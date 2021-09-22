@@ -5,7 +5,7 @@ import MindboxSdk from 'mindbox-sdk';
 
 export default function App() {
   React.useEffect(() => {
-    MindboxSdk.init('api.mindbox.ru', 'test');
+    MindboxSdk.initialize('api.mindbox.ru', 'test');
   }, []);
 
   return (

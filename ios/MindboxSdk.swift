@@ -3,8 +3,8 @@ import Mindbox
 @objc(MindboxSdk)
 class MindboxSdk: NSObject {
 
-    @objc(init:endpoint:)
-    func init(_ domain: String, endpoint: String) -> Void {
+    @objc(initialize:endpoint:)
+    func initialize(_ domain: String, endpoint: String) -> Void {
     do {
       let configuration = try MBConfiguration(
         endpoint: endpoint,

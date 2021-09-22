@@ -1,7 +1,7 @@
 import { NativeModules } from 'react-native';
 
 type MindboxSdkType = {
-  init(domain: String, endpoint: String): void;
+  initialize(domain: String, endpoint: String): void;
 };
 
 const { MindboxSdk } = NativeModules;
