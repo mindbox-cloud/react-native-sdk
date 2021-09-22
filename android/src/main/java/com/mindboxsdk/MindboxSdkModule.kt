@@ -8,6 +8,7 @@ import com.facebook.react.bridge.Promise
 import cloud.mindbox.mobile_sdk.*
 
 class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+  val context = reactContext.getApplicationContext()
 
   override fun getName(): String {
     return "MindboxSdk"
@@ -15,8 +16,6 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
   @ReactMethod
   fun initialize(mindbox_api: String, project_endpoint_external_id: String) {
-    val context = reactContext.getApplicationContext()
-
     val configuration = MindboxConfiguration.Builder(
       context,
       mindbox_api,                     

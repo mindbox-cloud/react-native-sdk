@@ -1,11 +1,17 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Platform } from 'react-native';
 import MindboxSdk from 'mindbox-sdk';
 
 export default function App() {
   React.useEffect(() => {
-    MindboxSdk.initialize('api.mindbox.ru', 'test');
+    switch (Platform.OS) {
+      case 'android':
+        MindboxSdk.initialize('api.mindbox.ru', 'mpush-test-Android');
+        break;
+      case 'ios':
+        MindboxSdk.initialize('api.mindbox.ru', 'app-with-hub-iOS');
+    }
   }, []);
 
   return (
