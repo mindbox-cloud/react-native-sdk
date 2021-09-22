@@ -4,15 +4,14 @@ import { StyleSheet, View, Text } from 'react-native';
 import MindboxSdk from 'mindbox-sdk';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
 
   React.useEffect(() => {
-    MindboxSdk.multiply(3, 7).then(setResult);
+    MindboxSdk.init('api.mindbox.ru', 'test');
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Hello!</Text>
     </View>
   );
 }

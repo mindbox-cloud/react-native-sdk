@@ -2,8 +2,6 @@
 
 @interface RCT_EXTERN_MODULE(MindboxSdk, NSObject)
 
-RCT_EXTERN_METHOD(multiply:(float)a withB:(float)b
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(init:(NSString)domain endpoint:(NSString)endpoint)
 
 @end

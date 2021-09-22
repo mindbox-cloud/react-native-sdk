@@ -36,11 +36,11 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/mindbox-moscow/react-native-sdk/",
-  "author": "Mindbox <mindbox@test.com> (https://github.com/mindbox-moscow/)",
+  "repository": "https://github.com/mindbox-moscow/react-native-sdk",
+  "author": "Mindbox <mindbox@test.com> (https://github.com/mindbox-moscow)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mindbox-moscow/react-native-sdk//issues"
+    "url": "https://github.com/mindbox-moscow/react-native-sdk/issues"
   },
   "homepage": "https://github.com/mindbox-moscow/react-native-sdk/#readme",
   "publishConfig": {

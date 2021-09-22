@@ -16,4 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
+
+  s.dependency "Mindbox", "1.2.0"
+  s.dependency "MindboxNotifications", "1.2.0"
 end
