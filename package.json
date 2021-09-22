@@ -37,7 +37,7 @@
     "android"
   ],
   "repository": "https://github.com/mindbox-moscow/react-native-sdk",
-  "author": "Mindbox <mindbox@test.com> (https://github.com/mindbox-moscow)",
+  "author": "Mindbox <it@mindbox.ru> (https://github.com/mindbox-moscow)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mindbox-moscow/react-native-sdk/issues"

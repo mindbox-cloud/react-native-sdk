@@ -4,7 +4,6 @@ import { StyleSheet, View, Text } from 'react-native';
 import MindboxSdk from 'mindbox-sdk';
 
 export default function App() {
-
   React.useEffect(() => {
     MindboxSdk.init('api.mindbox.ru', 'test');
   }, []);
