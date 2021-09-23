@@ -15,11 +15,11 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   }
 
   @ReactMethod
-  fun initialize(mindbox_api: String, project_endpoint_external_id: String) {
+  fun initialize(domain: String, endpoint: String) {
     val configuration = MindboxConfiguration.Builder(
       context,
-      mindbox_api,                     
-      project_endpoint_external_id
+      domain,                     
+      endpoint
     )
     .subscribeCustomerIfCreated(true) 
     .build()
