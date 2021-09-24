@@ -10,7 +10,8 @@ export default function App() {
         MindboxSdk.initialize('api.mindbox.ru', 'mpush-test-Android');
         break;
       case 'ios':
-        MindboxSdk.initialize('api.mindbox.ru', 'app-with-hub-iOS');
+        MindboxSdk.initialize('api.mindbox.ru', 'mpush-test-iOS-test');
+        break;
     }
   }, []);
 

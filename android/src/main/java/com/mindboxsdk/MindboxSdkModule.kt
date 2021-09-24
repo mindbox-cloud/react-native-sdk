@@ -1,30 +1,38 @@
 package com.mindboxsdk
 
+import android.app.Activity
+import android.content.Context
+import android.os.Handler
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.bridge.Promise
 
-import cloud.mindbox.mobile_sdk.*
+import cloud.mindbox.mobile_sdk.Mindbox
+import cloud.mindbox.mobile_sdk.MindboxConfiguration
 
 class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
-  val context = reactContext.getApplicationContext()
-
   override fun getName(): String {
     return "MindboxSdk"
   }
 
   @ReactMethod
   fun initialize(domain: String, endpoint: String) {
-    val configuration = MindboxConfiguration.Builder(
-      context,
-      domain,                     
-      endpoint
-    )
-    .subscribeCustomerIfCreated(true) 
-    .build()
+    val context: Context = reactApplicationContext.applicationContext
+    val activity: Activity? = reactApplicationContext.currentActivity
 
-    Mindbox.init(context, configuration)
+    if (activity != null && context != null) {
+      val configuration = MindboxConfiguration.Builder(
+        context,
+        domain,
+        endpoint
+      )
+        .subscribeCustomerIfCreated(true)
+        .build()
+
+      val handler = Handler(context.mainLooper);
+      handler.post(Runnable {
+        Mindbox.init(activity, configuration)
+      })
+    }
   }
-  
 }

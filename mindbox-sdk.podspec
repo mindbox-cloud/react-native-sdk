@@ -18,5 +18,4 @@ Pod::Spec.new do |s|
   s.dependency "React-Core"
 
   s.dependency "Mindbox", "1.2.0"
-  s.dependency "MindboxNotifications", "1.2.0"
 end
