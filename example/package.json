@@ -9,14 +9,8 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@react-navigation/native": "^6.0.4",
-    "@react-navigation/native-stack": "^6.2.2",
-    "formik": "^2.2.9",
     "react": "16.13.1",
-    "react-native": "0.63.4",
-    "react-native-safe-area-context": "^3.3.2",
-    "react-native-screens": "^3.8.0",
-    "yup": "^0.32.9"
+    "react-native": "0.63.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
