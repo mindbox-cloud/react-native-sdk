@@ -1,6 +1,11 @@
-import { NativeModules, Platform } from 'react-native';
+import {
+  EmitterSubscription,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 
-const { MindboxSdk: MindboxSdkNative } = NativeModules;
+const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
 
 type InitializationData = {
   domain: string;
@@ -15,15 +20,20 @@ type GetDeviceUUIDCallback = (deviceUUID: string) => any;
 
 type GetTokenCallback = (token: string) => any;
 
+type OnPushClickReceivedCallback = (payload: string) => any;
+
 class MindboxSdkClass {
   private _initialized: boolean;
   private _initializing: boolean;
   private _callbacks: Array<() => void>;
+  private _mindboxJsDeliveryEvents: NativeEventEmitter;
+  private _emitterSubscribtion?: EmitterSubscription;
 
   constructor() {
     this._initialized = false;
     this._initializing = false;
     this._callbacks = [];
+    this._mindboxJsDeliveryEvents = new NativeEventEmitter(MindboxJsDelivery);
   }
 
   get initialized() {
@@ -164,6 +174,21 @@ class MindboxSdkClass {
         }
         break;
     }
+  }
+
+  public onPushClickReceived(callback: OnPushClickReceivedCallback) {
+    if (typeof callback !== 'function') {
+      return;
+    }
+
+    if (this._emitterSubscribtion) {
+      this._emitterSubscribtion.remove();
+    }
+
+    this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
+      'pushNotificationClicked',
+      callback
+    );
   }
 }
 

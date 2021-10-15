@@ -13,7 +13,7 @@
     "android",
     "ios",
     "cpp",
-    "mindbox-sdk.podspec",
+    "MindboxSdk.podspec",
     "!lib/typescript/example",
     "!android/build",
     "!ios/build",
