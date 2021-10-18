@@ -6,8 +6,19 @@ jest.mock('react-native', () => {
   actualReactNative.NativeModules.MindboxSdk = {
     initialize: jest.fn(
       (payloadString: string) =>
-        new Promise((resolve, reject) => {
+        new Promise(async (resolve, reject) => {
           if (payloadString && typeof payloadString === 'string') {
+            try {
+              const paylaod = JSON.parse(payloadString);
+
+              if (!paylaod.domain || !paylaod.endpointId) {
+                reject(new Error('Error'));
+              } else {
+                resolve(true);
+              }
+            } catch (error) {
+              reject(error);
+            }
             resolve(true);
           } else {
             reject(new Error('Error'));
@@ -83,11 +94,27 @@ describe('Testing Mindbox RN SDK', () => {
     } = require('react-native');
 
     describe('Testing initialize method', () => {
-      it('throws errors when no paylaod passed or payload is not a string', async () => {
-        expect.assertions(2);
+      it('throws errors when no paylaod passed or payload is not a JSON string', async () => {
+        expect.assertions(3);
 
         await expect(MindboxSdk.initialize()).rejects.toThrow('Error');
         await expect(MindboxSdk.initialize(123)).rejects.toThrow('Error');
+        await expect(MindboxSdk.initialize('notJSONString')).rejects.toThrow(
+          'Unexpected token'
+        );
+      });
+
+      it('throws error when no valid payload data was passed', async () => {
+        expect.assertions(1);
+
+        const notValidInitializationData = {
+          ...initializationData,
+          domain: '',
+        };
+
+        await expect(
+          MindboxSdk.initialize(notValidInitializationData)
+        ).rejects.toThrow('Error');
       });
 
       it('resolves successfully with string payload passed', async () => {
