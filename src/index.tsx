@@ -40,6 +40,10 @@ class MindboxSdkClass {
     return this._initialized;
   }
 
+  get subscribedForPushClickedEvent() {
+    return !!this._emitterSubscribtion;
+  }
+
   public async initialize(initializationData: InitializationData) {
     if (this._initializing) {
       return;
@@ -49,6 +53,14 @@ class MindboxSdkClass {
 
     if (this._initialized) {
       this._initializing = false;
+      return;
+    }
+
+    if (!initializationData || typeof initializationData !== 'object') {
+      return;
+    }
+
+    if (!initializationData.domain || !initializationData.endpointId) {
       return;
     }
 
