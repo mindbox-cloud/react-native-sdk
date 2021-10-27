@@ -26,6 +26,7 @@ type ExecuteAsyncOperationPayload = {
   operationSystemName: string;
   operationBody: { [key: string]: any };
 };
+type OperationBody = { [key: string]: any };
 
 class MindboxSdkClass {
   private _initialized: boolean;
@@ -235,6 +236,28 @@ class MindboxSdkClass {
       operationSystemName,
       jsonStringPayload
     );
+  }
+
+  public async executeSyncOperation(
+    operationSystemName: string,
+    operationBody: OperationBody
+  ) {
+    if (!operationSystemName || typeof operationSystemName !== 'string') {
+      return;
+    }
+
+    if (!operationBody || typeof operationBody !== 'object') {
+      return;
+    }
+
+    const JsonStringPayload = JSON.stringify(operationBody);
+
+    const response = await MindboxSdkNative.executeSyncOperation(
+      operationSystemName,
+      JsonStringPayload
+    );
+
+    return JSON.parse(response);
   }
 }
 

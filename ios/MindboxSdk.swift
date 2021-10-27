@@ -1,4 +1,5 @@
 import Mindbox
+import CoreFoundation
 
 enum CustomError: Error {
     case tokenAPNSisNull
@@ -83,5 +84,38 @@ class MindboxSdk: NSObject {
     func executeAsyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
         Mindbox.shared.executeAsyncOperation(operationSystemName: operationSystemName, json: operationBody)
         resolve(true)
+    }
+
+    @objc(executeSyncOperation:operationBody:resolve:rejecter:)
+    func executeSyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
+        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, operationBody: operationBody) { response in
+            switch response {
+                case let .success(result):
+                do {
+                    let messageDictionary: [String: Any?] = [ "data": nil, "error": nil ]
+                    let jsonData = try JSONSerialization.data(withJSONObject: messageDictionary)
+                    let jsonString = String(data: jsonData, encoding: .utf8)
+                    resolve(jsonString)
+                } catch {
+                    reject("Error", error.localizedDescription, error)
+                }
+                
+                case let .failure(resultError):
+                do {
+                    let messageDictionary: [String: Any?] = [
+                        "data": nil,
+                        "error": [
+                            "failureReason": resultError.failureReason,
+                            "description": resultError.localizedDescription
+                        ]
+                    ]
+                    let jsonData = try JSONSerialization.data(withJSONObject: messageDictionary)
+                    let jsonString = String(data: jsonData, encoding: .utf8)
+                    resolve(jsonString)
+                } catch {
+                    reject("Error", error.localizedDescription, error)
+                }
+            }
+        }
     }
 }
