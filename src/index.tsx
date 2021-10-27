@@ -22,6 +22,8 @@ type GetTokenCallback = (token: string) => any;
 
 type OnPushClickReceivedCallback = (payload: string) => any;
 
+type OperationBody = { [key: string]: any };
+
 class MindboxSdkClass {
   private _initialized: boolean;
   private _initializing: boolean;
@@ -207,6 +209,48 @@ class MindboxSdkClass {
       'pushNotificationClicked',
       callback
     );
+  }
+
+  public executeAsyncOperation(
+    operationSystemName: string,
+    operationBody: OperationBody
+  ) {
+    if (!operationSystemName || typeof operationSystemName !== 'string') {
+      return;
+    }
+
+    if (!operationBody || typeof operationBody !== 'object') {
+      return;
+    }
+
+    const jsonStringPayload = JSON.stringify(operationBody);
+
+    MindboxSdkNative.executeAsyncOperation(
+      operationSystemName,
+      jsonStringPayload
+    );
+  }
+
+  public async executeSyncOperation(
+    operationSystemName: string,
+    operationBody: OperationBody
+  ) {
+    if (!operationSystemName || typeof operationSystemName !== 'string') {
+      return;
+    }
+
+    if (!operationBody || typeof operationBody !== 'object') {
+      return;
+    }
+
+    const JsonStringPayload = JSON.stringify(operationBody);
+
+    const response = await MindboxSdkNative.executeSyncOperation(
+      operationSystemName,
+      JsonStringPayload
+    );
+
+    return JSON.parse(response);
   }
 }
 
