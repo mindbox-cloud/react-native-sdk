@@ -297,10 +297,6 @@ describe('Testing Mindbox RN SDK', () => {
     it('onPushClickReceived method works correctly', () => {
       const MindboxSdk = require('../index').default;
 
-      MindboxSdk.onPushClickReceived();
-
-      expect(MindboxSdk.subscribedForPushClickedEvent).toBeFalsy();
-
       MindboxSdk.onPushClickReceived(() => {});
 
       expect(MindboxSdk.subscribedForPushClickedEvent).toBeTruthy();
