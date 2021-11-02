@@ -46,22 +46,20 @@ class MindboxSdkClass {
 
   public async initialize(initializationData: InitializationData) {
     if (this._initializing) {
+      console.warn('MindboxSdk is already initializing');
       return;
     }
 
     this._initializing = true;
 
     if (this._initialized) {
+      console.warn('MindboxSdk is already initialized');
       this._initializing = false;
       return;
     }
 
     if (!initializationData || typeof initializationData !== 'object') {
-      return;
-    }
-
-    if (!initializationData.domain || !initializationData.endpointId) {
-      return;
+      throw new Error('Wrong initialization data!');
     }
 
     const {
@@ -72,6 +70,10 @@ class MindboxSdkClass {
       previousInstallId,
       previousUuid,
     } = initializationData;
+
+    if (!domain || !endpointId) {
+      throw new Error('Wrong initialization data!');
+    }
 
     const payload: InitializationData = {
       domain,
@@ -111,8 +113,8 @@ class MindboxSdkClass {
   }
 
   public getDeviceUUID(callback: GetDeviceUUIDCallback) {
-    if (typeof callback !== 'function') {
-      return;
+    if (!callback || typeof callback !== 'function') {
+      throw new Error('Callback is required!');
     }
 
     const callbackHandler = () => {
@@ -129,8 +131,8 @@ class MindboxSdkClass {
   }
 
   public getToken(callback: GetTokenCallback) {
-    if (typeof callback !== 'function') {
-      return;
+    if (!callback || typeof callback !== 'function') {
+      throw new Error('Callback is required!');
     }
 
     const callbackHandler = () => {
@@ -161,6 +163,10 @@ class MindboxSdkClass {
   }
 
   public async updateToken(token: string) {
+    if (!token || typeof token !== 'string') {
+      throw new Error('Token is required!');
+    }
+
     switch (Platform.OS) {
       case 'ios':
         try {
@@ -189,8 +195,8 @@ class MindboxSdkClass {
   }
 
   public onPushClickReceived(callback: OnPushClickReceivedCallback) {
-    if (typeof callback !== 'function') {
-      return;
+    if (!callback || typeof callback !== 'function') {
+      throw new Error('Callback is required!');
     }
 
     if (this._emitterSubscribtion) {
