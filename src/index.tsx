@@ -26,7 +26,16 @@ type ExecuteAsyncOperationPayload = {
   operationSystemName: string;
   operationBody: { [key: string]: any };
 };
-type OperationBody = { [key: string]: any };
+
+type ExecuteSyncOperationPayload = {
+  operationSystemName: string;
+  operationBody: { [key: string]: any };
+  onResponse: (
+    response: { [key: string]: any } | null,
+    error: { [key: string]: any } | null
+  ) => any;
+  onError?: (error: Error) => any;
+};
 
 class MindboxSdkClass {
   private _initialized: boolean;
@@ -238,10 +247,13 @@ class MindboxSdkClass {
     );
   }
 
-  public async executeSyncOperation(
-    operationSystemName: string,
-    operationBody: OperationBody
-  ) {
+  public executeSyncOperation(payload: ExecuteSyncOperationPayload) {
+    if (!payload || typeof payload !== 'object') {
+      return;
+    }
+
+    const { operationSystemName, operationBody, onResponse, onError } = payload;
+
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       return;
     }
@@ -250,14 +262,34 @@ class MindboxSdkClass {
       return;
     }
 
-    const JsonStringPayload = JSON.stringify(operationBody);
+    if (!onResponse || typeof onResponse !== 'function') {
+      return;
+    }
 
-    const response = await MindboxSdkNative.executeSyncOperation(
+    if (onError && typeof onError !== 'function') {
+      return;
+    }
+
+    const jsonStringPayload = JSON.stringify(operationBody);
+
+    MindboxSdkNative.executeSyncOperation(
       operationSystemName,
-      JsonStringPayload
-    );
+      jsonStringPayload
+    )
+      .then((response: string) => {
+        const data: { [key: string]: any } = JSON.parse(response);
 
-    return JSON.parse(response);
+        if (data.status) {
+          onResponse(data, null);
+        } else {
+          onResponse(null, data);
+        }
+      })
+      .catch((error: Error) => {
+        if (onError) {
+          onError(error);
+        }
+      });
   }
 }
 
