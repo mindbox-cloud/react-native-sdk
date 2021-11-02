@@ -82,33 +82,32 @@ class MindboxSdk: NSObject {
     
     @objc(executeAsyncOperation:operationBody:)
     func executeAsyncOperation(_ operationSystemName: String, operationBody: String) -> Void {
-        Mindbox.shared.executeAsyncOperation(operationSystemName: operationSystemName, operationBody: operationBody)
+        Mindbox.shared.executeAsyncOperation(operationSystemName: operationSystemName, json: operationBody)
     }
     
     @objc(executeSyncOperation:operationBody:resolve:rejecter:)
     func executeSyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
-        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, operationBody: operationBody) { response in
+        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, json: operationBody) { response in
             switch response {
                 case let .success(result):
                 do {
-                    let messageDictionary: [String: Any?] = [ "data": nil, "error": nil ]
-                    let jsonData = try JSONSerialization.data(withJSONObject: messageDictionary)
+                    let jsonData = try JSONEncoder().encode(result)
                     let jsonString = String(data: jsonData, encoding: .utf8)
                     resolve(jsonString)
                 } catch {
                     reject("Error", error.localizedDescription, error)
                 }
                 
-                case let .failure(resultError):
+                case let .failure(result):
                 do {
-                    let messageDictionary: [String: Any?] = [
-                        "data": nil,
-                        "error": [
-                            "failureReason": resultError.failureReason,
-                            "description": resultError.localizedDescription
-                        ]
-                    ]
-                    let jsonData = try JSONSerialization.data(withJSONObject: messageDictionary)
+                    let jsonData = try JSONEncoder().encode([
+                        "failureReason": result.failureReason,
+                        "errorKey": result.errorKey,
+                        "errorDescription": result.errorDescription,
+                        "localizedDescription": result.localizedDescription,
+                        "helpAnchor": result.helpAnchor,
+                        "recoverySuggestion": result.recoverySuggestion
+                    ])
                     let jsonString = String(data: jsonData, encoding: .utf8)
                     resolve(jsonString)
                 } catch {
