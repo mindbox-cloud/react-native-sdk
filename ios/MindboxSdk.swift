@@ -25,6 +25,11 @@ struct PayloadData: Codable {
 @objc(MindboxSdk)
 class MindboxSdk: NSObject {
     
+    @objc
+    static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
     @objc(initialize:resolve:rejecter:)
     func initialize(_ payloadString: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
         do {
