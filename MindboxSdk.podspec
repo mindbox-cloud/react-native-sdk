@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 Pod::Spec.new do |s|
-  s.name         = "mindbox-sdk"
+  s.name         = "MindboxSdk"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
@@ -17,5 +17,6 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
 
-  s.dependency "Mindbox", "1.2.0"
+  s.dependency "Mindbox", "1.3.0"
+  s.dependency "MindboxNotifications", "1.3.0"
 end

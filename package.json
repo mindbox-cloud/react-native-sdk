@@ -1,6 +1,6 @@
 {
   "name": "mindbox-sdk",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "SDK for integration React Native mobile apps with Mindbox",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -13,7 +13,7 @@
     "android",
     "ios",
     "cpp",
-    "mindbox-sdk.podspec",
+    "MindboxSdk.podspec",
     "!lib/typescript/example",
     "!android/build",
     "!ios/build",
@@ -50,6 +50,7 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@react-native-community/eslint-config": "^2.0.0",
     "@release-it/conventional-changelog": "^2.0.0",
+    "@release-it/keep-a-changelog": "^2.3.0",
     "@types/jest": "^26.0.0",
     "@types/react": "^16.9.19",
     "@types/react-native": "0.62.13",
@@ -92,7 +93,12 @@
   "release-it": {
     "git": {
       "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
+      "tagName": "v${version}",
+      "changelog": "npx auto-changelog --stdout --commit-limit false -u --template https://raw.githubusercontent.com/release-it/release-it/master/templates/changelog-compact.hbs",
+      "requireCleanWorkingDir": false
+    },
+    "hooks": {
+      "after:bump": "npx auto-changelog -p"
     },
     "npm": {
       "publish": true
@@ -101,8 +107,8 @@
       "release": true
     },
     "plugins": {
-      "@release-it/conventional-changelog": {
-        "preset": "angular"
+      "@release-it/keep-a-changelog": {
+        "filename": "CHANGELOG.md"
       }
     }
   },
