@@ -3,12 +3,14 @@ package com.mindboxsdk
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
+import cloud.mindbox.mobile_sdk.models.MindboxError
 import com.facebook.react.bridge.Promise
 import org.json.JSONObject
 
@@ -51,6 +53,8 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         })
 
         promise.resolve(true)
+      } else {
+        promise.resolve(false)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -90,11 +94,40 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   @ReactMethod
   fun updateFMSToken(token: String, promise: Promise) {
     try {
-      val context: Context = reactApplicationContext.applicationContext
-
-      Mindbox.updateFmsToken(context, token)
-
+      Mindbox.updateFmsToken(reactApplicationContext.applicationContext, token)
       promise.resolve(true)
+    } catch (error: Throwable) {
+      promise.reject(error)
+    }
+  }
+
+  @ReactMethod
+  fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
+    try {
+      Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
+      promise.resolve(true)
+    } catch (error: Throwable) {
+      promise.reject(error)
+    }
+  }
+
+  @ReactMethod
+  fun executeSyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
+    try {
+      Mindbox.executeSyncOperation(
+        context = reactApplicationContext.applicationContext,
+        operationSystemName = operationSystemName,
+        operationBodyJson = operationBody,
+        onSuccess = {
+          response: String -> Log.d("Response", response)
+        },
+        onRequestError = {
+          requestError: String -> Log.d("RequestError", requestError)
+        },
+        onMindboxError = {
+          internalError: MindboxError -> Log.d("InternalError", internalError.toString())
+        }
+      )
     } catch (error: Throwable) {
       promise.reject(error)
     }
