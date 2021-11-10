@@ -27,14 +27,35 @@ type ExecuteAsyncOperationPayload = {
   operationBody: { [key: string]: any };
 };
 
+type ExecuteSyncOperationResponseData = {
+  status:
+    | 'Success'
+    | 'TransactionAlreadyProcessed'
+    | 'ValidationError'
+    | 'ProtocolError'
+    | 'InternalServerError';
+  [key: string]: any;
+} | null;
+
+type ExecuteSyncOperationResponseError = {
+  httpStatusCode: string;
+  errorMessage: string;
+  [key: string]: any;
+} | null;
+
 type ExecuteSyncOperationPayload = {
   operationSystemName: string;
   operationBody: { [key: string]: any };
   onResponse: (
-    response: { [key: string]: any } | null,
-    error: { [key: string]: any } | null
+    response: ExecuteSyncOperationResponseData,
+    error: ExecuteSyncOperationResponseError
   ) => any;
   onError?: (error: Error) => any;
+};
+
+type ExecuteSyncOperationResponse = {
+  data: ExecuteSyncOperationResponseData;
+  error: ExecuteSyncOperationResponseError;
 };
 
 class MindboxSdkClass {
@@ -249,25 +270,25 @@ class MindboxSdkClass {
 
   public executeSyncOperation(payload: ExecuteSyncOperationPayload) {
     if (!payload || typeof payload !== 'object') {
-      return;
+      throw new Error('Payload is required!');
     }
 
     const { operationSystemName, operationBody, onResponse, onError } = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
-      return;
+      throw new Error('operationSystemName is required and must be a string!');
     }
 
     if (!operationBody || typeof operationBody !== 'object') {
-      return;
+      throw new Error('operationBody is required!');
     }
 
     if (!onResponse || typeof onResponse !== 'function') {
-      return;
+      throw new Error('onResponse callback is required!');
     }
 
     if (onError && typeof onError !== 'function') {
-      return;
+      throw new Error('onError callback must be a function!');
     }
 
     const jsonStringPayload = JSON.stringify(operationBody);
@@ -277,13 +298,9 @@ class MindboxSdkClass {
       jsonStringPayload
     )
       .then((response: string) => {
-        const data: { [key: string]: any } = JSON.parse(response);
+        const responseObj: ExecuteSyncOperationResponse = JSON.parse(response);
 
-        if (data.status) {
-          onResponse(data, null);
-        } else {
-          onResponse(null, data);
-        }
+        onResponse(responseObj.data, responseObj.error);
       })
       .catch((error: Error) => {
         if (onError) {

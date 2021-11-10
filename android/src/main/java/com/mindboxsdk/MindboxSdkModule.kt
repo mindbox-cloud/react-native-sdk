@@ -119,13 +119,35 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         operationSystemName = operationSystemName,
         operationBodyJson = operationBody,
         onSuccess = {
-          response: String -> Log.d("Response", response)
+          response: String ->
+            val jsonObject = JSONObject()
+            jsonObject.put("data", JSONObject(response))
+            jsonObject.put("error", JSONObject.NULL)
+            promise.resolve(response)
         },
         onRequestError = {
-          requestError: String -> Log.d("RequestError", requestError)
+          requestError: String ->
+            val jsonObject = JSONObject()
+            jsonObject.put("data", JSONObject(requestError))
+            jsonObject.put("error", JSONObject.NULL)
+            promise.resolve(jsonObject.toString())
         },
         onMindboxError = {
-          internalError: MindboxError -> Log.d("InternalError", internalError.toString())
+          internalError: MindboxError -> when(internalError) {
+            is MindboxError.UnknownServer -> {
+              Log.d("Tag", internalError.toString())
+              val rootObject = JSONObject()
+              val errorObject = JSONObject()
+              rootObject.put("data", JSONObject.NULL)
+              errorObject.put("httpStatusCode", internalError.httpStatusCode ?: "502")
+              errorObject.put("errorMessage", internalError.errorMessage ?: "Something went wrong")
+              rootObject.put("error", errorObject)
+              promise.resolve(rootObject.toString())
+            }
+            is MindboxError.Unknown -> {
+              promise.reject(internalError.throwable)
+            }
+          }
         }
       )
     } catch (error: Throwable) {
