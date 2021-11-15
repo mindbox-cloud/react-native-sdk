@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Added
-- executeAsyncOperation methid
+- executeAsyncOperation method
 
 ## [0.1.0] - 2021-11-03
 
