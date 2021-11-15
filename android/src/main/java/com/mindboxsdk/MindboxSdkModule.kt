@@ -51,6 +51,8 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         })
 
         promise.resolve(true)
+      } else {
+        promise.resolve(false)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -90,10 +92,17 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   @ReactMethod
   fun updateFMSToken(token: String, promise: Promise) {
     try {
-      val context: Context = reactApplicationContext.applicationContext
+      Mindbox.updateFmsToken(reactApplicationContext.applicationContext, token)
+      promise.resolve(true)
+    } catch (error: Throwable) {
+      promise.reject(error)
+    }
+  }
 
-      Mindbox.updateFmsToken(context, token)
-
+  @ReactMethod
+  fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
+    try {
+      Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
       promise.resolve(true)
     } catch (error: Throwable) {
       promise.reject(error)

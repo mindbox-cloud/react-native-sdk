@@ -63,6 +63,23 @@ jest.mock('react-native', () => {
           }
         })
     ),
+    executeAsyncOperation: jest.fn(
+      (operationSystemName: string, operationBodyString: string) =>
+        new Promise((resolve, reject) => {
+          if (
+            operationSystemName &&
+            typeof operationSystemName === 'string' &&
+            operationSystemName.length > 0 &&
+            operationBodyString &&
+            typeof operationBodyString === 'string' &&
+            operationBodyString.length > 0
+          ) {
+            resolve(true);
+          } else {
+            reject(new Error('Error'));
+          }
+        })
+    ),
   };
 
   actualReactNative.NativeModules.MindboxJsDelivery = {
@@ -87,6 +104,30 @@ describe('Testing Mindbox RN SDK', () => {
     previousInstallId: '',
     previousUuid: '',
   };
+  const asyncOperationSystemName = 'setProductList';
+  const asyncOperationBody = {
+    productList: [
+      {
+        count: 10,
+        pricePerItem: 1,
+        product: {
+          ids: {
+            website: 'test-1',
+          },
+        },
+      },
+      {
+        count: 2,
+        pricePerItem: 4,
+        productGroup: {
+          ids: {
+            website: 'test-group-1',
+          },
+        },
+      },
+    ],
+  };
+  const asyncOperationBodyString = JSON.stringify(asyncOperationBody);
 
   describe('Testing Mindbox RN SDK native methods', () => {
     const {
@@ -213,6 +254,43 @@ describe('Testing Mindbox RN SDK', () => {
         ).resolves.toBeTruthy();
       });
     });
+
+    describe('Testing executeAsyncOperation method', () => {
+      it('throws error when no payload passed', async () => {
+        expect.assertions(2);
+
+        await expect(
+          MindboxSdk.executeAsyncOperation('', asyncOperationBodyString)
+        ).rejects.toThrow('Error');
+
+        await expect(
+          MindboxSdk.executeAsyncOperation(asyncOperationSystemName, '')
+        ).rejects.toThrow('Error');
+      });
+
+      it('throws error when non string payload passed', async () => {
+        expect.assertions(2);
+
+        await expect(
+          MindboxSdk.executeAsyncOperation(123, asyncOperationBodyString)
+        ).rejects.toThrow('Error');
+
+        await expect(
+          MindboxSdk.executeAsyncOperation(asyncOperationSystemName, 123)
+        ).rejects.toThrow('Error');
+      });
+
+      it('resolves successfully with string payload passed', async () => {
+        expect.assertions(1);
+
+        await expect(
+          MindboxSdk.executeAsyncOperation(
+            asyncOperationSystemName,
+            asyncOperationBodyString
+          )
+        ).resolves.toBeTruthy();
+      });
+    });
   });
 
   describe('Testing Mindbox RN SDK public interface', () => {
@@ -297,11 +375,26 @@ describe('Testing Mindbox RN SDK', () => {
     it('onPushClickReceived method works correctly', () => {
       const MindboxSdk = require('../index').default;
 
+      expect.assertions(2);
+
       expect(MindboxSdk.subscribedForPushClickedEvent).toBeFalsy();
 
       MindboxSdk.onPushClickReceived(() => {});
 
       expect(MindboxSdk.subscribedForPushClickedEvent).toBeTruthy();
+    });
+
+    it('executeAsyncOperation method works correctly', () => {
+      const MindboxSdk = require('../index').default;
+
+      expect.assertions(1);
+
+      expect(
+        MindboxSdk.executeAsyncOperation({
+          operationSystemName: asyncOperationSystemName,
+          operationBody: asyncOperationBody,
+        })
+      ).toBeUndefined();
     });
   });
 });

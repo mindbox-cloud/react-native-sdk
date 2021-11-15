@@ -78,4 +78,10 @@ class MindboxSdk: NSObject {
             reject("Error", error.localizedDescription, error)
         }
     }
+    
+    @objc(executeAsyncOperation:operationBody:resolve:rejecter:)
+    func executeAsyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
+        Mindbox.shared.executeAsyncOperation(operationSystemName: operationSystemName, json: operationBody)
+        resolve(true)
+    }
 }
