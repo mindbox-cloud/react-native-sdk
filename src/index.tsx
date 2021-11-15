@@ -22,6 +22,11 @@ type GetTokenCallback = (token: string) => any;
 
 type OnPushClickReceivedCallback = (payload: string) => any;
 
+type ExecuteAsyncOperationPayload = {
+  operationSystemName: string;
+  operationBody: { [key: string]: any };
+};
+
 class MindboxSdkClass {
   private _initialized: boolean;
   private _initializing: boolean;
@@ -206,6 +211,29 @@ class MindboxSdkClass {
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
       callback
+    );
+  }
+
+  public executeAsyncOperation(payload: ExecuteAsyncOperationPayload) {
+    if (!payload || typeof payload !== 'object') {
+      throw new Error('Payload is required!');
+    }
+
+    const { operationSystemName, operationBody } = payload;
+
+    if (!operationSystemName || typeof operationSystemName !== 'string') {
+      throw new Error('operationSystemName is required and must be a string!');
+    }
+
+    if (!operationBody || typeof operationBody !== 'object') {
+      throw new Error('operationBody is required!');
+    }
+
+    const jsonStringPayload = JSON.stringify(operationBody);
+
+    MindboxSdkNative.executeAsyncOperation(
+      operationSystemName,
+      jsonStringPayload
     );
   }
 }

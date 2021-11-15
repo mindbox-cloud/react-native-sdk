@@ -78,3 +78,14 @@ Requires a callback that will return push notification link or push notification
 ```js
 MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
 ```
+
+#### executeAsyncOperation
+
+Make request to backend without waiting any response
+
+```js
+MindboxSdk.executeAsyncOperation({
+  operationSystemName: '--YOUR SYSTEM NAME HERE--',
+  operationBody: { ... },
+});
+```
