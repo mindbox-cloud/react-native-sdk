@@ -88,32 +88,12 @@ class MindboxSdk: NSObject {
 
     @objc(executeSyncOperation:operationBody:resolve:rejecter:)
     func executeSyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
-        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, json: operationBody) { response in
-            switch response {
-                case let .success(result):
-                do {
-                    let jsonData = try JSONEncoder().encode(result)
-                    let jsonString = String(data: jsonData, encoding: .utf8)
-                    resolve(jsonString)
-                } catch {
-                    reject("Error", error.localizedDescription, error)
-                }
-                
-                case let .failure(result):
-                do {
-                    let jsonData = try JSONEncoder().encode([
-                        "failureReason": result.failureReason,
-                        "errorKey": result.errorKey,
-                        "errorDescription": result.errorDescription,
-                        "localizedDescription": result.localizedDescription,
-                        "helpAnchor": result.helpAnchor,
-                        "recoverySuggestion": result.recoverySuggestion
-                    ])
-                    let jsonString = String(data: jsonData, encoding: .utf8)
-                    resolve(jsonString)
-                } catch {
-                    reject("Error", error.localizedDescription, error)
-                }
+        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, json: operationBody) { result in
+            switch result {
+            case .success(let response):
+                resolve(response.createJSON())
+            case .failure(let error):
+                reject("MindboxError", error.createJSON(), error)
             }
         }
     }
