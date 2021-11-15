@@ -27,35 +27,23 @@ type ExecuteAsyncOperationPayload = {
   operationBody: { [key: string]: any };
 };
 
-type ExecuteSyncOperationResponseData = {
-  status:
-    | 'Success'
-    | 'TransactionAlreadyProcessed'
-    | 'ValidationError'
-    | 'ProtocolError'
-    | 'InternalServerError';
+type ExecuteSyncOperationSuccessData = {
+  status: 'Success';
   [key: string]: any;
 } | null;
 
-type ExecuteSyncOperationResponseError = {
-  httpStatusCode: string;
-  errorMessage: string;
-  [key: string]: any;
+type ExecuteSyncOperationErrorData = {
+  type: 'MindboxError' | 'NetworkError' | 'InternalError';
+  data: {
+    [key: string]: any;
+  };
 } | null;
 
 type ExecuteSyncOperationPayload = {
   operationSystemName: string;
   operationBody: { [key: string]: any };
-  onResponse: (
-    response: ExecuteSyncOperationResponseData,
-    error: ExecuteSyncOperationResponseError
-  ) => any;
-  onError?: (error: Error) => any;
-};
-
-type ExecuteSyncOperationResponse = {
-  data: ExecuteSyncOperationResponseData;
-  error: ExecuteSyncOperationResponseError;
+  onSuccess: (data: ExecuteSyncOperationSuccessData) => any;
+  onError: (error: ExecuteSyncOperationErrorData) => any;
 };
 
 class MindboxSdkClass {
@@ -273,7 +261,7 @@ class MindboxSdkClass {
       throw new Error('Payload is required!');
     }
 
-    const { operationSystemName, operationBody, onResponse, onError } = payload;
+    const { operationSystemName, operationBody, onSuccess, onError } = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
@@ -283,8 +271,8 @@ class MindboxSdkClass {
       throw new Error('operationBody is required!');
     }
 
-    if (!onResponse || typeof onResponse !== 'function') {
-      throw new Error('onResponse callback is required!');
+    if (!onSuccess || typeof onSuccess !== 'function') {
+      throw new Error('onSuccess callback is required!');
     }
 
     if (onError && typeof onError !== 'function') {
@@ -298,14 +286,17 @@ class MindboxSdkClass {
       jsonStringPayload
     )
       .then((response: string) => {
-        const responseObj: ExecuteSyncOperationResponse = JSON.parse(response);
+        const responseObj: ExecuteSyncOperationSuccessData =
+          JSON.parse(response);
 
-        onResponse(responseObj.data, responseObj.error);
+        onSuccess(responseObj);
       })
       .catch((error: Error) => {
-        if (onError) {
-          onError(error);
-        }
+        const errorObj: ExecuteSyncOperationErrorData = JSON.parse(
+          error.message
+        );
+
+        onError(errorObj);
       });
   }
 }

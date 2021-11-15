@@ -103,55 +103,22 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    try {
-      Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
-      promise.resolve(true)
-    } catch (error: Throwable) {
-      promise.reject(error)
-    }
+    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
+    promise.resolve(true)
   }
 
   @ReactMethod
   fun executeSyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    try {
-      Mindbox.executeSyncOperation(
-        context = reactApplicationContext.applicationContext,
-        operationSystemName = operationSystemName,
-        operationBodyJson = operationBody,
-        onSuccess = {
-          response: String ->
-            val jsonObject = JSONObject()
-            jsonObject.put("data", JSONObject(response))
-            jsonObject.put("error", JSONObject.NULL)
-            promise.resolve(response)
-        },
-        onRequestError = {
-          requestError: String ->
-            val jsonObject = JSONObject()
-            jsonObject.put("data", JSONObject(requestError))
-            jsonObject.put("error", JSONObject.NULL)
-            promise.resolve(jsonObject.toString())
-        },
-        onMindboxError = {
-          internalError: MindboxError -> when(internalError) {
-            is MindboxError.UnknownServer -> {
-              Log.d("Tag", internalError.toString())
-              val rootObject = JSONObject()
-              val errorObject = JSONObject()
-              rootObject.put("data", JSONObject.NULL)
-              errorObject.put("httpStatusCode", internalError.httpStatusCode ?: "502")
-              errorObject.put("errorMessage", internalError.errorMessage ?: "Something went wrong")
-              rootObject.put("error", errorObject)
-              promise.resolve(rootObject.toString())
-            }
-            is MindboxError.Unknown -> {
-              promise.reject(internalError.throwable)
-            }
-          }
-        }
-      )
-    } catch (error: Throwable) {
-      promise.reject(error)
-    }
+    Mindbox.executeSyncOperation(
+      context = reactApplicationContext.applicationContext,
+      operationSystemName = operationSystemName,
+      operationBodyJson = operationBody,
+      onSuccess = {
+          response -> promise.resolve(response)
+      },
+      onError = {
+          error -> promise.reject("MindboxError", error.toJson())
+      }
+    )
   }
 }
