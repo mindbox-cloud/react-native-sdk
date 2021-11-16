@@ -93,7 +93,7 @@ class MindboxSdk: NSObject {
             case .success(let response):
                 resolve(response.createJSON())
             case .failure(let error):
-                reject("MindboxError", error.createJSON(), error)
+                resolve(error.createJSON())
             }
         }
     }

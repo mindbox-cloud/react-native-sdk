@@ -117,7 +117,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
           response -> promise.resolve(response)
       },
       onError = {
-          error -> promise.reject("MindboxError", error.toJson())
+          error -> promise.resolve(error.toJson())
       }
     )
   }

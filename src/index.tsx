@@ -5,46 +5,13 @@ import {
   Platform,
 } from 'react-native';
 
+import type {
+  InitializationData,
+  ExecuteSyncOperationPayload,
+  ExecuteAsyncOperationPayload,
+} from './types';
+
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
-
-type InitializationData = {
-  domain: string;
-  endpointId: string;
-  subscribeCustomerIfCreated: boolean;
-  shouldCreateCustomer?: boolean;
-  previousInstallId?: string;
-  previousUuid?: string;
-};
-
-type GetDeviceUUIDCallback = (deviceUUID: string) => any;
-
-type GetTokenCallback = (token: string) => any;
-
-type OnPushClickReceivedCallback = (payload: string) => any;
-
-type ExecuteAsyncOperationPayload = {
-  operationSystemName: string;
-  operationBody: { [key: string]: any };
-};
-
-type ExecuteSyncOperationSuccessData = {
-  status: 'Success';
-  [key: string]: any;
-} | null;
-
-type ExecuteSyncOperationErrorData = {
-  type: 'MindboxError' | 'NetworkError' | 'InternalError';
-  data: {
-    [key: string]: any;
-  };
-} | null;
-
-type ExecuteSyncOperationPayload = {
-  operationSystemName: string;
-  operationBody: { [key: string]: any };
-  onSuccess: (data: ExecuteSyncOperationSuccessData) => any;
-  onError: (error: ExecuteSyncOperationErrorData) => any;
-};
 
 class MindboxSdkClass {
   private _initialized: boolean;
@@ -136,7 +103,7 @@ class MindboxSdkClass {
     }
   }
 
-  public getDeviceUUID(callback: GetDeviceUUIDCallback) {
+  public getDeviceUUID(callback: (deviceUUID: string) => void) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('Callback is required!');
     }
@@ -154,7 +121,7 @@ class MindboxSdkClass {
     }
   }
 
-  public getToken(callback: GetTokenCallback) {
+  public getToken(callback: (token: string) => void) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('Callback is required!');
     }
@@ -218,7 +185,7 @@ class MindboxSdkClass {
     }
   }
 
-  public onPushClickReceived(callback: OnPushClickReceivedCallback) {
+  public onPushClickReceived(callback: (payload: string) => void) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('Callback is required!');
     }
@@ -284,20 +251,20 @@ class MindboxSdkClass {
     MindboxSdkNative.executeSyncOperation(
       operationSystemName,
       jsonStringPayload
-    )
-      .then((response: string) => {
-        const responseObj: ExecuteSyncOperationSuccessData =
-          JSON.parse(response);
+    ).then((data: string) => {
+      const response = JSON.parse(data);
 
-        onSuccess(responseObj);
-      })
-      .catch((error: Error) => {
-        const errorObj: ExecuteSyncOperationErrorData = JSON.parse(
-          error.message
-        );
-
-        onError(errorObj);
-      });
+      if (
+        response.type &&
+        ['MindboxError', 'NetworkError', 'InternalError'].includes(
+          response.type
+        )
+      ) {
+        onError(response);
+      } else {
+        onSuccess(response);
+      }
+    });
   }
 }
 
