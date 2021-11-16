@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- executeSyncOperation method
+
 ## [0.2.0] - 2021-11-15
 
 ### Added
