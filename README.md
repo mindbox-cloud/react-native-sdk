@@ -73,7 +73,7 @@ await MindboxSdk.updateToken('your-fms/apns-token');
 
 #### onPushClickReceived
 
-Requires a callback that will return push notification link or push notification button link when it clicked
+Requires a callback that will return push notification link or push notification button link when it clicked.
 
 ```js
 MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
@@ -81,11 +81,24 @@ MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
 
 #### executeAsyncOperation
 
-Make request to backend without waiting any response
+Make request to backend API without waiting any response.
 
 ```js
 MindboxSdk.executeAsyncOperation({
   operationSystemName: '--YOUR SYSTEM NAME HERE--',
   operationBody: { ... },
+});
+```
+
+#### executeSyncOperation
+
+Make request to backend API and waits response.
+
+```js
+MindboxSdk.executeSyncOperation({
+  operationSystemName: '--YOUR SYSTEM NAME HERE--',
+  operationBody: { ... },
+  onSuccess: (data) => { ... },
+  onError: (error) => { ... },
 });
 ```
