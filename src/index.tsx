@@ -138,7 +138,7 @@ class MindboxSdkClass {
    */
   public getDeviceUUID(callback: (deviceUUID: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     const callbackHandler = () => {
@@ -164,7 +164,7 @@ class MindboxSdkClass {
    */
   public getToken(callback: (token: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     const callbackHandler = () => {
@@ -204,7 +204,7 @@ class MindboxSdkClass {
    */
   public async updateToken(token: string) {
     if (!token || typeof token !== 'string') {
-      throw new Error('Token is required!');
+      throw new Error('token is required!');
     }
 
     switch (Platform.OS) {
@@ -244,7 +244,7 @@ class MindboxSdkClass {
    */
   public onPushClickReceived(callback: (payload: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     if (this._emitterSubscribtion) {
@@ -259,7 +259,7 @@ class MindboxSdkClass {
 
   /**
    * @name executeAsyncOperation
-   * @description Make request to backend API without waiting any response.
+   * @description Makes request to backend API without waiting any response.
    * @param {ExecuteAsyncOperationPayload} payload Payload with data
    * @param {String} payload.operationSystemName System name of the async operation
    * @param {Object} payload.operationBody Data for operation. Will be passed to the backed API
@@ -272,7 +272,7 @@ class MindboxSdkClass {
    */
   public executeAsyncOperation(payload: ExecuteAsyncOperationPayload) {
     if (!payload || typeof payload !== 'object') {
-      throw new Error('Payload is required!');
+      throw new Error('payload is required!');
     }
 
     const { operationSystemName, operationBody } = payload;
@@ -295,7 +295,7 @@ class MindboxSdkClass {
 
   /**
    * @name executeSyncOperation
-   * @description Make request to backend API and waits response.
+   * @description Makes request to backend API and waits response.
    * @param {ExecuteSyncOperationPayload} payload Payload with data
    * @param {String} payload.operationSystemName System name of the async operation
    * @param {Object} payload.operationBody Data for operation. Will be passed to the backed API
@@ -312,7 +312,7 @@ class MindboxSdkClass {
    */
   public executeSyncOperation(payload: ExecuteSyncOperationPayload) {
     if (!payload || typeof payload !== 'object') {
-      throw new Error('Payload is required!');
+      throw new Error('payload is required!');
     }
 
     const { operationSystemName, operationBody, onSuccess, onError } = payload;

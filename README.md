@@ -81,7 +81,7 @@ MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
 
 #### executeAsyncOperation
 
-Make request to backend API without waiting any response.
+Makes request to backend API without waiting any response.
 
 ```js
 MindboxSdk.executeAsyncOperation({
@@ -92,7 +92,7 @@ MindboxSdk.executeAsyncOperation({
 
 #### executeSyncOperation
 
-Make request to backend API and waits response.
+Makes request to backend API and waits response.
 
 ```js
 MindboxSdk.executeSyncOperation({

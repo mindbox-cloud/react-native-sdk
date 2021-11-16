@@ -33,7 +33,6 @@ android {
     targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
     versionCode 1
     versionName "1.0"
-
   }
 
   buildTypes {
@@ -127,6 +126,5 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation "com.google.firebase:firebase-messaging:21.0.0"
-  implementation "com.github.mindbox-moscow:android-sdk:1.2.3-beta04"
+  implementation "com.github.mindbox-moscow:android-sdk:1.2.4-beta01"
 }
