@@ -3,14 +3,12 @@ package com.mindboxsdk
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
-import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
-import cloud.mindbox.mobile_sdk.models.MindboxError
 import com.facebook.react.bridge.Promise
 import org.json.JSONObject
 
