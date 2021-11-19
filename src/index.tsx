@@ -5,27 +5,13 @@ import {
   Platform,
 } from 'react-native';
 
+import type {
+  InitializationData,
+  ExecuteSyncOperationPayload,
+  ExecuteAsyncOperationPayload,
+} from './types';
+
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
-
-type InitializationData = {
-  domain: string;
-  endpointId: string;
-  subscribeCustomerIfCreated: boolean;
-  shouldCreateCustomer?: boolean;
-  previousInstallId?: string;
-  previousUuid?: string;
-};
-
-type GetDeviceUUIDCallback = (deviceUUID: string) => any;
-
-type GetTokenCallback = (token: string) => any;
-
-type OnPushClickReceivedCallback = (payload: string) => any;
-
-type ExecuteAsyncOperationPayload = {
-  operationSystemName: string;
-  operationBody: { [key: string]: any };
-};
 
 class MindboxSdkClass {
   private _initialized: boolean;
@@ -41,14 +27,39 @@ class MindboxSdkClass {
     this._mindboxJsDeliveryEvents = new NativeEventEmitter(MindboxJsDelivery);
   }
 
+  /**
+   * @name initialized
+   * @type {boolean}
+   * @description Is MindboxSdk already initialized.
+   */
   get initialized() {
     return this._initialized;
   }
 
+  /**
+   * @name subscribedForPushClickedEvent
+   * @type {boolean}
+   * @description Is there any subscription on push notification tapped.
+   */
   get subscribedForPushClickedEvent() {
     return !!this._emitterSubscribtion;
   }
 
+  /**
+   * @name initialize
+   * @description Initialization of MindboxSdk. It is recommended to do this on app's launch.
+   * @param {InitializationData} initializationData Initialization data
+   *
+   * @example
+   * await MindboxSdk.initialize({
+   *   domain: 'api.mindbox.ru',
+   *   endpointId: 'your-endpoint-id-here',
+   *   subscribeCustomerIfCreated: true,
+   *   shouldCreateCustomer: true,
+   *   previousInstallId: '',
+   *   previousUuid: '',
+   * });
+   */
   public async initialize(initializationData: InitializationData) {
     if (this._initializing) {
       console.warn('MindboxSdk is already initializing');
@@ -117,9 +128,17 @@ class MindboxSdkClass {
     }
   }
 
-  public getDeviceUUID(callback: GetDeviceUUIDCallback) {
+  /**
+   * @name getDeviceUUID
+   * @description Requires a callback that will return device UUID.
+   * @param {function(deviceUUID: String): void} callback Callback will return device UUID
+   *
+   * @example
+   * MindboxSdk.getDeviceUUID((uuid: string) => { ... });
+   */
+  public getDeviceUUID(callback: (deviceUUID: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     const callbackHandler = () => {
@@ -135,9 +154,17 @@ class MindboxSdkClass {
     }
   }
 
-  public getToken(callback: GetTokenCallback) {
+  /**
+   * @name getToken
+   * @description Requires a callback that will return FMS (Android) / APNS (iOS) token.
+   * @param {function(token: String): void} callback Callback will return FMS (Android) / APNS (iOS) token
+   *
+   * @example
+   * MindboxSdk.getToken((token: string) => { ... });
+   */
+  public getToken(callback: (token: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     const callbackHandler = () => {
@@ -167,9 +194,17 @@ class MindboxSdkClass {
     }
   }
 
+  /**
+   * @name updateToken
+   * @description Updates your FMS/APNS token.
+   * @param {String} token Your new fms/apns token
+   *
+   * @example
+   * await MindboxSdk.updateToken('your-fms/apns-token');
+   */
   public async updateToken(token: string) {
     if (!token || typeof token !== 'string') {
-      throw new Error('Token is required!');
+      throw new Error('token is required!');
     }
 
     switch (Platform.OS) {
@@ -199,9 +234,17 @@ class MindboxSdkClass {
     }
   }
 
-  public onPushClickReceived(callback: OnPushClickReceivedCallback) {
+  /**
+   * @name onPushClickReceived
+   * @description Listens if push notification on push notification button were pressed.
+   * @param {function(payload: String): void} callback Callback will return push notification link or push notification button link
+   *
+   * @example
+   * MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
+   */
+  public onPushClickReceived(callback: (payload: string) => void) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('Callback is required!');
+      throw new Error('callback is required!');
     }
 
     if (this._emitterSubscribtion) {
@@ -214,9 +257,22 @@ class MindboxSdkClass {
     );
   }
 
+  /**
+   * @name executeAsyncOperation
+   * @description Makes request to backend API without waiting any response.
+   * @param {ExecuteAsyncOperationPayload} payload Payload with data
+   * @param {String} payload.operationSystemName System name of the async operation
+   * @param {Object} payload.operationBody Data for operation. Will be passed to the backed API
+   *
+   * @example
+   * MindboxSdk.executeAsyncOperation({
+   *   operationSystemName: '--YOUR SYSTEM NAME HERE--',
+   *   operationBody: { ... },
+   * });
+   */
   public executeAsyncOperation(payload: ExecuteAsyncOperationPayload) {
     if (!payload || typeof payload !== 'object') {
-      throw new Error('Payload is required!');
+      throw new Error('payload is required!');
     }
 
     const { operationSystemName, operationBody } = payload;
@@ -235,6 +291,67 @@ class MindboxSdkClass {
       operationSystemName,
       jsonStringPayload
     );
+  }
+
+  /**
+   * @name executeSyncOperation
+   * @description Makes request to backend API and waits response.
+   * @param {ExecuteSyncOperationPayload} payload Payload with data
+   * @param {String} payload.operationSystemName System name of the async operation
+   * @param {Object} payload.operationBody Data for operation. Will be passed to the backed API
+   * @param {function(data: ExecuteSyncOperationSuccess): void} payload.onSuccess Callback will return data in case of successfull request
+   * @param {function(error: ExecuteSyncOperationError): void} payload.onError Callback will return error data in case of unsuccessfull request
+   *
+   * @example
+   * MindboxSdk.executeSyncOperation({
+   *   operationSystemName: '--YOUR SYSTEM NAME HERE--',
+   *   operationBody: { ... },
+   *   onSuccess: (data) => { ... },
+   *   onError: (error) => { ... },
+   * });
+   */
+  public executeSyncOperation(payload: ExecuteSyncOperationPayload) {
+    if (!payload || typeof payload !== 'object') {
+      throw new Error('payload is required!');
+    }
+
+    const { operationSystemName, operationBody, onSuccess, onError } = payload;
+
+    if (!operationSystemName || typeof operationSystemName !== 'string') {
+      throw new Error('operationSystemName is required and must be a string!');
+    }
+
+    if (!operationBody || typeof operationBody !== 'object') {
+      throw new Error('operationBody is required!');
+    }
+
+    if (!onSuccess || typeof onSuccess !== 'function') {
+      throw new Error('onSuccess callback is required!');
+    }
+
+    if (onError && typeof onError !== 'function') {
+      throw new Error('onError callback must be a function!');
+    }
+
+    const jsonStringPayload = JSON.stringify(operationBody);
+
+    MindboxSdkNative.executeSyncOperation(
+      operationSystemName,
+      jsonStringPayload
+    ).then((data: string) => {
+      const response = JSON.parse(data);
+
+      if (
+        response.type &&
+        ['MindboxError', 'NetworkError', 'InternalError'].includes(
+          response.type
+        )
+      ) {
+        onError(response);
+      } else {
+        onSuccess(response);
+      }
+    });
   }
 }
 
