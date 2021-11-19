@@ -80,6 +80,78 @@ jest.mock('react-native', () => {
           }
         })
     ),
+    executeSyncOperation: jest.fn(
+      (operationSystemName: string, operationBodyString: string) =>
+        new Promise((resolve, reject) => {
+          if (
+            operationSystemName &&
+            typeof operationSystemName === 'string' &&
+            operationBodyString &&
+            typeof operationBodyString === 'string'
+          ) {
+            if (operationSystemName !== 'personalReco.sync') {
+              resolve(
+                JSON.stringify({
+                  type: 'MindboxError',
+                  data: {
+                    status: 'ProtocolError',
+                    errorMessage: 'Operation WrongOperationName.sync not found',
+                    errorId: 'fb6f5556-7e88-415f-950f-5d483bc0f3d1',
+                    httpStatusCode: 400,
+                  },
+                })
+              );
+            } else if (
+              operationBodyString !==
+              JSON.stringify({ recommendation: { limit: '10' } })
+            ) {
+              resolve(
+                JSON.stringify({
+                  type: 'MindboxError',
+                  data: {
+                    status: 'ProtocolError',
+                    errorMessage:
+                      '/recommendation/limit: "ururu" не является корректным целым числом. Поле должно содержать целое число не превышающее 2147483647.',
+                    errorId: 'afa03759-52e8-43b7-83ad-ad7b48d559f3',
+                    httpStatusCode: 400,
+                  },
+                })
+              );
+            } else {
+              resolve(
+                JSON.stringify({
+                  status: 'Success',
+                  recommendations: [
+                    {
+                      ids: {
+                        mindboxId: 1528,
+                        website: '4733',
+                      },
+                      productGroup: {
+                        ids: {
+                          website: '3063',
+                        },
+                      },
+                      name: 'NikeCourt Advantage RF',
+                      description:
+                        "Made from sweat-wicking fabric, the NikeCourt Advantage RF Men's Tennis Polo helps keep you cool and dry when the match heats up.",
+                      displayName: 'NikeCourt Advantage RF',
+                      url: 'https://demoshop.mindbox.cloud/catalog/muzhchiny/futbolki/3063/?oid=4733&r1=yandext&r2=',
+                      pictureUrl:
+                        'https://demoshop.mindbox.cloud/upload/iblock/462/4622e4f88b4fe73063404f01aac9c4b0.jpg',
+                      price: 1275.0,
+                      oldPrice: 2550.0,
+                      category: 'T-shirts',
+                    },
+                  ],
+                })
+              );
+            }
+          } else {
+            reject(new Error('Error'));
+          }
+        })
+    ),
   };
 
   actualReactNative.NativeModules.MindboxJsDelivery = {
@@ -128,6 +200,13 @@ describe('Testing Mindbox RN SDK', () => {
     ],
   };
   const asyncOperationBodyString = JSON.stringify(asyncOperationBody);
+  const syncOperationSystemName = 'personalReco.sync';
+  const syncOperationBody = {
+    recommendation: {
+      limit: '10',
+    },
+  };
+  const syncOperationBodyString = JSON.stringify(syncOperationBody);
 
   describe('Testing Mindbox RN SDK native methods', () => {
     const {
@@ -291,6 +370,118 @@ describe('Testing Mindbox RN SDK', () => {
         ).resolves.toBeTruthy();
       });
     });
+
+    describe('Testing executeSyncOperation method', () => {
+      it('throws error when no payload passed', async () => {
+        expect.assertions(2);
+
+        await expect(
+          MindboxSdk.executeSyncOperation('', syncOperationBodyString)
+        ).rejects.toThrow('Error');
+
+        await expect(
+          MindboxSdk.executeSyncOperation(syncOperationSystemName, '')
+        ).rejects.toThrow('Error');
+      });
+
+      it('throws error when non string payload passed', async () => {
+        expect.assertions(2);
+
+        await expect(
+          MindboxSdk.executeSyncOperation(123, syncOperationBodyString)
+        ).rejects.toThrow('Error');
+
+        await expect(
+          MindboxSdk.executeSyncOperation(syncOperationSystemName, 123)
+        ).rejects.toThrow('Error');
+      });
+
+      it('resolves with ProtocolError with wrong operation name', async () => {
+        expect.assertions(1);
+
+        await expect(
+          MindboxSdk.executeSyncOperation(
+            'WrongOperationName',
+            syncOperationBodyString
+          )
+        ).resolves.toBe(
+          JSON.stringify({
+            type: 'MindboxError',
+            data: {
+              status: 'ProtocolError',
+              errorMessage: 'Operation WrongOperationName.sync not found',
+              errorId: 'fb6f5556-7e88-415f-950f-5d483bc0f3d1',
+              httpStatusCode: 400,
+            },
+          })
+        );
+      });
+
+      it('resolves with ProtocolError with wrong operation body parameter', async () => {
+        expect.assertions(1);
+
+        await expect(
+          MindboxSdk.executeSyncOperation(
+            syncOperationSystemName,
+            JSON.stringify({
+              ...syncOperationBody,
+              recommendation: {
+                limit: 'wrongValue',
+              },
+            })
+          )
+        ).resolves.toBe(
+          JSON.stringify({
+            type: 'MindboxError',
+            data: {
+              status: 'ProtocolError',
+              errorMessage:
+                '/recommendation/limit: "ururu" не является корректным целым числом. Поле должно содержать целое число не превышающее 2147483647.',
+              errorId: 'afa03759-52e8-43b7-83ad-ad7b48d559f3',
+              httpStatusCode: 400,
+            },
+          })
+        );
+      });
+
+      it('resolves successfully with string payload passed', async () => {
+        expect.assertions(1);
+
+        await expect(
+          MindboxSdk.executeSyncOperation(
+            syncOperationSystemName,
+            syncOperationBodyString
+          )
+        ).resolves.toBe(
+          JSON.stringify({
+            status: 'Success',
+            recommendations: [
+              {
+                ids: {
+                  mindboxId: 1528,
+                  website: '4733',
+                },
+                productGroup: {
+                  ids: {
+                    website: '3063',
+                  },
+                },
+                name: 'NikeCourt Advantage RF',
+                description:
+                  "Made from sweat-wicking fabric, the NikeCourt Advantage RF Men's Tennis Polo helps keep you cool and dry when the match heats up.",
+                displayName: 'NikeCourt Advantage RF',
+                url: 'https://demoshop.mindbox.cloud/catalog/muzhchiny/futbolki/3063/?oid=4733&r1=yandext&r2=',
+                pictureUrl:
+                  'https://demoshop.mindbox.cloud/upload/iblock/462/4622e4f88b4fe73063404f01aac9c4b0.jpg',
+                price: 1275.0,
+                oldPrice: 2550.0,
+                category: 'T-shirts',
+              },
+            ],
+          })
+        );
+      });
+    });
   });
 
   describe('Testing Mindbox RN SDK public interface', () => {
@@ -395,6 +586,59 @@ describe('Testing Mindbox RN SDK', () => {
           operationBody: asyncOperationBody,
         })
       ).toBeUndefined();
+    });
+
+    it('executeSyncOperation method works correctly', async () => {
+      const MindboxSdk = require('../index').default;
+
+      expect.assertions(3);
+
+      let successResponse = null;
+      let errorResponse = null;
+
+      expect(
+        MindboxSdk.executeSyncOperation({
+          operationSystemName: syncOperationSystemName,
+          operationBody: syncOperationBody,
+          onSuccess: (data: any) => {
+            successResponse = data;
+          },
+          onError: (error: any) => {
+            errorResponse = error;
+          },
+        })
+      ).toBeUndefined();
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(successResponse).toStrictEqual({
+        status: 'Success',
+        recommendations: [
+          {
+            ids: {
+              mindboxId: 1528,
+              website: '4733',
+            },
+            productGroup: {
+              ids: {
+                website: '3063',
+              },
+            },
+            name: 'NikeCourt Advantage RF',
+            description:
+              "Made from sweat-wicking fabric, the NikeCourt Advantage RF Men's Tennis Polo helps keep you cool and dry when the match heats up.",
+            displayName: 'NikeCourt Advantage RF',
+            url: 'https://demoshop.mindbox.cloud/catalog/muzhchiny/futbolki/3063/?oid=4733&r1=yandext&r2=',
+            pictureUrl:
+              'https://demoshop.mindbox.cloud/upload/iblock/462/4622e4f88b4fe73063404f01aac9c4b0.jpg',
+            price: 1275.0,
+            oldPrice: 2550.0,
+            category: 'T-shirts',
+          },
+        ],
+      });
+
+      expect(errorResponse).toBeNull();
     });
   });
 });

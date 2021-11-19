@@ -101,11 +101,22 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    try {
-      Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
-      promise.resolve(true)
-    } catch (error: Throwable) {
-      promise.reject(error)
-    }
+    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
+    promise.resolve(true)
+  }
+
+  @ReactMethod
+  fun executeSyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
+    Mindbox.executeSyncOperation(
+      context = reactApplicationContext.applicationContext,
+      operationSystemName = operationSystemName,
+      operationBodyJson = operationBody,
+      onSuccess = {
+          response -> promise.resolve(response)
+      },
+      onError = {
+          error -> promise.resolve(error.toJson())
+      }
+    )
   }
 }

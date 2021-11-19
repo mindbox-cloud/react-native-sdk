@@ -12,4 +12,5 @@ RCT_EXTERN_METHOD(updateAPNSToken:(NSString)token resolve:(RCTPromiseResolveBloc
 
 RCT_EXTERN_METHOD(executeAsyncOperation:(NSString)operationSystemName operationBody:(NSString)operationBody resolve:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(executeSyncOperation:(NSString)operationSystemName operationBody:(NSString)operationBody resolve:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 @end

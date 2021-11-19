@@ -1,4 +1,5 @@
 import Mindbox
+import CoreFoundation
 
 enum CustomError: Error {
     case tokenAPNSisNull
@@ -83,5 +84,17 @@ class MindboxSdk: NSObject {
     func executeAsyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
         Mindbox.shared.executeAsyncOperation(operationSystemName: operationSystemName, json: operationBody)
         resolve(true)
+    }
+
+    @objc(executeSyncOperation:operationBody:resolve:rejecter:)
+    func executeSyncOperation(_ operationSystemName: String, operationBody: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping  RCTPromiseRejectBlock) -> Void {
+        Mindbox.shared.executeSyncOperation(operationSystemName: operationSystemName, json: operationBody) { result in
+            switch result {
+            case .success(let response):
+                resolve(response.createJSON())
+            case .failure(let error):
+                resolve(error.createJSON())
+            }
+        }
     }
 }
