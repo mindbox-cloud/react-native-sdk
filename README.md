@@ -4,8 +4,6 @@ This module is a wrapper over the native Mindbox([iOS](https://github.com/mindbo
 [Android](https://github.com/mindbox-moscow/android-sdk)) libraries that allows to 
 receive and handle push notifications.
 
-> mindbox-sdk module is in beta.
-
 ## Features
 
 * Receive and show push notification in both mobile platforms.
