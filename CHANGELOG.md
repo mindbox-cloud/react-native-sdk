@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changes
+- upgrade iOS SDK dependency to v1.3.2
+
 ## [1.0.0] - 2021-11-19
 
 ### Added
