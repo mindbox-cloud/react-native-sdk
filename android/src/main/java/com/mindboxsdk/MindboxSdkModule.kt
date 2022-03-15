@@ -119,4 +119,9 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
       }
     )
   }
+
+  @ReactMethod
+  fun onPushClickedIsRegistered(isRegistered: Boolean) {
+    MindboxJsDelivery.Shared.hasListeners = isRegistered
+  }
 }
