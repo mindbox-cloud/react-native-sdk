@@ -49,7 +49,8 @@ NSDictionary *storedEventDetails;
   NSString *clickUrl = @"";
   
   if ([actionIdentifier isEqual:UNNotificationDefaultActionIdentifier]) {
-    clickUrl = [userInfo objectForKey:@"clickUrl"];
+    NSDictionary *aps = [userInfo objectForKey:@"aps"];
+    clickUrl = [aps objectForKey:@"clickUrl"];
   } else {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uniqueKey == %@", actionIdentifier];
     NSArray *filteredArray = [[userInfo objectForKey:@"buttons"] filteredArrayUsingPredicate:predicate];
