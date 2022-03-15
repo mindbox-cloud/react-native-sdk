@@ -250,7 +250,7 @@ class MindboxSdkClass {
     if (this._emitterSubscribtion) {
       this._emitterSubscribtion.remove();
       if (Platform.OS === 'android') {
-        MindboxSdkNative.onPushClickedIsRegistered(false)
+        MindboxSdkNative.onPushClickedIsRegistered(false);
       }
     }
 
@@ -259,7 +259,7 @@ class MindboxSdkClass {
       callback
     );
     if (Platform.OS === 'android') {
-      MindboxSdkNative.onPushClickedIsRegistered(true)
+      MindboxSdkNative.onPushClickedIsRegistered(true);
     }
   }
 
