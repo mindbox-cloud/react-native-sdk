@@ -249,12 +249,18 @@ class MindboxSdkClass {
 
     if (this._emitterSubscribtion) {
       this._emitterSubscribtion.remove();
+      if (Platform.OS === 'android') {
+        MindboxSdkNative.onPushClickedIsRegistered(false);
+      }
     }
 
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
       callback
     );
+    if (Platform.OS === 'android') {
+      MindboxSdkNative.onPushClickedIsRegistered(true);
+    }
   }
 
   /**
