@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- onPushClickReceived method loosing events when app is down
+- support for old push notifications format
+
 ## [1.0.1] - 2021-11-23
 
 ### Changes
