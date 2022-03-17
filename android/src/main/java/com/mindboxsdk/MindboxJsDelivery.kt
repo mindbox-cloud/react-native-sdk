@@ -3,6 +3,7 @@ package com.mindboxsdk
 import android.content.Intent
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
+import kotlin.properties.Delegates
 
 class MindboxJsDelivery private constructor(private val mReactContext: ReactContext) {
   companion object Shared {
