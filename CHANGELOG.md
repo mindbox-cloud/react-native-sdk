@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.2] - 2022-03-18
 
 ### Fixed
 - onPushClickReceived method loosing events when app is down
