@@ -47,13 +47,16 @@ NSDictionary *storedEventDetails;
   NSString *actionIdentifier = [eventDetails objectAtIndex:1];
   NSDictionary *userInfo = [eventDetails objectAtIndex:2];
   NSString *clickUrl = @"";
+  NSString *pushPayload = @"";
   
   if ([actionIdentifier isEqual:UNNotificationDefaultActionIdentifier]) {
     clickUrl = [userInfo objectForKey:@"clickUrl"];
+    pushPayload = [userInfo objectForKey:@"payload"];
       
     if ([clickUrl length] == 0) {
       NSDictionary *aps = [userInfo objectForKey:@"aps"];
       clickUrl = [aps objectForKey:@"clickUrl"];
+      pushPayload = [aps objectForKey:@"payload"];
     }
   } else {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uniqueKey == %@", actionIdentifier];
@@ -62,11 +65,24 @@ NSDictionary *storedEventDetails;
     if (filteredArray.count > 0) {
       clickUrl = [filteredArray.firstObject objectForKey:@"url"];
     }
+      
+    pushPayload = [userInfo objectForKey:@"payload"];
+    if ([pushPayload length] == 0) {
+      NSDictionary *aps = [userInfo objectForKey:@"aps"];
+      pushPayload = [aps objectForKey:@"payload"];
+    }
   }
 
-  [self sendEventWithName:eventName body:clickUrl];
-  
-  
+  NSDictionary *dict = @{
+    @"pushUrl": clickUrl,
+    @"pushPayload": pushPayload
+  };
+  NSError *error;
+  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+  NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+
+  [self sendEventWithName:eventName body:jsonString];
+
   if (storedEventDetails != NULL) {
     storedEventDetails = NULL;
   }

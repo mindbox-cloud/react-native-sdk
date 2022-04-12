@@ -237,12 +237,14 @@ class MindboxSdkClass {
   /**
    * @name onPushClickReceived
    * @description Listens if push notification or push notification button were pressed.
-   * @param {function(payload: String): void} callback Callback will return push notification link or push notification button link
+   * @param {function(pushUrl: String, pushPayload: String): void} callback Callback will return push notification link or push notification button link
    *
    * @example
    * MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
    */
-  public onPushClickReceived(callback: (payload: string) => void) {
+  public onPushClickReceived(
+    callback: (pushUrl: string, pushPayload: string) => void
+  ) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('callback is required!');
     }
@@ -251,7 +253,10 @@ class MindboxSdkClass {
 
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
-      callback
+      (dataString: string) => {
+        const data = JSON.parse(dataString);
+        callback(data.pushUrl, data.pushPayload);
+      }
     );
     if (Platform.OS === 'android') {
       MindboxSdkNative.onPushClickedIsRegistered(true);
