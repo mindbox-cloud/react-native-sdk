@@ -1,8 +1,10 @@
 package com.mindboxsdk
 
 import android.content.Intent
+import android.os.Bundle
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
+import org.json.JSONObject
 import kotlin.properties.Delegates
 
 class MindboxJsDelivery private constructor(private val mReactContext: ReactContext) {
@@ -31,11 +33,14 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
     }
   }
 
-  private fun sendEvent(eventName: String, params: Any?) {
+  private fun sendEvent(eventName: String, bundle: Bundle) {
     if (mReactContext.hasActiveCatalystInstance()) {
+      var payload = JSONObject();
+      payload.put("pushUrl", bundle.getString("push_url", ""));
+      payload.put("pushPayload", bundle.getString("push_payload", ""));
       mReactContext
         .getJSModule(RCTDeviceEventEmitter::class.java)
-        .emit(eventName, params)
+        .emit(eventName, payload.toString())
     }
   }
 
@@ -45,7 +50,7 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
       if (bundle != null) {
         val key = bundle.getString("uniq_push_key")
         if (key != null) {
-          sendEvent("pushNotificationClicked", bundle.getString("push_url"))
+          sendEvent("pushNotificationClicked", bundle)
         }
       }
     } else {
