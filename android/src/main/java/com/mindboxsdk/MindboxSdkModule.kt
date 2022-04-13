@@ -81,7 +81,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         Mindbox.disposePushTokenSubscription(this.fmsTokenSubscription!!)
       }
 
-      this.fmsTokenSubscription = Mindbox.subscribeFmsToken {
+      this.fmsTokenSubscription = Mindbox.subscribePushToken {
         fmsToken -> promise.resolve(fmsToken)
       }
     } catch (error: Throwable) {
