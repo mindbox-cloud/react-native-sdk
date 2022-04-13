@@ -236,7 +236,7 @@ class MindboxSdkClass {
 
   /**
    * @name onPushClickReceived
-   * @description Listens if push notification on push notification button were pressed.
+   * @description Listens if push notification or push notification button were pressed.
    * @param {function(payload: String): void} callback Callback will return push notification link or push notification button link
    *
    * @example

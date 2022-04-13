@@ -47,7 +47,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
         val handler = Handler(context.mainLooper)
         handler.post(Runnable {
-          Mindbox.init(activity, configuration)
+          Mindbox.init(activity, configuration, listOf())
         })
 
         promise.resolve(true)
@@ -78,7 +78,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   fun getFMSToken(promise: Promise) {
     try {
       if (this.fmsTokenSubscription != null) {
-        Mindbox.disposeFmsTokenSubscription(this.fmsTokenSubscription!!)
+        Mindbox.disposePushTokenSubscription(this.fmsTokenSubscription!!)
       }
 
       this.fmsTokenSubscription = Mindbox.subscribeFmsToken {
@@ -92,7 +92,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   @ReactMethod
   fun updateFMSToken(token: String, promise: Promise) {
     try {
-      Mindbox.updateFmsToken(reactApplicationContext.applicationContext, token)
+      Mindbox.updatePushToken(reactApplicationContext.applicationContext, token)
       promise.resolve(true)
     } catch (error: Throwable) {
       promise.reject(error)
