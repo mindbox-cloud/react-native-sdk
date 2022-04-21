@@ -5,8 +5,8 @@
 ### Changes
 - upgrade iOS SDK dependency to v2.0.1
 - upgrade Android SDK dependency to v2.1.1
-- add Huawei support
-- add payload param to onPushClickReceived callback
+- add support of Huawei Push Kit
+- update onPushClickReceived method: add second argument with push payload 
 - add removeOnPushClickReceived method
 
 ## [1.0.2] - 2022-03-18
