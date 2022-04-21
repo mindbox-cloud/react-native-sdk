@@ -236,30 +236,47 @@ class MindboxSdkClass {
 
   /**
    * @name onPushClickReceived
-   * @description Listens if push notification on push notification button were pressed.
-   * @param {function(payload: String): void} callback Callback will return push notification link or push notification button link
+   * @description Listens if push notification or push notification button were pressed.
+   * @param {function(pushUrl: String, pushPayload: String): void} callback Callback will return push notification link or push notification button link
    *
    * @example
    * MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
    */
-  public onPushClickReceived(callback: (payload: string) => void) {
+  public onPushClickReceived(
+    callback: (pushUrl: string, pushPayload: string) => void
+  ) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('callback is required!');
     }
 
-    if (this._emitterSubscribtion) {
-      this._emitterSubscribtion.remove();
-      if (Platform.OS === 'android') {
-        MindboxSdkNative.onPushClickedIsRegistered(false);
-      }
-    }
+    this.removeOnPushClickReceived();
 
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
-      callback
+      (dataString: string) => {
+        const data = JSON.parse(dataString);
+        callback(data.pushUrl, data.pushPayload);
+      }
     );
     if (Platform.OS === 'android') {
       MindboxSdkNative.onPushClickedIsRegistered(true);
+    }
+  }
+
+  /**
+   * @name removeOnPushClickReceived
+   * @description Removes onPushClickReceived subscribtion and event listener.
+   *
+   * @example
+   * MindboxSdk.removeOnPushClickReceived();
+   */
+  public removeOnPushClickReceived() {
+    if (this._emitterSubscribtion) {
+      this._emitterSubscribtion.remove();
+      this._emitterSubscribtion = undefined;
+      if (Platform.OS === 'android') {
+        MindboxSdkNative.onPushClickedIsRegistered(false);
+      }
     }
   }
 
