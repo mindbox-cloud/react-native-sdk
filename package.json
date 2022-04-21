@@ -1,7 +1,7 @@
 {
   "name": "mindbox-sdk",
   "version": "1.0.2",
-  "target-version": "1.0.2",
+  "target-version": "2.0.0",
   "description": "SDK for integration React Native mobile apps with Mindbox",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -83,7 +83,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
+      "pre-commit": "yarn lint"
     }
   },
   "commitlint": {
