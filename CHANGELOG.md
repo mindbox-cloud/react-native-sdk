@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changes
+- upgrade Android SDK dependency to v2.1.2
+
 ## [2.0.0] - 2022-04-21
 
 ### Changes
