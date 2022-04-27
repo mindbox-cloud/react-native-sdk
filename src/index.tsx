@@ -68,13 +68,8 @@ class MindboxSdkClass {
 
     this._initializing = true;
 
-    if (this._initialized) {
-      console.warn('MindboxSdk is already initialized');
-      this._initializing = false;
-      return;
-    }
-
     if (!initializationData || typeof initializationData !== 'object') {
+      this._initializing = false;
       throw new Error('Wrong initialization data!');
     }
 
@@ -88,6 +83,7 @@ class MindboxSdkClass {
     } = initializationData;
 
     if (!domain || !endpointId) {
+      this._initializing = false;
       throw new Error('Wrong initialization data!');
     }
 
