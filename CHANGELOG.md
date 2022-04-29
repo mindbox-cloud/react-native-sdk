@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changes
+- upgrade iOS SDK dependency to v.2.1.0
+- upgrade Android SDK dependency to v2.1.3
+- update initialize method: you can change sdk configuration without reinstallation of app
+
 ## [2.0.1] - 2022-04-27
 
 ### Changes
