@@ -47,7 +47,7 @@ class MindboxSdkClass {
 
   /**
    * @name initialize
-   * @description Initialization of MindboxSdk. It is recommended to do this on app's launch.
+   * @description Initialization of MindboxSdk. It is recommended to do this on app's launch. You can call this method multiple times to set new configuration params.
    * @param {InitializationData} initializationData Initialization data
    *
    * @example
@@ -68,13 +68,8 @@ class MindboxSdkClass {
 
     this._initializing = true;
 
-    if (this._initialized) {
-      console.warn('MindboxSdk is already initialized');
-      this._initializing = false;
-      return;
-    }
-
     if (!initializationData || typeof initializationData !== 'object') {
+      this._initializing = false;
       throw new Error('Wrong initialization data!');
     }
 
@@ -88,6 +83,7 @@ class MindboxSdkClass {
     } = initializationData;
 
     if (!domain || !endpointId) {
+      this._initializing = false;
       throw new Error('Wrong initialization data!');
     }
 
