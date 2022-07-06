@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.1.3] - 2022-07-06
 
 ### Changes
 - upgrade iOS SDK dependency to v2.1.2
