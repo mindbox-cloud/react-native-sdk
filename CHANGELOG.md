@@ -3,6 +3,12 @@
 ## [Unreleased]
 
 ### Changes
+- upgrade Android SDK dependency to v2.1.9
+- upgrade iOS SDK dependency to v2.1.5
+
+## [2.1.4] - 2022-07-29
+
+### Changes
 - upgrade Android SDK dependency to v2.1.6
 
 ## [2.1.3] - 2022-07-06
