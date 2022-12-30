@@ -3,12 +3,14 @@ package com.mindboxsdk
 import android.app.Activity
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
+import cloud.mindbox.mobile_sdk.inapp.presentation.InAppCallback
 import com.facebook.react.bridge.Promise
 import org.json.JSONObject
 
@@ -19,6 +21,25 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   override fun getName(): String {
     return "MindboxSdk"
   }
+
+  inner class RNInAppCallback: InAppCallback {
+    override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
+      Log.i("MindboxAndroidSdk", listOf(
+        id.length,
+        redirectUrl.length,
+        payload.length,
+      ).toString())
+    }
+
+    override fun onInAppDismissed(id: String) {
+      Log.i("MindboxAndroidSdk", "onInAppDismissed")
+    }
+
+  }
+
+  private val inAppCallback: InAppCallback
+    get() = RNInAppCallback()
+
 
   @ReactMethod
   fun initialize(payloadString: String, promise: Promise) {
@@ -48,6 +69,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         val handler = Handler(context.mainLooper)
         handler.post(Runnable {
           Mindbox.init(activity, configuration, listOf())
+          Mindbox.registerInAppCallback(inAppCallback)
         })
 
         promise.resolve(true)
@@ -125,3 +147,4 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
     MindboxJsDelivery.Shared.hasListeners = isRegistered
   }
 }
+
