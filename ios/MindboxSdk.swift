@@ -23,8 +23,22 @@ struct PayloadData: Codable {
     var previousUuid: String?
 }
 
+class RNInAppMessagesDelegate: InAppMessagesDelegate {
+    func inAppMessageTapAction(id: String, url: URL?, payload: String){
+            print(id, "inapp tap")
+    }
+    func inAppMessageDismissed(id: String) {
+        print(id, "inapp close")
+    }
+}
+
 @objc(MindboxSdk)
 class MindboxSdk: NSObject {
+    private final var rnInAppMessagesDelegate: InAppMessagesDelegate?
+    override init() {
+        self.rnInAppMessagesDelegate = RNInAppMessagesDelegate()
+    }
+    
     
     @objc
     static func requiresMainQueueSetup() -> Bool {
@@ -33,6 +47,7 @@ class MindboxSdk: NSObject {
     
     @objc(initialize:resolve:rejecter:)
     func initialize(_ payloadString: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+        
         do {
             let payload = try JSONDecoder().decode(PayloadData.self, from: payloadString.data(using: .utf8)!)
             
@@ -44,13 +59,15 @@ class MindboxSdk: NSObject {
                 subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated,
                 shouldCreateCustomer: payload.shouldCreateCustomer ?? true
             )
-            
+
             Mindbox.shared.initialization(configuration: configuration)
+            Mindbox.shared.inAppMessagesDelegate = rnInAppMessagesDelegate
             
             resolve(true)
         } catch {
             reject("Error", error.localizedDescription, error)
         }
+
     }
     
     @objc(getDeviceUUID:rejecter:)
