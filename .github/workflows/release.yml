@@ -24,7 +24,7 @@ jobs:
           path: ./package.json
       - name: Version check
         if: ${{ fromJson(steps.package.outputs.content).version == fromJson(steps.package.outputs.content).target-version }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           script: |
             core.setFailed('Packet version and target version are equivalent!')
