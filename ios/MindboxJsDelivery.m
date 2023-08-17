@@ -74,8 +74,8 @@ NSDictionary *storedEventDetails;
   }
 
   NSDictionary *dict = @{
-    @"pushUrl": clickUrl,
-    @"pushPayload": pushPayload
+    @"pushUrl": clickUrl ? clickUrl : [NSNull null],
+    @"pushPayload": pushPayload ? pushPayload : [NSNull null]
   };
   NSError *error;
   NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
