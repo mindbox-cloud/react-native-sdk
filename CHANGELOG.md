@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.1.7] - 2023-08-24
 
 ### Changes
 - Crash fix when push notification interaction intent not from MB push notification
