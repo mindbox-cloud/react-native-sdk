@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.7] - 2023-08-24
+
+### Changes
+- Crash fix when push notification interaction intent not from MB push notification
+
+## [2.1.6] - 2022-12-12
+
+### Changes
+- upgrade Android SDK dependency to v2.1.10
+
+## [2.1.5] - 2022-11-14
+
+### Changes
+- upgrade Android SDK dependency to v2.1.9
+- upgrade iOS SDK dependency to v2.1.5
+
 ## [2.1.4] - 2022-07-29
 
 ### Changes

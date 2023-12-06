@@ -259,7 +259,7 @@ class MindboxSdkClass {
    * MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
    */
   public onPushClickReceived(
-    callback: (pushUrl: string, pushPayload: string) => void
+    callback: (pushUrl: string | null, pushPayload: string | null) => void
   ) {
     if (!callback || typeof callback !== 'function') {
       throw new Error('callback is required!');
@@ -271,7 +271,7 @@ class MindboxSdkClass {
       'pushNotificationClicked',
       (dataString: string) => {
         const data = JSON.parse(dataString);
-        callback(data.pushUrl, data.pushPayload);
+        callback(data.pushUrl || null, data.pushPayload || null);
       }
     );
     if (Platform.OS === 'android') {
