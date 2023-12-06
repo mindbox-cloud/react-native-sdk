@@ -12,7 +12,8 @@ import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
 import org.json.JSONObject
 
-class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class MindboxSdkModule(reactContext: ReactApplicationContext) :
+  ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
 
@@ -33,9 +34,19 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
           domain = payload.optString("domain", "api.mindbox.ru"),
           endpointId = payload.optString("endpointId", "")
         )
-        configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", true))
+        configurationBuilder.subscribeCustomerIfCreated(
+          payload.optBoolean(
+            "subscribeCustomerIfCreated",
+            true
+          )
+        )
         if (payload.has("shouldCreateCustomer")) {
-          configurationBuilder.shouldCreateCustomer(payload.optBoolean("shouldCreateCustomer", true))
+          configurationBuilder.shouldCreateCustomer(
+            payload.optBoolean(
+              "shouldCreateCustomer",
+              true
+            )
+          )
         }
         if (payload.has("previousInstallId")) {
           configurationBuilder.setPreviousInstallationId(payload.optString("previousInstallId", ""))
@@ -60,14 +71,54 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
   }
 
   @ReactMethod
+  fun registerCallbacks(
+    callbacks: ReadableArray,
+    onInAppClick: Callback,
+    onInAppDismissed: Callback
+  ) {
+    val cb = mutableListOf<InAppCallback>()
+    for (i in 0 until callbacks.size()) {
+      when (val callback = callbacks.getString(i)) {
+        "urlInAppCallback" -> {
+          cb.add(UrlInAppCallback())
+          cb.add(DeeplinkInAppCallback())
+          cb.add(LoggingInAppCallback())
+        }
+
+        "copyPayloadInAppCallback" -> {
+          cb.add(CopyPayloadInAppCallback())
+          cb.add(LoggingInAppCallback())
+        }
+
+        "emptyInAppCallback" -> {
+          cb.add(EmptyInAppCallback())
+        }
+
+        else -> {
+          cb.add(object : InAppCallback {
+            override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
+                onInAppClick.invoke(id, redirectUrl, payload)
+            }
+
+            override fun onInAppDismissed(id: String) {
+              onInAppDismissed.invoke(id)
+            }
+          })
+        }
+      }
+    }
+    Mindbox.registerInAppCallback(CompositeInAppCallback(cb))
+  }
+
+  @ReactMethod
   fun getDeviceUUID(promise: Promise) {
     try {
       if (this.deviceUuidSubscription != null) {
         Mindbox.disposeDeviceUuidSubscription(this.deviceUuidSubscription!!)
       }
 
-      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid {
-        deviceUUID -> promise.resolve(deviceUUID)
+      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid { deviceUUID ->
+        promise.resolve(deviceUUID)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -81,8 +132,8 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         Mindbox.disposePushTokenSubscription(this.fmsTokenSubscription!!)
       }
 
-      this.fmsTokenSubscription = Mindbox.subscribePushToken {
-        fmsToken -> promise.resolve(fmsToken)
+      this.fmsTokenSubscription = Mindbox.subscribePushToken { fmsToken ->
+        promise.resolve(fmsToken)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -101,7 +152,11 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
+    Mindbox.executeAsyncOperation(
+      reactApplicationContext.applicationContext,
+      operationSystemName,
+      operationBody
+    )
     promise.resolve(true)
   }
 
@@ -111,11 +166,11 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
       context = reactApplicationContext.applicationContext,
       operationSystemName = operationSystemName,
       operationBodyJson = operationBody,
-      onSuccess = {
-          response -> promise.resolve(response)
+      onSuccess = { response ->
+        promise.resolve(response)
       },
-      onError = {
-          error -> promise.resolve(error.toJson())
+      onError = { error ->
+        promise.resolve(error.toJson())
       }
     )
   }
