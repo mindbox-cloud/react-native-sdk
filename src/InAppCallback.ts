@@ -1,4 +1,4 @@
-interface InAppCallback {
+export interface InAppCallback {
 
   getName(): String
 
@@ -7,7 +7,7 @@ interface InAppCallback {
   onInAppDismissed(id: String): void
 
 }
-class UrlInAppCallback implements InAppCallback {
+export class UrlInAppCallback implements InAppCallback {
   getName(): String {
     return "urlInAppCallback"
   }
@@ -21,30 +21,31 @@ class UrlInAppCallback implements InAppCallback {
   }
 }
 
-class CopyPayloadInAppCallback implements InAppCallback {
-  getName(): String {
+export class CopyPayloadInAppCallback implements InAppCallback {
+  getName(): string {
     return "copyPayloadInAppCallback"
   }
   // @ts-ignore
-  onInAppClick(id: String, redirectUrl: String, payload: String): void {
+  onInAppClick(id: string, redirectUrl: string, payload: string): void {
     return
   }
   // @ts-ignore
-  onInAppDismissed(id: String): void {
+  onInAppDismissed(id: string): void {
     return
   }
 }
 
-class EmptyInAppCallback implements InAppCallback {
-  getName(): String {
+export class EmptyInAppCallback implements InAppCallback {
+  getName(): string {
     return "emptyInAppCallback"
   }
   // @ts-ignore
-  onInAppClick(id: String, redirectUrl: String, payload: String): void {
+  onInAppClick(id: string, redirectUrl: string, payload: string): void {
     return
   }
   // @ts-ignore
-  onInAppDismissed(id: String): void {
+  onInAppDismissed(id: string): void {
     return
   }
 }
+

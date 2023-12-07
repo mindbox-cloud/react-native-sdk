@@ -6,10 +6,18 @@ import android.os.Handler
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-
+import cloud.mindbox.mobile_sdk.inapp.presentation.InAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.ComposableInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.CopyPayloadInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.DeepLinkInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.EmptyInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.LoggingInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.UrlInAppCallback
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.Callback
+import com.facebook.react.bridge.ReadableArray
 import org.json.JSONObject
 
 class MindboxSdkModule(reactContext: ReactApplicationContext) :
@@ -73,15 +81,15 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) :
   @ReactMethod
   fun registerCallbacks(
     callbacks: ReadableArray,
-    onInAppClick: Callback,
-    onInAppDismissed: Callback
+    onInAppClick: Callback?,
+    onInAppDismissed: Callback?
   ) {
     val cb = mutableListOf<InAppCallback>()
     for (i in 0 until callbacks.size()) {
       when (val callback = callbacks.getString(i)) {
         "urlInAppCallback" -> {
           cb.add(UrlInAppCallback())
-          cb.add(DeeplinkInAppCallback())
+          cb.add(DeepLinkInAppCallback())
           cb.add(LoggingInAppCallback())
         }
 
@@ -97,17 +105,17 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) :
         else -> {
           cb.add(object : InAppCallback {
             override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
-                onInAppClick.invoke(id, redirectUrl, payload)
+                onInAppClick?.invoke(id, redirectUrl, payload)
             }
 
             override fun onInAppDismissed(id: String) {
-              onInAppDismissed.invoke(id)
+              onInAppDismissed?.invoke(id)
             }
           })
         }
       }
     }
-    Mindbox.registerInAppCallback(CompositeInAppCallback(cb))
+    Mindbox.registerInAppCallback(ComposableInAppCallback(cb))
   }
 
   @ReactMethod
