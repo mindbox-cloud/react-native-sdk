@@ -20,7 +20,8 @@ import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.ReadableArray
 import org.json.JSONObject
 
-class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class MindboxSdkModule(reactContext: ReactApplicationContext) :
+  ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
 
@@ -41,9 +42,19 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
           domain = payload.optString("domain", "api.mindbox.ru"),
           endpointId = payload.optString("endpointId", "")
         )
-        configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", true))
+        configurationBuilder.subscribeCustomerIfCreated(
+          payload.optBoolean(
+            "subscribeCustomerIfCreated",
+            true
+          )
+        )
         if (payload.has("shouldCreateCustomer")) {
-          configurationBuilder.shouldCreateCustomer(payload.optBoolean("shouldCreateCustomer", true))
+          configurationBuilder.shouldCreateCustomer(
+            payload.optBoolean(
+              "shouldCreateCustomer",
+              true
+            )
+          )
         }
         if (payload.has("previousInstallId")) {
           configurationBuilder.setPreviousInstallationId(payload.optString("previousInstallId", ""))
@@ -114,8 +125,8 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         Mindbox.disposeDeviceUuidSubscription(this.deviceUuidSubscription!!)
       }
 
-      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid {
-        deviceUUID -> promise.resolve(deviceUUID)
+      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid { deviceUUID ->
+        promise.resolve(deviceUUID)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -129,8 +140,8 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
         Mindbox.disposePushTokenSubscription(this.fmsTokenSubscription!!)
       }
 
-      this.fmsTokenSubscription = Mindbox.subscribePushToken {
-        fmsToken -> promise.resolve(fmsToken)
+      this.fmsTokenSubscription = Mindbox.subscribePushToken { fmsToken ->
+        promise.resolve(fmsToken)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -149,7 +160,11 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
+    Mindbox.executeAsyncOperation(
+      reactApplicationContext.applicationContext,
+      operationSystemName,
+      operationBody
+    )
     promise.resolve(true)
   }
 
@@ -159,11 +174,11 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
       context = reactApplicationContext.applicationContext,
       operationSystemName = operationSystemName,
       operationBodyJson = operationBody,
-      onSuccess = {
-          response -> promise.resolve(response)
+      onSuccess = { response ->
+        promise.resolve(response)
       },
-      onError = {
-          error -> promise.resolve(error.toJson())
+      onError = { error ->
+        promise.resolve(error.toJson())
       }
     )
   }

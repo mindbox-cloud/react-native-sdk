@@ -1,9 +1,6 @@
-import {
-  EmitterSubscription,
-  NativeEventEmitter,
-  NativeModules,
-  Platform,
-} from 'react-native';
+import {EmitterSubscription, NativeEventEmitter, NativeModules, Platform,} from 'react-native';
+import type {InAppCallback} from "./InAppCallback";
+import type {ExecuteAsyncOperationPayload, ExecuteSyncOperationPayload, InitializationData,} from './types';
 
 import type {
   InitializationData,
@@ -47,6 +44,35 @@ class MindboxSdkClass {
    */
   get subscribedForPushClickedEvent() {
     return !!this._emitterSubscribtion;
+  }
+
+
+  public registerInAppCallbacks(callbacks: Array<InAppCallback>) {
+    let customCallback: InAppCallback | undefined
+    const callbackNames = callbacks.map(callback => {
+        const name = callback.getName();
+        switch (name) {
+          case "urlInAppCallback": {
+            break
+          }
+          case "copyPayloadInAppCallback": {
+            break
+          }
+          case "emptyInAppCallback": {
+            break
+          }
+          default : {
+            customCallback = callback
+          }
+        }
+        return name
+      }
+    );
+    if (null != customCallback) {
+      MindboxSdkNative.registerCallbacks(callbackNames, customCallback.onInAppClick, customCallback.onInAppDismissed)
+    } else {
+      MindboxSdkNative.registerCallbacks(callbackNames, null, null)
+    }
   }
 
   /**
@@ -298,7 +324,7 @@ class MindboxSdkClass {
       throw new Error('payload is required!');
     }
 
-    const { operationSystemName, operationBody } = payload;
+    const {operationSystemName, operationBody} = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
@@ -338,7 +364,7 @@ class MindboxSdkClass {
       throw new Error('payload is required!');
     }
 
-    const { operationSystemName, operationBody, onSuccess, onError } = payload;
+    const {operationSystemName, operationBody, onSuccess, onError} = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
