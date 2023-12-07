@@ -1,6 +1,7 @@
 import Mindbox
 import CoreFoundation
 
+
 enum CustomError: Error {
     case tokenAPNSisNull
 }
@@ -24,12 +25,14 @@ struct PayloadData: Codable {
 }
 
 @objc(MindboxSdk)
-class MindboxSdk: NSObject {
+class MindboxSdk: NSObject, RCTBridgeModule  {
 
     @objc
     static func requiresMainQueueSetup() -> Bool {
         return true
     }
+
+    let compositeDelegate: CompositeInappMessageDelegate? = null
 
     @objc(initialize:resolve:rejecter:)
     func initialize(_ payloadString: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
@@ -67,10 +70,43 @@ class MindboxSdk: NSObject {
         }
     }
 
-    @objc()
-    func registerCallbacks() {
-      Mindbox.shared
+    class CustomCallback: InAppMessagesDelegate {
+
+      func inAppMessageTapAction(id: String, url: URL?, payload: String) {
+        if let bridge = self.bridge {
+            bridge.eventDispatcher().sendAppEvent(withName: "Click", body: ["id": id, "redirectUrl": url, "payload": payload])
+          }
+
+      }
+
+      func inAppMessageDismissed(id: String) {
+             if let bridge = self.bridge {
+             bridge.eventDispatcher().sendAppEvent(withName: "Dismiss", body: ["id": id])
+              }
+      }
+
     }
+
+    @objc func registerCallbacks(_ callbacks: [String]) {
+       var cb = [InAppCallback]()
+
+       for callback in callbacks {
+         switch callback {
+         case "urlInAppCallback":
+           cb.append(UrlInAppCallback())
+
+         case "copyPayloadInAppCallback":
+           cb.append(CopyPayloadInAppCallback())
+         case "emptyInAppCallback":
+           cb.append(EmptyInAppCallback())
+
+         default:
+           cb.append(CustomCallback())
+         }
+       }
+       compositeDelegate = CompositeInappMessageDelegate(cb)
+        Mindbox.shared.inAppMessagesDelegate = compositeDelegate
+     }
 
     @objc(updateAPNSToken:resolve:rejecter:)
     func updateAPNSToken(_ token: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
