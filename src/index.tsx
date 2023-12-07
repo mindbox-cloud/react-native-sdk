@@ -10,8 +10,12 @@ import type {
   ExecuteSyncOperationPayload,
   ExecuteAsyncOperationPayload,
 } from './types';
+import {EmitterSubscription, NativeEventEmitter, NativeModules, Platform,} from 'react-native';
+import type {InAppCallback} from "./InAppCallback";
+import type {ExecuteAsyncOperationPayload, ExecuteSyncOperationPayload, InitializationData,} from './types';
 
-const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
+
+const {MindboxSdk: MindboxSdkNative, MindboxJsDelivery} = NativeModules;
 
 class MindboxSdkClass {
   private _initialized: boolean;
