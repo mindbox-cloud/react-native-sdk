@@ -63,10 +63,16 @@ class MindboxSdkClass {
         return name
       }
     );
+    this._mindboxJsDeliveryEvents.addListener('Click', event => {
+      customCallback?.onInAppClick(event.id, event.redirectUrl, event.payload)
+    });
+    this._mindboxJsDeliveryEvents.addListener("Dismiss", event => {
+      customCallback?.onInAppDismissed(event.id)
+    });
     if (null != customCallback) {
-      MindboxSdkNative.registerCallbacks(callbackNames, customCallback.onInAppClick, customCallback.onInAppDismissed)
+      MindboxSdkNative.registerCallbacks(callbackNames)
     } else {
-      MindboxSdkNative.registerCallbacks(callbackNames, null, null)
+      MindboxSdkNative.registerCallbacks(callbackNames)
     }
   }
 

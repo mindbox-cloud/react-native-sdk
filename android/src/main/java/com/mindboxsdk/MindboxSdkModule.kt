@@ -16,11 +16,14 @@ import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.UrlInAppCallback
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.Callback
+import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import android.util.Log
 import org.json.JSONObject
 
-class MindboxSdkModule(reactContext: ReactApplicationContext) :
+class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
@@ -80,9 +83,7 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun registerCallbacks(
-    callbacks: ReadableArray,
-    onInAppClick: Callback?,
-    onInAppDismissed: Callback?
+    callbacks: ReadableArray
   ) {
     val cb = mutableListOf<InAppCallback>()
     for (i in 0 until callbacks.size()) {
@@ -101,15 +102,27 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) :
         "emptyInAppCallback" -> {
           cb.add(EmptyInAppCallback())
         }
-
         else -> {
           cb.add(object : InAppCallback {
             override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
-                onInAppClick?.invoke(id, redirectUrl, payload)
+                Log.d("test", "trigger1")
+                val params = Arguments.createMap().apply {
+                    putString("id", id)
+                    putString("redirectUrl", redirectUrl)
+                    putString("payload", payload)
+
+                }
+                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                                      .emit("Click", params)
             }
 
             override fun onInAppDismissed(id: String) {
-              onInAppDismissed?.invoke(id)
+                Log.d("test", "trigger2")
+                val params = Arguments.createMap().apply {
+                    putString("id", id)
+                }
+             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                                   .emit("Dismiss", params)
             }
           })
         }

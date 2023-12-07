@@ -1,22 +1,22 @@
 export interface InAppCallback {
 
-  getName(): String
+  getName(): string
 
-  onInAppClick(id: String, redirectUrl: String, payload: String): void
+  onInAppClick(id: string, redirectUrl: string, payload: string): void
 
-  onInAppDismissed(id: String): void
+  onInAppDismissed(id: string): void
 
 }
 export class UrlInAppCallback implements InAppCallback {
-  getName(): String {
+  getName(): string {
     return "urlInAppCallback"
   }
   // @ts-ignore
-  onInAppClick(id: String, redirectUrl: String, payload: String): void {
+  onInAppClick(id: string, redirectUrl: string, payload: string): void {
     return
   }
   // @ts-ignore
-  onInAppDismissed(id: String): void {
+  onInAppDismissed(id: string): void {
     return
   }
 }
