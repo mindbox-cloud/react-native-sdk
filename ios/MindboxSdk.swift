@@ -25,7 +25,7 @@ struct PayloadData: Codable {
 }
 
 @objc(MindboxSdk)
-class MindboxSdk: NSObject, RCTBridgeModule  {
+class MindboxSdk: NSObject  {
 
     @objc
     static func requiresMainQueueSetup() -> Bool {
@@ -84,7 +84,6 @@ class MindboxSdk: NSObject, RCTBridgeModule  {
              bridge.eventDispatcher().sendAppEvent(withName: "Dismiss", body: ["id": id])
               }
       }
-
     }
 
     @objc func registerCallbacks(_ callbacks: [String]) {
