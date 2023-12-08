@@ -138,4 +138,13 @@ class MindboxSdk: NSObject, RCTBridgeModule  {
             }
         }
     }
+    @objc
+    static func moduleName() -> String {
+        return "MindboxSdk"
+    }
+
+    @objc
+    func constantsToExport() -> [AnyHashable: Any] {
+        return [:]
+    }
 }
