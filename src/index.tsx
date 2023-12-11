@@ -73,11 +73,7 @@ class MindboxSdkClass {
     this._mindboxJsDeliveryEvents.addListener("Dismiss", event => {
       customCallback?.onInAppDismissed(event.id)
     });
-    if (null != customCallback) {
-      MindboxSdkNative.registerCallbacks(callbackNames)
-    } else {
-      MindboxSdkNative.registerCallbacks(callbackNames)
-    }
+    MindboxSdkNative.registerCallbacks(callbackNames)
   }
 
   /**
