@@ -7,35 +7,48 @@
 //
 
 #import "MindboxJsDelivery.h"
-
 #import <UserNotifications/UserNotifications.h>
 
 @implementation MindboxJsDelivery
 
 RCT_EXPORT_MODULE();
 
-bool hasListeners = NO;
-NSDictionary *storedEventDetails;
+static bool hasListeners = NO;
+static NSDictionary *storedEventDetails;
 
 - (NSArray<NSString *> *)supportedEvents {
-  return @[@"pushNotificationClicked"];
+  return @[@"pushNotificationClicked", @"Click", @"Dismiss"];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)startObserving {
   hasListeners = YES;
-  
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(emitEventInternal:) name:@"event-emitted" object:nil];
-  
+
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(emitEventInternal:)
+                                               name:@"event-emitted"
+                                             object:nil];
+
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(inappActionReceived:)
+                                               name:@"MindboxInappAction"
+                                             object:nil];
+
   if (storedEventDetails != NULL) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted" object:self userInfo:storedEventDetails];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted"
+                                                        object:self
+                                                      userInfo:storedEventDetails];
   }
 }
 
 - (void)stopObserving {
   hasListeners = NO;
-  
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  
+
   if (storedEventDetails != NULL) {
     storedEventDetails = NULL;
   }
@@ -48,11 +61,11 @@ NSDictionary *storedEventDetails;
   NSDictionary *userInfo = [eventDetails objectAtIndex:2];
   NSString *clickUrl = @"";
   NSString *pushPayload = @"";
-  
+
   if ([actionIdentifier isEqual:UNNotificationDefaultActionIdentifier]) {
     clickUrl = [userInfo objectForKey:@"clickUrl"];
     pushPayload = [userInfo objectForKey:@"payload"];
-      
+
     if ([clickUrl length] == 0) {
       NSDictionary *aps = [userInfo objectForKey:@"aps"];
       clickUrl = [aps objectForKey:@"clickUrl"];
@@ -61,11 +74,11 @@ NSDictionary *storedEventDetails;
   } else {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uniqueKey == %@", actionIdentifier];
     NSArray *filteredArray = [[userInfo objectForKey:@"buttons"] filteredArrayUsingPredicate:predicate];
-    
+
     if (filteredArray.count > 0) {
       clickUrl = [filteredArray.firstObject objectForKey:@"url"];
     }
-      
+
     pushPayload = [userInfo objectForKey:@"payload"];
     if ([pushPayload length] == 0) {
       NSDictionary *aps = [userInfo objectForKey:@"aps"];
@@ -98,6 +111,36 @@ NSDictionary *storedEventDetails;
   } else {
     storedEventDetails = eventDetails;
   }
+}
+
++ (void)sendInappEvent:(NSString *)eventName eventId:(NSString *)eventId url:(NSString *)clickUrl payload:(NSString *)payload {
+    if (hasListeners) {
+        NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
+        bodyDict[@"id"] = eventId;
+
+        if (clickUrl != nil) {
+            bodyDict[@"redirectUrl"] = clickUrl;
+        }
+
+        if (payload != nil) {
+            bodyDict[@"payload"] = payload;
+        }
+
+        NSDictionary *userInfo = @{
+            @"eventName": eventName,
+            @"body": bodyDict
+        };
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"MindboxEventNotification"
+                                                            object:self
+                                                          userInfo:userInfo];
+    }
+}
+
+- (void)inappActionReceived:(NSNotification *)notification {
+    NSString *eventName = notification.userInfo[@"eventName"];
+    NSDictionary *body = notification.userInfo[@"body"];
+    [self sendEventWithName:eventName body:body];
 }
 
 @end
