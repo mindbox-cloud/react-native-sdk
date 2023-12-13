@@ -189,4 +189,28 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
     val logLevel : Level = Level.values()[level]
     Mindbox.setLogLevel(logLevel)
   }
+
+  @ReactMethod
+  fun getSdkVersion(promise: Promise) {
+    try {
+      promise.resolve(Mindbox.getSdkVersion())
+    } catch (error: Throwable) {
+      promise.reject(error)
+    }
+  }
+
+  @ReactMethod
+  fun pushDelivered(uniqKey: String) {
+    Mindbox.onPushReceived(
+      context = reactApplicationContext.applicationContext,
+      uniqKey = uniqKey,
+    )
+  }
+
+  @ReactMethod
+  fun updateNotificationPermissionStatus(granted: Boolean) {
+    Mindbox.updateNotificationPermissionStatus(
+      context = reactApplicationContext.applicationContext,
+    )
+  }
 }

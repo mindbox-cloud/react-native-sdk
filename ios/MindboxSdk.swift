@@ -147,7 +147,7 @@ class MindboxSdk: NSObject {
         return [:]
     }
 
-    @objc(executeSyncOperation:operationBody:resolve:rejecter:)
+    @objc(setLogLevel:)
     func setLogLevel(_ level: Int) -> Void {
         switch (level) {
         case 0:
@@ -163,5 +163,29 @@ class MindboxSdk: NSObject {
         default:
             Mindbox.logger.logLevel = .none
         }
+    }
+
+    @objc
+    func getSdkVersion() -> String {
+        return Mindbox.shared.sdkVersion
+    }
+
+    @objc(getSdkVersion:rejecter:)
+    func getSdkVersion(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+        do {
+            resolve(Mindbox.shared.sdkVersion)
+        } catch {
+            reject("Error", error.localizedDescription, error)
+        }
+    }
+
+    @objc(pushDelivered:)
+    func pushDelivered(_ uniqKey: String) {
+        Mindbox.shared.pushDelivered(uniqueKey: uniqKey)
+    }
+
+    @objc
+    func updateNotificationPermissionStatus(_ granted: Bool) {
+        Mindbox.shared.notificationsRequestAuthorization(granted: granted)
     }
 }

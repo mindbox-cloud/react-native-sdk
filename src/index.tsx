@@ -10,7 +10,11 @@ import type {
   ExecuteSyncOperationPayload,
   ExecuteAsyncOperationPayload,
 } from './types';
-import type {InAppCallback} from "./InAppCallback";
+import type { InAppCallback } from "./InAppCallback";
+
+import type {
+  LogLevel,
+} from './LogLevel';
 
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
 
@@ -404,20 +408,51 @@ class MindboxSdkClass {
     });
   }
 
+  /**
+   * Method for managing sdk logging
+   * 
+   * @param level - is used for showing Mindbox logs starts from [LogLevel]. Default
+   * is [LogLevel.WARN]. [LogLevel.NONE] turns off all logs.
+   */
   public setLogLevel(level: LogLevel) {
     MindboxSdkNative.setLogLevel(level);
   }
-}
 
-export enum LogLevel {
-  VERBOSE,
-  DEBUG,
-  INFO,
-  WARN,
-  ERROR,
-  NONE,
+  /**
+   * Returns SDK version
+   */
+  public getSdkVersion(callback: (sdkVersion: string) => void) {
+    return MindboxSdkNative.getSdkVersion().then((version: string) => callback(version));
+  }
+
+  /**
+   * 
+   * Creates and deliveries event of "Push delivered". Recommended call this method from
+   * background thread.
+   *
+   * Use this method only if you have custom push handling you don't use [Mindbox.handleRemoteMessage].
+   * You must not call it otherwise.
+   *
+   * @param uniqKey unique identifier of push notification
+   */
+  public pushDelivered(uniqKey: string) {
+    return MindboxSdkNative.pushDelivered(uniqKey);
+  }
+
+  /**
+  * This method is used to inform sdk when the notification permission status changed 
+  * 
+  * @param granted current permission status
+  */
+  public updateNotificationPermissionStatus(granted: Boolean) {
+    return MindboxSdkNative.updateNotificationPermissionStatus(granted);
+  }
 }
 
 const MindboxSdk = new MindboxSdkClass();
 
 export default MindboxSdk;
+
+export { LogLevel } from './LogLevel';
+
+export { InAppCallback, CopyPayloadInAppCallback, EmptyInAppCallback, UrlInAppCallback } from "./InAppCallback";
