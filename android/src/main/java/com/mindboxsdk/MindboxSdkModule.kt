@@ -15,6 +15,7 @@ import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.EmptyInAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.LoggingInAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.UrlInAppCallback
 import cloud.mindbox.mobile_sdk.Mindbox
+import cloud.mindbox.mobile_sdk.logger.Level
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.WritableMap
@@ -181,5 +182,11 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
   @ReactMethod
   fun onPushClickedIsRegistered(isRegistered: Boolean) {
     MindboxJsDelivery.Shared.hasListeners = isRegistered
+  }
+
+  @ReactMethod
+  fun setLogLevel(level: Int) {
+    val logLevel : Level = Level.values()[level]
+    Mindbox.setLogLevel(logLevel)
   }
 }

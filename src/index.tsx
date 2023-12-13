@@ -403,6 +403,19 @@ class MindboxSdkClass {
       }
     });
   }
+
+  public setLogLevel(level: LogLevel) {
+    MindboxSdkNative.setLogLevel(level);
+  }
+}
+
+export enum LogLevel {
+  VERBOSE,
+  DEBUG,
+  INFO,
+  WARN,
+  ERROR,
+  NONE,
 }
 
 const MindboxSdk = new MindboxSdkClass();

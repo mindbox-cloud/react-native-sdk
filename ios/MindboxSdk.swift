@@ -24,7 +24,7 @@ struct PayloadData: Codable {
 }
 
 @objc(MindboxSdk)
-class MindboxSdk: NSObject  {
+class MindboxSdk: NSObject {
 
     private var urlInappDelegate: URLInappMessageDelegate?
     private var copyInappDelegate: CopyInappMessageDelegate?
@@ -136,6 +136,7 @@ class MindboxSdk: NSObject  {
             }
         }
     }
+
     @objc
     static func moduleName() -> String {
         return "MindboxSdk"
@@ -144,5 +145,23 @@ class MindboxSdk: NSObject  {
     @objc
     func constantsToExport() -> [AnyHashable: Any] {
         return [:]
+    }
+
+    @objc(executeSyncOperation:operationBody:resolve:rejecter:)
+    func setLogLevel(_ level: Int) -> Void {
+        switch (level) {
+        case 0:
+            Mindbox.logger.logLevel = .debug
+        case 1:
+            Mindbox.logger.logLevel = .info
+        case 2:
+            Mindbox.logger.logLevel = .default
+        case 3:
+            Mindbox.logger.logLevel = .error
+        case 4:
+            Mindbox.logger.logLevel = .fault
+        default:
+            Mindbox.logger.logLevel = .none
+        }
     }
 }
