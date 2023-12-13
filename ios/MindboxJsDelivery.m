@@ -131,7 +131,7 @@ static NSDictionary *storedEventDetails;
             @"body": bodyDict
         };
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"MindboxEventNotification"
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"MindboxInappAction"
                                                             object:self
                                                           userInfo:userInfo];
     }
