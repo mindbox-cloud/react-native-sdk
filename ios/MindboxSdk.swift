@@ -27,12 +27,16 @@ struct PayloadData: Codable {
 @objc(MindboxSdk)
 class MindboxSdk: NSObject  {
 
+    private var urlInappDelegate: URLInappMessageDelegate?
+    private var copyInappDelegate: CopyInappMessageDelegate?
+    private var emptyInappDelegate: InAppMessagesDelegate?
+    private var customClass: InAppMessagesDelegate?
+    private var compositeDelegate: CompositeInappMessageDelegate?
+
     @objc
     static func requiresMainQueueSetup() -> Bool {
         return true
     }
-
-    let compositeDelegate: CompositeInappMessageDelegate? = null
 
     @objc(initialize:resolve:rejecter:)
     func initialize(_ payloadString: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
@@ -70,42 +74,38 @@ class MindboxSdk: NSObject  {
         }
     }
 
-    class CustomCallback: InAppMessagesDelegate {
-
-      func inAppMessageTapAction(id: String, url: URL?, payload: String) {
-        if let bridge = self.bridge {
-            bridge.eventDispatcher().sendAppEvent(withName: "Click", body: ["id": id, "redirectUrl": url, "payload": payload])
-          }
-
-      }
-
-      func inAppMessageDismissed(id: String) {
-             if let bridge = self.bridge {
-             bridge.eventDispatcher().sendAppEvent(withName: "Dismiss", body: ["id": id])
-              }
-      }
-    }
-
     @objc func registerCallbacks(_ callbacks: [String]) {
-       var cb = [InAppCallback]()
+        var cb = [InAppMessagesDelegate]()
 
-       for callback in callbacks {
-         switch callback {
-         case "urlInAppCallback":
-           cb.append(UrlInAppCallback())
+        for callback in callbacks {
+            switch callback {
+                case "urlInAppCallback":
+                    urlInappDelegate = URLInappDelegate()
+                    if let urlInappDelegate = urlInappDelegate {
+                        cb.append(urlInappDelegate)
+                    }
+                case "copyPayloadInAppCallback":
+                    copyInappDelegate = CopyInappDelegate()
+                    if let copyInappDelegate = copyInappDelegate {
+                        cb.append(copyInappDelegate)
+                    }
+                case "emptyInAppCallback":
+                    emptyInappDelegate = EmptyInappDelegate()
+                    if let emptyInappDelegate = emptyInappDelegate {
+                        cb.append(emptyInappDelegate)
+                    }
+                default:
+                    customClass = CustomInappDelegate()
+                    if let customClass = customClass {
+                        cb.append(customClass)
+                    }
+            }
+        }
 
-         case "copyPayloadInAppCallback":
-           cb.append(CopyPayloadInAppCallback())
-         case "emptyInAppCallback":
-           cb.append(EmptyInAppCallback())
-
-         default:
-           cb.append(CustomCallback())
-         }
-       }
-       compositeDelegate = CompositeInappMessageDelegate(cb)
+        compositeDelegate = CompositeInappDelegate()
+        compositeDelegate?.delegates = cb
         Mindbox.shared.inAppMessagesDelegate = compositeDelegate
-     }
+    }
 
     @objc(updateAPNSToken:resolve:rejecter:)
     func updateAPNSToken(_ token: String, resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
