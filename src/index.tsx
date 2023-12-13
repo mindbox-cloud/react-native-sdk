@@ -41,11 +41,6 @@ class MindboxSdkClass {
     return !!this._emitterSubscribtion;
   }
 
-  public resetShownInApps() {
-    MindboxSdkNative.resetShownInApps()
-  }
-
-
   public registerInAppCallbacks(callbacks: Array<InAppCallback>) {
     let customCallback: InAppCallback | undefined
     const callbackNames = callbacks.map(callback => {

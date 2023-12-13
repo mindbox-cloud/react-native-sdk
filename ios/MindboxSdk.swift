@@ -70,10 +70,6 @@ class MindboxSdk: NSObject  {
         }
     }
 
-    func resetShownInApps() {
-        Mindbox.shared.resetShownInApps()
-    }
-
     class CustomCallback: InAppMessagesDelegate {
 
       func inAppMessageTapAction(id: String, url: URL?, payload: String) {

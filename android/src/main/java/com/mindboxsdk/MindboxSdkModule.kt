@@ -20,7 +20,6 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import android.util.Log
 import org.json.JSONObject
 import android.widget.Toast
 
@@ -83,15 +82,6 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun resetShownInApps() {
-        val prefs = reactApplicationContext.applicationContext
-              .getSharedPreferences("preferences", Context.MODE_PRIVATE)
-
-            prefs.edit().remove("SHOWN_IDS").apply()
-            Toast.makeText(reactApplicationContext.applicationContext, "SHOWN_IDS removed!", Toast.LENGTH_LONG).show()
- }
-
-  @ReactMethod
   fun registerCallbacks(
     callbacks: ReadableArray
   ) {
@@ -115,7 +105,6 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
         else -> {
           cb.add(object : InAppCallback {
             override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
-                Log.d("test", "trigger1")
                 val params = Arguments.createMap().apply {
                     putString("id", id)
                     putString("redirectUrl", redirectUrl)
@@ -127,7 +116,6 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
             }
 
             override fun onInAppDismissed(id: String) {
-                Log.d("test", "trigger2")
                 val params = Arguments.createMap().apply {
                     putString("id", id)
                 }
