@@ -7,6 +7,7 @@
 //
 
 #import "MindboxJsDelivery.h"
+
 #import <UserNotifications/UserNotifications.h>
 
 @implementation MindboxJsDelivery
@@ -27,20 +28,12 @@ static NSDictionary *storedEventDetails;
 - (void)startObserving {
   hasListeners = YES;
 
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(emitEventInternal:)
-                                               name:@"event-emitted"
-                                             object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(emitEventInternal:) name:@"event-emitted" object:nil];
 
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(inappActionReceived:)
-                                               name:@"MindboxInappAction"
-                                             object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inappActionReceived:)name:@"MindboxInappAction" object:nil];
 
   if (storedEventDetails != NULL) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted"
-                                                        object:self
-                                                      userInfo:storedEventDetails];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted"object:self userInfo:storedEventDetails];
   }
 }
 
