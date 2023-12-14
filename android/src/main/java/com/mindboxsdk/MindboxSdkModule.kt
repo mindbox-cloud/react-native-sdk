@@ -21,7 +21,6 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import org.json.JSONObject
-import android.widget.Toast
 
 class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
@@ -45,19 +44,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
           domain = payload.optString("domain", "api.mindbox.ru"),
           endpointId = payload.optString("endpointId", "")
         )
-        configurationBuilder.subscribeCustomerIfCreated(
-          payload.optBoolean(
-            "subscribeCustomerIfCreated",
-            true
-          )
-        )
+        configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", true))
         if (payload.has("shouldCreateCustomer")) {
-          configurationBuilder.shouldCreateCustomer(
-            payload.optBoolean(
-              "shouldCreateCustomer",
-              true
-            )
-          )
+          configurationBuilder.shouldCreateCustomer(payload.optBoolean("shouldCreateCustomer", true))
         }
         if (payload.has("previousInstallId")) {
           configurationBuilder.setPreviousInstallationId(payload.optString("previousInstallId", ""))
@@ -102,6 +91,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
         "emptyInAppCallback" -> {
           cb.add(EmptyInAppCallback())
         }
+
         else -> {
           cb.add(object : InAppCallback {
             override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
@@ -109,18 +99,16 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
                     putString("id", id)
                     putString("redirectUrl", redirectUrl)
                     putString("payload", payload)
-
                 }
-                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                                      .emit("Click", params)
+                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("Click", params)
             }
 
             override fun onInAppDismissed(id: String) {
                 val params = Arguments.createMap().apply {
                     putString("id", id)
                 }
-             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                                   .emit("Dismiss", params)
+
+             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("Dismiss", params)
             }
           })
         }
@@ -136,8 +124,8 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
         Mindbox.disposeDeviceUuidSubscription(this.deviceUuidSubscription!!)
       }
 
-      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid { deviceUUID ->
-        promise.resolve(deviceUUID)
+      this.deviceUuidSubscription = Mindbox.subscribeDeviceUuid {
+        deviceUUID -> promise.resolve(deviceUUID)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -151,8 +139,8 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
         Mindbox.disposePushTokenSubscription(this.fmsTokenSubscription!!)
       }
 
-      this.fmsTokenSubscription = Mindbox.subscribePushToken { fmsToken ->
-        promise.resolve(fmsToken)
+      this.fmsTokenSubscription = Mindbox.subscribePushToken {
+        fmsToken -> promise.resolve(fmsToken)
       }
     } catch (error: Throwable) {
       promise.reject(error)
@@ -171,11 +159,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    Mindbox.executeAsyncOperation(
-      reactApplicationContext.applicationContext,
-      operationSystemName,
-      operationBody
-    )
+    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext,operationSystemName,operationBody)
     promise.resolve(true)
   }
 
@@ -185,11 +169,11 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
       context = reactApplicationContext.applicationContext,
       operationSystemName = operationSystemName,
       operationBodyJson = operationBody,
-      onSuccess = { response ->
-        promise.resolve(response)
+      onSuccess = {
+        response -> promise.resolve(response)
       },
-      onError = { error ->
-        promise.resolve(error.toJson())
+      onError = {
+        error ->promise.resolve(error.toJson())
       }
     )
   }
