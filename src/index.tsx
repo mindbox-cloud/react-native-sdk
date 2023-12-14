@@ -12,7 +12,6 @@ import type {
 } from './types';
 import type {InAppCallback} from "./InAppCallback";
 
-
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
 
 class MindboxSdkClass {

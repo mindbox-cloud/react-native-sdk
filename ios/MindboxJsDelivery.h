@@ -12,6 +12,6 @@
 @interface MindboxJsDelivery : RCTEventEmitter <RCTBridgeModule>
 
 + (void)emitEvent:(UNNotificationResponse *)response;
+
 + (void)sendInappEvent:(NSString *)eventName eventId:(NSString *)eventId url:(NSString *)clickUrl payload:(NSString *)payload;
 @end
-

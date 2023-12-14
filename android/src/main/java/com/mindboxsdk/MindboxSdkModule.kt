@@ -6,6 +6,7 @@ import android.os.Handler
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+
 import cloud.mindbox.mobile_sdk.inapp.presentation.InAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.ComposableInAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.CopyPayloadInAppCallback
