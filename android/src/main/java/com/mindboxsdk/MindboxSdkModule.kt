@@ -7,12 +7,23 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
+import cloud.mindbox.mobile_sdk.inapp.presentation.InAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.ComposableInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.CopyPayloadInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.DeepLinkInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.EmptyInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.LoggingInAppCallback
+import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.UrlInAppCallback
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import org.json.JSONObject
 
-class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class MindboxSdkModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
 
@@ -57,6 +68,53 @@ class MindboxSdkModule(reactContext: ReactApplicationContext) : ReactContextBase
     } catch (error: Throwable) {
       promise.reject(error)
     }
+  }
+
+  @ReactMethod
+  fun registerCallbacks(
+    callbacks: ReadableArray
+  ) {
+    val cb = mutableListOf<InAppCallback>()
+    for (i in 0 until callbacks.size()) {
+      when (val callback = callbacks.getString(i)) {
+        "urlInAppCallback" -> {
+          cb.add(UrlInAppCallback())
+          cb.add(DeepLinkInAppCallback())
+          cb.add(LoggingInAppCallback())
+        }
+
+        "copyPayloadInAppCallback" -> {
+          cb.add(CopyPayloadInAppCallback())
+          cb.add(LoggingInAppCallback())
+        }
+
+        "emptyInAppCallback" -> {
+          cb.add(EmptyInAppCallback())
+        }
+
+        else -> {
+          cb.add(object : InAppCallback {
+            override fun onInAppClick(id: String, redirectUrl: String, payload: String) {
+                val params = Arguments.createMap().apply {
+                    putString("id", id)
+                    putString("redirectUrl", redirectUrl)
+                    putString("payload", payload)
+                }
+                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("Click", params)
+            }
+
+            override fun onInAppDismissed(id: String) {
+                val params = Arguments.createMap().apply {
+                    putString("id", id)
+                }
+
+             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit("Dismiss", params)
+            }
+          })
+        }
+      }
+    }
+    Mindbox.registerInAppCallback(ComposableInAppCallback(cb))
   }
 
   @ReactMethod

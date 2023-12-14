@@ -10,6 +10,7 @@ import type {
   ExecuteSyncOperationPayload,
   ExecuteAsyncOperationPayload,
 } from './types';
+import type {InAppCallback} from "./InAppCallback";
 
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
 
@@ -43,6 +44,36 @@ class MindboxSdkClass {
    */
   get subscribedForPushClickedEvent() {
     return !!this._emitterSubscribtion;
+  }
+
+  public registerInAppCallbacks(callbacks: Array<InAppCallback>) {
+    let customCallback: InAppCallback | undefined
+    const callbackNames = callbacks.map(callback => {
+        const name = callback.getName();
+        switch (name) {
+          case "urlInAppCallback": {
+            break
+          }
+          case "copyPayloadInAppCallback": {
+            break
+          }
+          case "emptyInAppCallback": {
+            break
+          }
+          default : {
+            customCallback = callback
+          }
+        }
+        return name
+      }
+    );
+    this._mindboxJsDeliveryEvents.addListener('Click', event => {
+      customCallback?.onInAppClick(event.id, event.redirectUrl, event.payload)
+    });
+    this._mindboxJsDeliveryEvents.addListener("Dismiss", event => {
+      customCallback?.onInAppDismissed(event.id)
+    });
+    MindboxSdkNative.registerCallbacks(callbackNames)
   }
 
   /**
