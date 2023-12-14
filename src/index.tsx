@@ -1,13 +1,18 @@
+import {
+  EmitterSubscription,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import type {
   InitializationData,
   ExecuteSyncOperationPayload,
   ExecuteAsyncOperationPayload,
 } from './types';
-import {EmitterSubscription, NativeEventEmitter, NativeModules, Platform,} from 'react-native';
 import type {InAppCallback} from "./InAppCallback";
 
 
-const {MindboxSdk: MindboxSdkNative, MindboxJsDelivery} = NativeModules;
+const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules;
 
 class MindboxSdkClass {
   private _initialized: boolean;
@@ -320,7 +325,7 @@ class MindboxSdkClass {
       throw new Error('payload is required!');
     }
 
-    const {operationSystemName, operationBody} = payload;
+    const { operationSystemName, operationBody} = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
