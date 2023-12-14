@@ -22,8 +22,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import org.json.JSONObject
 
-class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext) {
+class MindboxSdkModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
 
@@ -159,7 +158,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun executeAsyncOperation(operationSystemName: String, operationBody: String, promise: Promise) {
-    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext,operationSystemName,operationBody)
+    Mindbox.executeAsyncOperation(reactApplicationContext.applicationContext, operationSystemName, operationBody)
     promise.resolve(true)
   }
 
@@ -170,10 +169,10 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) :
       operationSystemName = operationSystemName,
       operationBodyJson = operationBody,
       onSuccess = {
-        response -> promise.resolve(response)
+          response -> promise.resolve(response)
       },
       onError = {
-        error ->promise.resolve(error.toJson())
+          error -> promise.resolve(error.toJson())
       }
     )
   }
