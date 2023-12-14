@@ -4,6 +4,7 @@ import {
   NativeModules,
   Platform,
 } from 'react-native';
+
 import type {
   InitializationData,
   ExecuteSyncOperationPayload,
@@ -325,7 +326,7 @@ class MindboxSdkClass {
       throw new Error('payload is required!');
     }
 
-    const { operationSystemName, operationBody} = payload;
+    const { operationSystemName, operationBody } = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
@@ -365,7 +366,7 @@ class MindboxSdkClass {
       throw new Error('payload is required!');
     }
 
-    const {operationSystemName, operationBody, onSuccess, onError} = payload;
+    const { operationSystemName, operationBody, onSuccess, onError } = payload;
 
     if (!operationSystemName || typeof operationSystemName !== 'string') {
       throw new Error('operationSystemName is required and must be a string!');
