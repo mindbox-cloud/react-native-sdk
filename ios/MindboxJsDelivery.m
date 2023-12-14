@@ -33,7 +33,7 @@ static NSDictionary *storedEventDetails;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inappActionReceived:)name:@"MindboxInappAction" object:nil];
 
   if (storedEventDetails != NULL) {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted"object:self userInfo:storedEventDetails];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"event-emitted" object:self userInfo:storedEventDetails];
   }
 }
 
