@@ -69,4 +69,5 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CICD_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: yarn release ${{ needs.checkingVersion.outputs.newVersion }} --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
+        run: yarn release ${{ needs.checkingVersion.outputs.newVersion }} --preRelease=rc --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
+      
