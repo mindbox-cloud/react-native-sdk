@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] 
+## [2.8.2-rc.0] - 2023-12-18 
 
 ### Changes
 - upgrade Android SDK dependency to v2.8.2
