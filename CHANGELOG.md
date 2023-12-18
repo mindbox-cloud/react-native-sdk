@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] 
+
+### Changes
+- upgrade Android SDK dependency to v2.8.2
+- upgrade iOS SDK dependency to v.2.8.2
+
 ## [2.1.7] - 2023-08-24
 
 ### Changes
