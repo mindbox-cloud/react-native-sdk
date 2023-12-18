@@ -7,6 +7,7 @@ export interface InAppCallback {
   onInAppDismissed(id: string): void
 
 }
+
 export class UrlInAppCallback implements InAppCallback {
   getName(): string {
     return "urlInAppCallback"
