@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.8.2] - 2023-12-26
 
 ### Changes
 - Added in-app support. 
