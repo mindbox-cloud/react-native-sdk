@@ -82,3 +82,4 @@ jobs:
             yarn release ${{ needs.checkingVersion.outputs.newVersion }} --pre-release --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
           else
             yarn release ${{ needs.checkingVersion.outputs.newVersion }} --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
+          fi
