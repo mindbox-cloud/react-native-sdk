@@ -1,8 +1,10 @@
 # Changelog
 
-## [2.8.2-rc.0] - 2023-12-18 
+## [Unreleased]
 
 ### Changes
+- Added in-app support. 
+- Added support for A/B tests of mobile applications
 - upgrade Android SDK dependency to v2.8.2
 - upgrade iOS SDK dependency to v.2.8.2
 
