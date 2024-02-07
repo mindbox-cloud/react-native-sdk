@@ -9,6 +9,7 @@ import cloud.mindbox.mindbox_firebase.MindboxFirebase
 import com.google.firebase.messaging.*
 import android.util.Log
 
+// https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
 class MindboxFirebaseMessagingService : FirebaseMessagingService() {
   override fun onNewToken(token: String) {
     Mindbox.updatePushToken(applicationContext, token, MindboxFirebase)

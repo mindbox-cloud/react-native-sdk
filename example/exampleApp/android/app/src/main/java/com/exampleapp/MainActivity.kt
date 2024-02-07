@@ -20,7 +20,8 @@ class MainActivity : ReactActivity() {
   override fun createReactActivityDelegate(): ReactActivityDelegate =
     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
-  /// Initializes MindboxJsDelivery and sends the current intent to React Native
+  // Initializes MindboxJsDelivery and sends the current intent to React Native
+  // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
   private fun initializeAndSentIntent(context: ReactContext) {
     mJsDelivery = MindboxJsDelivery.Shared.getInstance(context)
     if (context.hasCurrentActivity()) {
@@ -36,6 +37,7 @@ class MainActivity : ReactActivity() {
     val reactContext = mReactInstanceManager.getCurrentReactContext();
 
     // Initialize and send intent if React context is already available
+    // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
     if (reactContext != null) {
       initializeAndSentIntent(reactContext);
     } else {
@@ -50,7 +52,6 @@ class MainActivity : ReactActivity() {
     }
   }
 
-
   // Handles new intents received by the activity
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
@@ -58,6 +59,7 @@ class MainActivity : ReactActivity() {
   }
 
   // Sends the received intent to Mindbox and React Native
+  // https://developers.mindbox.ru/docs/android-get-click-react-native
   private fun sendIntent(context: Context, intent: Intent) {
     Mindbox.onNewIntent(intent)
     //send click action

@@ -6,7 +6,7 @@ const configuration = {
   domain: 'api.mindbox.ru',
   endpointId:
     Platform.OS === 'ios'
-      ? 'mpush-test-iOS'
+      ? 'Mpush-test.IosRnExample'
       : 'Mpush-test.AndroidRnExample',
   subscribeCustomerIfCreated: true,
   shouldCreateCustomer: true,

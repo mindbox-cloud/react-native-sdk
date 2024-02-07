@@ -1151,6 +1151,8 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
+  - Mindbox (~> 2.8.2)
+  - MindboxNotifications
   - MindboxSdk (from `../node_modules/mindbox-sdk`)
   - OpenSSL-Universal (= 1.1.1100)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1386,6 +1388,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: ff0382b894475dba0b4d2a5fda860bfee5a9afad
 
-PODFILE CHECKSUM: 766371bfd9239233076ffb323449b63790940dc0
+PODFILE CHECKSUM: 68abaf4b1ed2951339daea054bfacdb4f6753c54
 
 COCOAPODS: 1.13.0

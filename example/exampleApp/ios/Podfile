@@ -8,15 +8,6 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
-# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
-#
-# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
-# ```js
-# module.exports = {
-#   dependencies: {
-#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
-# ```
 flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -38,14 +29,26 @@ target 'exampleApp' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-
+  pod 'Mindbox', '~> 2.8.2'
   target 'exampleAppTests' do
     inherit! :complete
     # Pods for testing
   end
 
+target 'MindboxNotificationServiceExtension' do
+     pod 'MindboxNotifications'
+  end
+
+target 'MindboxNotificationContentExtension' do
+   pod 'MindboxNotifications'
+  end
+
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    installer.pods_project.targets.each do |target|
+       target.build_configurations.each do |config|
+         config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'No'
+       end
+     end
     react_native_post_install(
       installer,
       config[:reactNativePath],
@@ -53,3 +56,4 @@ target 'exampleApp' do
     )
   end
 end
+
