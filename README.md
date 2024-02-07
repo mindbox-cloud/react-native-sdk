@@ -1,102 +1,50 @@
-# mindbox-sdk
 
-This module is a wrapper over the native Mindbox([iOS](https://github.com/mindbox-moscow/ios-sdk),
-[Android](https://github.com/mindbox-moscow/android-sdk)) libraries that allows to 
-receive and handle push notifications.
+[![npm version](https://badge.fury.io/js/mindbox-sdk.svg)](https://www.npmjs.com/package/mindbox-sdk)
 
-## Features
+# Mindbox SDK for React Native
 
-* Receive and show push notification in both mobile platforms.
-* Receive push notification data(links) in React Native.
+The Mindbox SDK allows developers to integrate mobile push notifications, in-app messages, and client events into your React Native projects.
 
-## Getting started
+## Getting Started
 
-This plugin depends on the configuration of push notifications on native platforms. It's necessary 
-to follow the steps specified in the guide:
+These instructions will help you integrate the Mindbox SDK into your React Native app.
 
-* [Mindbox React Native SDK](https://developers.mindbox.ru/docs/react-native-sdk)
+### Installation
 
-## Installation
+Follow the installation process detailed [here](https://developers.mindbox.ru/docs/add-sdk-react-native). Overview:
 
-```sh
-npm install mindbox-sdk
-```
+1. Install the Mindbox SDK package:
+   ```markdown
+    npm i --save mindbox-sdk
+    ```
 
-## Usage
+2. For iOS, make sure to install the pods:
+   ```markdown
+    cd ios && pod install && cd ..
+    ```
 
-```js
-import MindboxSdk from "mindbox-sdk";
-```
+### Initialization
 
-### Methods
+Initialize the Mindbox SDK in your React Native app. You can find the necessary code snippet and explanations [here](https://developers.mindbox.ru/docs/sdk-initialization-react-native).
 
-#### initialize (Promise)
+### Operations
 
-Initialization of MindboxSdk. It is recommended to do this on app's launch.
+Learn how to send events to Mindbox. Different operations and their usage are detailed [here](https://developers.mindbox.ru/docs/integration-actions-react-native).
 
-```js
-await MindboxSdk.initialize({
-  domain: 'api.mindbox.ru',
-  endpointId: 'your-endpoint-id-here',
-  subscribeCustomerIfCreated: true,
-  shouldCreateCustomer: true,
-  previousInstallId: '',
-  previousUuid: '',
-});
-```
+### Push Notifications
 
-#### getDeviceUUID
+Mindbox SDK aids in handling push notifications. It offers configurations and usage instructions, found in the SDK documentation [Android(FCM)](https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native), [Android(HCM)](https://developers.mindbox.ru/docs/huawei-send-push-notifications-react-native), [IOS](https://developers.mindbox.ru/docs/ios-send-push-notifications-react-native) and [IOS(Rich)](https://developers.mindbox.ru/docs/ios-send-rich-push-react-native).
 
-Requires a callback that will return device UUID.
+## Troubleshooting
 
-```js
-MindboxSdk.getDeviceUUID((uuid: string) => { ... });
-```
+Feel free to refer to the [Example of integration](https://github.com/mindbox-cloud/react-native-sdk/tree/example) in case of any issues.
 
-#### getToken
+## Further Help
 
-Requires a callback that will return FMS (Android) / APNS (iOS) token.
+If you need further assistance, don't hesitate to contact us.
 
-```js
-MindboxSdk.getToken((token: string) => { ... });
-```
+## License
 
-#### updateToken (Promise)
+This library is open source, available under the explicit terms of the [License](https://github.com/mindbox-cloud/react-native-sdk/blob/master/LICENSE.md).
 
-Updates your FMS/APNS token.
-
-```js
-await MindboxSdk.updateToken('your-fms/apns-token');
-```
-
-#### onPushClickReceived
-
-Requires a callback that will return push notification link or push notification button link when it clicked.
-
-```js
-MindboxSdk.onPushClickReceived((pushClickRecievedData: string) => { ... });
-```
-
-#### executeAsyncOperation
-
-Makes request to backend API without waiting any response.
-
-```js
-MindboxSdk.executeAsyncOperation({
-  operationSystemName: '--YOUR SYSTEM NAME HERE--',
-  operationBody: { ... },
-});
-```
-
-#### executeSyncOperation
-
-Makes request to backend API and waits response.
-
-```js
-MindboxSdk.executeSyncOperation({
-  operationSystemName: '--YOUR SYSTEM NAME HERE--',
-  operationBody: { ... },
-  onSuccess: (data) => { ... },
-  onError: (error) => { ... },
-});
-```
+For a comprehensive understanding, we recommend reading the Mindbox [React Native SDK](https://developers.mindbox.ru/docs/react-native-sdk-integration) documentation.
