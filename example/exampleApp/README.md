@@ -1,79 +1,28 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+To run the example application with functioning mobile push notifications (complete only step 4 for in-app functionality to work), follow these steps:
 
-# Getting Started
+1) Change the package identifier in the **app/build.gradle** file in Android
+   Change team and bundle identifier and App Groups name in iOS for next targets:
+    - exampleApp
+    - MindboxNotificationServiceExtension
+    - MindboxNotificationContentExtension
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+   Tip: app group name template: group.cloud.Mindbox.<your_bundle_id>
 
-## Step 1: Start the Metro Server
+2) Add your application to either Firebase or Huawei project, following the instructions provided at:
+   [Firebase Key Generation](https://developers.mindbox.ru/docs/firebase-get-keys) /
+   [Huawei Key Generation](https://developers.mindbox.ru/docs/huawei-get-keys)
+   or add app in your existing project for Android
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+   [Get keys and configuring APNS](https://developers.mindbox.ru/docs/ios-get-keys) for iOS
 
-To start Metro, run the following command from the _root_ of your React Native project:
+3) Copy the **google-services.json** file (for Firebase) or/and **agcconnect-services.json** file (for Huawei) into the app folder of your project
 
-```bash
-# using npm
-npm start
+4) Configure your endpoints [iOS](https://developers.mindbox.ru/docs/add-ios-integration), [Android](https://developers.mindbox.ru/docs/add-android-integration)
 
-# OR using Yarn
-yarn start
-```
+5) Set your domain and endpoints in the HomeScreen.tsx within the configuration builder
 
-## Step 2: Start your Application
+6) Run the application
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+7) After 5 minutes check your user in your Mindbox admin site
 
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+7) Run in-app and send mobile push
