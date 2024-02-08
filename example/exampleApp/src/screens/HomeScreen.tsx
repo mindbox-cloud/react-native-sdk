@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-na
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
   InAppCallback, UrlInAppCallback } from "mindbox-sdk";
 import { sendSync, sendAsync } from '../utils/MindboxOperations';
+import { requestNotificationPermission } from '../utils/RequestPermission';
 import PushNotificationScreen from './screens/PushNotificationScreen';
 import { useNavigation } from '@react-navigation/native';
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks';
@@ -11,21 +12,21 @@ const configuration = {
   domain: 'api.mindbox.ru',
   endpointId:
     Platform.OS === 'ios'
-      ? 'Mpush-test.IosRnExample'
-      : 'Mpush-test.AndroidRnExample',
+      ? ''
+      : '',
   subscribeCustomerIfCreated: true,
   shouldCreateCustomer: true,
 };
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-
   const [deviceUUID, setDeviceUUID] = useState('Empty');
   const [token, setToken] = useState('Empty');
   const [pushData, setPushData] = useState({ pushUrl: null, pushPayload: null });
   const [sdkVersion, setSdkVersion] = useState('Empty');
 
   useEffect(() => {
+    requestNotificationPermission()
     appInitializationCallback();
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
     MindboxSdk.setLogLevel(LogLevel.DEBUG);

@@ -47,7 +47,7 @@ android {
 
 dependencies {
   implementation("com.facebook.react:react-android")
-  implementation "com.facebook.react:react-native:0.58.3"
+  implementation "com.facebook.react:react-native:0.73.3"
   implementation("com.facebook.react:flipper-integration")
 
   implementation platform('com.google.firebase:firebase-bom:29.3.1')
