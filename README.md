@@ -37,7 +37,7 @@ Mindbox SDK aids in handling push notifications. It offers configurations and us
 
 ## Troubleshooting
 
-Feel free to refer to the [Example of integration](https://github.com/mindbox-cloud/react-native-sdk/tree/feature/readme/example) in case of any issues.
+Feel free to refer to the [Example of integration](https://github.com/mindbox-cloud/react-native-sdk/tree/develop/example) in case of any issues.
 
 ## Further Help
 
