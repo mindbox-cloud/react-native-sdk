@@ -1,4 +1,4 @@
-To run the example application with functioning mobile push notifications (complete only step 4 for in-app functionality to work), follow these steps:
+To run the example application with functioning mobile push notifications (complete only step 5 for in-app functionality to work), follow these steps:
 
 1) Change the package identifier in the **app/build.gradle** file in Android
    Change team and bundle identifier and App Groups name in iOS for next targets:
