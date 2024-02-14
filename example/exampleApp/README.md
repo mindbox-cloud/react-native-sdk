@@ -25,4 +25,4 @@ To run the example application with functioning mobile push notifications (compl
 
 7) After 5 minutes check your user in your Mindbox admin site
 
-7) Run in-app and send mobile push
+8) Run in-app and send mobile push

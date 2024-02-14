@@ -14,7 +14,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
+        
+        // Set the current instance of UNUserNotificationCenter's delegate to self.
+        // This enables the AppDelegate to respond to notification events
+        UNUserNotificationCenter.current().delegate = self
+      
         // Setting up React Native bridge
         bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
         let rootView = RCTRootView(bridge: bridge, moduleName: "exampleApp", initialProperties: nil)

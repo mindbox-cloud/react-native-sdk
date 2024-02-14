@@ -10,6 +10,7 @@ import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallba
 
 const configuration = {
   domain: 'api.mindbox.ru',
+  // Set your endpoints system name for ios and android below
   endpointId:
     Platform.OS === 'ios'
       ? ''
@@ -37,7 +38,7 @@ const HomeScreen = () => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
     MindboxSdk.getSdkVersion((version) => { setSdkVersion(version) });
     // https://developers.mindbox.ru/docs/in-app#react-native
-    chooseInappCallback(RegisterInappCallback.CUSTOM)
+    chooseInappCallback(RegisterInappCallback.DEFAULT)
   }, []);
 
   const appInitializationCallback = useCallback(async () => {
