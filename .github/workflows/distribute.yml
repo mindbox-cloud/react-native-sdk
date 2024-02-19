@@ -20,4 +20,4 @@ jobs:
           workflow: 80115879
           repo: mindbox-cloud/react-native-app
           ref: develop
-          token: ${{ secrets.GITHUBACCESSTOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
