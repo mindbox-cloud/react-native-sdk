@@ -11,7 +11,8 @@ on:
 
 jobs:
   update_on_merge:
-    if: github.event.pull_request.merged == true || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/'))
+    #if: github.event.pull_request.merged == true || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/'))
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: trigger build & send to FAD
