@@ -4,7 +4,7 @@
 
 ### Changes
 - upgrade Android SDK dependency to v2.8.5
-- upgrade iOS SDK dependency to v.2.8.5
+- upgrade iOS SDK dependency to v2.8.5
 
 ## [2.8.2] - 2023-12-26
 
