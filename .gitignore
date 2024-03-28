@@ -35,6 +35,8 @@ project.xcworkspace
 .gradle
 local.properties
 android.iml
+example/exampleApp/android/app/google-services.json
+example/exampleApp/android/app/agconnect-services.json
 
 # Cocoapods
 #

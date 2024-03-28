@@ -1,9 +1,15 @@
 # Changelog
 
+## [2.8.3] - 2024-03-28
+
+### Changes
+- upgrade Android SDK dependency to v2.8.5
+- upgrade iOS SDK dependency to v.2.8.5
+
 ## [2.8.2] - 2023-12-26
 
 ### Changes
-- Added in-app support. 
+- Added in-app support.
 - Added support for A/B tests of mobile applications
 - upgrade Android SDK dependency to v2.8.2
 - upgrade iOS SDK dependency to v.2.8.2
@@ -63,7 +69,7 @@
 - upgrade iOS SDK dependency to v2.0.1
 - upgrade Android SDK dependency to v2.1.1
 - add support of Huawei Push Kit
-- update onPushClickReceived method: add second argument with push payload 
+- update onPushClickReceived method: add second argument with push payload
 - add removeOnPushClickReceived method
 
 ## [1.0.2] - 2022-03-18
