@@ -2,7 +2,7 @@
 
 ## [2.8.3] - 2024-03-28
 
-## [Unreleased]
+## [2.8.3] - 2024-03-28
 
 ### Changes
 - upgrade Android SDK dependency to v2.8.5
