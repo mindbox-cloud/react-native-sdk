@@ -50,12 +50,12 @@ dependencies {
   implementation "com.facebook.react:react-native:0.73.3"
 
   // Integration of Mindbox SDK and necessary Firebase and Huawei services for mobile push notifications functionality
-  implementation 'cloud.mindbox:mobile-sdk:2.8.2'
+  implementation 'cloud.mindbox:mobile-sdk:2.8.5'
   implementation platform('com.google.firebase:firebase-bom:29.3.1')
   implementation 'com.google.firebase:firebase-analytics-ktx'
   implementation 'com.google.firebase:firebase-messaging-ktx'
-  implementation 'cloud.mindbox:mindbox-firebase:2.8.2'
-  implementation 'cloud.mindbox:mindbox-huawei:2.8.2'
+  implementation 'cloud.mindbox:mindbox-firebase:2.8.5'
+  implementation 'cloud.mindbox:mindbox-huawei:2.8.5'
   implementation 'com.huawei.hms:push:6.7.0.300'
 
   if (hermesEnabled.toBoolean()) {
