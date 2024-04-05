@@ -127,11 +127,4 @@ dependencies {
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   api 'cloud.mindbox:mobile-sdk:2.8.5'
-
-  api 'cloud.mindbox:mindbox-huawei:2.8.5'
-  api 'com.huawei.hms:push:6.11.0.300'
-
-  api 'cloud.mindbox:mindbox-firebase:2.8.5'
-  api platform('com.google.firebase:firebase-bom:32.6.0')
-  api 'com.google.firebase:firebase-messaging'
 }

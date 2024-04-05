@@ -1,6 +1,9 @@
 # Changelog
 
-## [2.8.3] - 2024-03-28
+## [Unreleased]
+
+### Changes
+- upgrade iOS SDK dependency to v2.8.6
 
 ## [2.8.3] - 2024-03-28
 
