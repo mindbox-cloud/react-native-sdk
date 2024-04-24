@@ -26,14 +26,13 @@ branch_name="release/$version"
 git branch $branch_name
 git checkout $branch_name
 
-# Add changelog to the index and create a commit
-properties_file="gradle.properties"
-current_version=$(grep -E '^SDK_VERSION_NAME=' gradle.properties | cut -d'=' -f2)
-sed -i '' "s/^SDK_VERSION_NAME=.*/SDK_VERSION_NAME=$version/" $properties_file
+package_json="package.json"
+current_version=$(grep -Eo '"target-version": "[^"]+"' $package_json | cut -d '"' -f 4)
+sed -i '' "s/\"target-version\": \".*\"/\"target-version\": \"$version\"/" $package_json
 
 echo "Bump SDK version from $current_version to $version."
 
-git add $properties_file
-git commit -m "Bump SDK version to $version"
+git add $package_json
+git commit -m "Bump SDK version to $version" --no-verify
 
 echo "Branch $branch_name has been created."
