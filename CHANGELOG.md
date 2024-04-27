@@ -2,10 +2,11 @@
 
 ## [Unreleased]
 
+### Changes
 - Added new in-app templates: a modal window and a snackbar, when clicked on, a system window opens to request push notifications.
 - Added new targeting based on user login frequency.
 - Upgrade iOS SDK dependency to v2.9.0.
-- Upgrade Android SDK dependency to v2.9.0.
+- Upgrade Android SDK dependency to v2.9.1.
 
 ### [2.8.4] - 2024-04-05
 - upgrade iOS SDK dependency to v2.8.6
