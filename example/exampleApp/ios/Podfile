@@ -29,14 +29,14 @@ target 'exampleApp' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  pod 'Mindbox', '2.8.2'
+  pod 'Mindbox', '2.9.0'
 
 target 'MindboxNotificationServiceExtension' do
-     pod 'MindboxNotifications', '2.8.2'
+     pod 'MindboxNotifications', '2.9.0'
   end
 
 target 'MindboxNotificationContentExtension' do
-   pod 'MindboxNotifications', '2.8.2'
+   pod 'MindboxNotifications', '2.9.0'
   end
 
   post_install do |installer|
