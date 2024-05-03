@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.9.1] - 2024-05-03
 
 ### Changes
 - Added new in-app templates: a modal window and a snackbar, when clicked on, a system window opens to request push notifications.
