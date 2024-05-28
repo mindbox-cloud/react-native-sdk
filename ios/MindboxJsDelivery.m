@@ -72,6 +72,15 @@ static NSDictionary *storedEventDetails;
       clickUrl = [filteredArray.firstObject objectForKey:@"url"];
     }
 
+    if ([clickUrl length] == 0) {
+        NSDictionary *aps = [userInfo objectForKey:@"aps"];
+        NSArray *apsButtons = [aps objectForKey:@"buttons"];
+        filteredArray = [apsButtons filteredArrayUsingPredicate:predicate];
+        if (filteredArray.count > 0) {
+            clickUrl = [filteredArray.firstObject objectForKey:@"url"];
+        }
+    }
+
     pushPayload = [userInfo objectForKey:@"payload"];
     if ([pushPayload length] == 0) {
       NSDictionary *aps = [userInfo objectForKey:@"aps"];
