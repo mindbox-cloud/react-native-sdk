@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.10.0] - 2024-06-13
 
 ### Changes
 - In-app display frequency can now be customized
