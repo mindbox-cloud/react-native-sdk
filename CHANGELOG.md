@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.10.0] - 2024-06-13
+
+### Changes
+- In-app display frequency can now be customized
+- The in-app cache on the device is now limited by ttl
+- Upgrade Android SDK dependency to v2.10.0
+- Upgrade iOS SDK dependency to v2.10.1
+
 ## [2.9.1] - 2024-05-03
 
 ### Changes
