@@ -47,7 +47,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         )
 
         if (payload.has("subscribeCustomerIfCreated")) {
-          configurationBuildersubscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", false))
+          configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", false))
         }
         if (payload.has("shouldCreateCustomer")) {
           configurationBuilder.shouldCreateCustomer(payload.optBoolean("shouldCreateCustomer", true))

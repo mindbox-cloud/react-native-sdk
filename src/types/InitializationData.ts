@@ -1,7 +1,7 @@
 export type InitializationData = {
   domain: string;
   endpointId: string;
-  subscribeCustomerIfCreated: boolean;
+  subscribeCustomerIfCreated?: boolean;
   shouldCreateCustomer?: boolean;
   previousInstallId?: string;
   previousUuid?: string;
