@@ -17,7 +17,7 @@ extension CustomError: LocalizedError {
 struct PayloadData: Codable {
     var domain: String
     var endpointId: String
-    var subscribeCustomerIfCreated: Bool
+    var subscribeCustomerIfCreated: Bool?
     var shouldCreateCustomer: Bool?
     var previousInstallId: String?
     var previousUuid: String?
@@ -47,7 +47,7 @@ class MindboxSdk: NSObject {
                 domain: payload.domain,
                 previousInstallationId: payload.previousInstallId,
                 previousDeviceUUID: payload.previousUuid,
-                subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated,
+                subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated ?? false,
                 shouldCreateCustomer: payload.shouldCreateCustomer ?? true
             )
 
