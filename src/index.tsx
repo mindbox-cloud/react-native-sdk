@@ -124,12 +124,15 @@ class MindboxSdkClass {
 
     const payload: InitializationData = {
       domain,
-      endpointId,
-      subscribeCustomerIfCreated,
+      endpointId
     };
 
     if (typeof shouldCreateCustomer !== 'undefined') {
       payload.shouldCreateCustomer = shouldCreateCustomer;
+    }
+
+    if (typeof subscribeCustomerIfCreated !== 'undefined') {
+      payload.subscribeCustomerIfCreated = subscribeCustomerIfCreated;
     }
 
     if (
@@ -410,7 +413,7 @@ class MindboxSdkClass {
 
   /**
    * Method for managing sdk logging
-   * 
+   *
    * @param level - is used for showing Mindbox logs starts from [LogLevel]. Default
    * is [LogLevel.WARN]. [LogLevel.NONE] turns off all logs.
    */
@@ -426,7 +429,7 @@ class MindboxSdkClass {
   }
 
   /**
-   * 
+   *
    * Creates and deliveries event of "Push delivered". Recommended call this method from
    * background thread.
    *
@@ -440,8 +443,8 @@ class MindboxSdkClass {
   }
 
   /**
-  * This method is used to inform sdk when the notification permission status changed 
-  * 
+  * This method is used to inform sdk when the notification permission status changed
+  *
   * @param granted current permission status
   */
   public updateNotificationPermissionStatus(granted: Boolean) {

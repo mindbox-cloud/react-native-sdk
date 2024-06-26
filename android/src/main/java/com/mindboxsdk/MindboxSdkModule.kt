@@ -45,7 +45,10 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
           domain = payload.optString("domain", "api.mindbox.ru"),
           endpointId = payload.optString("endpointId", "")
         )
-        configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", true))
+
+        if (payload.has("subscribeCustomerIfCreated")) {
+          configurationBuilder.subscribeCustomerIfCreated(payload.optBoolean("subscribeCustomerIfCreated", false))
+        }
         if (payload.has("shouldCreateCustomer")) {
           configurationBuilder.shouldCreateCustomer(payload.optBoolean("shouldCreateCustomer", true))
         }
