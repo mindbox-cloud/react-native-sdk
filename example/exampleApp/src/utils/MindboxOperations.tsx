@@ -1,12 +1,15 @@
 import MindboxSdk, { LogLevel } from 'mindbox-sdk';
+import Snackbar from 'react-native-snackbar';
 import { Alert } from 'react-native';
 
 // Define the operation names
-const asyncOperationName = "viewProduct";
-const syncOperationName = "categoryReco.sync";
+const asyncViewProductOperationName = "viewProduct";
+const syncRecoOperationName = "categoryReco.sync";
+const asyncOperationNCOpenName = "mobileapp.NCOpen";
+const asyncOperationNCPushOpenName = "mobileapp.NCPushOpen";
 
 // Async operation request body
-const requestBodyAsync = {
+const requestProductOperationBodyAsync = {
   "viewProduct": {
     "productGroup": {
       "ids": {
@@ -17,7 +20,7 @@ const requestBodyAsync = {
 };
 
 // Sync operation request body
-const requestBodySync = {
+const requestRecoBodySync = {
   "recommendation": {
     "limit": 100,
     "productCategory": {
@@ -37,8 +40,8 @@ const requestBodySync = {
 const sendAsync = () => {
   // https://developers.mindbox.ru/docs/integration-actions-react-native
   MindboxSdk.executeAsyncOperation({
-    operationSystemName: asyncOperationName,
-    operationBody: requestBodyAsync
+    operationSystemName: asyncViewProductOperationName,
+    operationBody: requestProductOperationBodyAsync
   });
   Alert.alert("Mindbox Async Operation", "The operation was sent.");
 };
@@ -46,8 +49,8 @@ const sendAsync = () => {
 const sendSync = async () => {
   // https://developers.mindbox.ru/docs/integration-actions-react-native
   MindboxSdk.executeSyncOperation({
-    operationSystemName: syncOperationName,
-    operationBody: requestBodySync,
+    operationSystemName: syncRecoOperationName,
+    operationBody: requestRecoBodySync,
     onSuccess: (data) => {
       // On success, display the response data
       Alert.alert("Mindbox Sync Operation Success", JSON.stringify(data, null, 2));
@@ -59,4 +62,39 @@ const sendSync = async () => {
   });
 };
 
-export { sendSync, sendAsync };
+// Async operation to send action "notification center was opened"
+const asyncOperationNCOpen = () => {
+  MindboxSdk.executeAsyncOperation({
+    operationSystemName: asyncOperationNCOpenName,
+    operationBody: {}
+  });
+  Snackbar.show({
+    text: `Send operation: Notification center opened`,
+    duration: Snackbar.LENGTH_SHORT,
+  });
+};
+
+// Async operation to send "click on push from notification center"
+const asyncOperationNCPushOpen = (pushName: string, pushDate: string) => {
+  const requestBody = {
+    "data": {
+      "customerAction": {
+        "customFields": {
+          "mobPushSendDateTime": pushDate,
+          "mobPushTranslateName": pushName
+        }
+      }
+    }
+  };
+
+  MindboxSdk.executeAsyncOperation({
+    operationSystemName: asyncOperationNCPushOpenName,
+    operationBody: requestBody
+  });
+  Snackbar.show({
+    text: `Send operation: push opened from notification center`,
+    duration: Snackbar.LENGTH_SHORT,
+  });
+};
+
+export { sendSync, sendAsync, asyncOperationNCPushOpen, asyncOperationNCOpen  };
