@@ -1,20 +1,14 @@
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, NativeEventEmitter, NativeModules, StyleSheet } from 'react-native';
+import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
 import NotificationItem from '../components/NotificationItem';
 import { asyncOperationNCPushOpen } from '../utils/MindboxOperations';
+import initialNotifications from '../utils/NotificationStub';
+import styles from '../components/NotificationScreenStyles';
+import { Notification } from '../utils/Notification';
 
 const { NotificationModule } = NativeModules;
 const notificationEmitter = new NativeEventEmitter(NotificationModule);
-
-interface Notification {
-  uniqueKey: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  pushLink: string;
-  pushName: string;
-  pushDate: string;
-}
 
 const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -36,7 +30,7 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
       const result = await NotificationModule.getNotifications();
       const notificationStrings = JSON.parse(result);
       const notificationList = notificationStrings.map((notificationString: string) => {
-        const notification = JSON.parse(notificationString);
+      const notification = JSON.parse(notificationString);
         /*
         Assuming payload of push notification has this structure:
            {"pushName":"<Push name>",
@@ -52,8 +46,8 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
           notification.pushDate = "";
         }
         return notification;
-      }).reverse();
-      setNotifications(notificationList);
+      });
+      setNotifications([...initialNotifications, ...notificationList].reverse());
     } catch (error) {
       console.error('Failed to load notifications:', error);
     }
@@ -62,7 +56,7 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
   const clearNotifications = async () => {
     try {
       await NotificationModule.clearNotifications();
-      setNotifications([]);
+      setNotifications(initialNotifications.reverse());
     } catch (error) {
       console.error('Failed to clear notifications:', error);
     }
@@ -95,23 +89,5 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  buttonContainer: {
-    marginTop: 16,
-  },
-  buttonWrapper: {
-    marginBottom: 10,
-  },
-});
 
 export default NotificationCenterScreen;
