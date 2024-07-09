@@ -95,7 +95,7 @@ const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
               <View style={styles.buttonSpacing} />
               <Button title="Send Sync" onPress={handleSendSyncPress} />
               <View style={styles.buttonSpacing} />
-              <Button title="Go to notification screen" onPress={handleOpenNotificationCenterPress} />
+              <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
             </View>
     </SafeAreaView>
   );
