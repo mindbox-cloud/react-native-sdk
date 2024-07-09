@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		02ADDBF8A19984F9D26FCB4E /* libPods-exampleApp-MindboxNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D15FE27D8E0EFFC720594B8 /* libPods-exampleApp-MindboxNotificationServiceExtension.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		3A027BAC2C3BF24F005415BB /* NotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A027BAB2C3BF24F005415BB /* NotificationModule.swift */; };
+		3A027BAE2C3BFC4D005415BB /* NotificationModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A027BAD2C3BFC4D005415BB /* NotificationModule.m */; };
+		3A175C362C3D1B800027776A /* PushAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A175C322C3D16C70027776A /* PushAction.swift */; };
+		3A175C372C3D1B800027776A /* MindboxRemoteMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A175C342C3D16F50027776A /* MindboxRemoteMessage.swift */; };
 		3A88FC072B6BDD900046E687 /* Swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A88FC062B6BDD900046E687 /* Swift.swift */; };
 		3A88FC092B6BDF360046E687 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A88FC082B6BDF360046E687 /* AppDelegate.swift */; };
 		3ACCD5142B72826700C94F45 /* MindboxNotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3ACCD50D2B72826700C94F45 /* MindboxNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -60,6 +64,10 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = exampleApp/Info.plist; sourceTree = "<group>"; };
 		22407D2A15E8083A8FEC02A6 /* Pods-exampleApp-MindboxNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exampleApp-MindboxNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-exampleApp-MindboxNotificationServiceExtension/Pods-exampleApp-MindboxNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 		225AB1FB2853D87400D56406 /* libPods-exampleApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-exampleApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A027BAB2C3BF24F005415BB /* NotificationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationModule.swift; sourceTree = "<group>"; };
+		3A027BAD2C3BFC4D005415BB /* NotificationModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationModule.m; sourceTree = "<group>"; };
+		3A175C322C3D16C70027776A /* PushAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAction.swift; sourceTree = "<group>"; };
+		3A175C342C3D16F50027776A /* MindboxRemoteMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxRemoteMessage.swift; sourceTree = "<group>"; };
 		3A88FC062B6BDD900046E687 /* Swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Swift.swift; sourceTree = "<group>"; };
 		3A88FC082B6BDF360046E687 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3A88FC0A2B6BF2840046E687 /* exampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "exampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -145,6 +153,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		3A175C312C3D16B20027776A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3A175C322C3D16C70027776A /* PushAction.swift */,
+				3A175C342C3D16F50027776A /* MindboxRemoteMessage.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		3ACCD50E2B72826700C94F45 /* MindboxNotificationServiceExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -176,6 +193,9 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				3A175C312C3D16B20027776A /* Models */,
+				3A027BAD2C3BFC4D005415BB /* NotificationModule.m */,
+				3A027BAB2C3BF24F005415BB /* NotificationModule.swift */,
 				3A88FC0A2B6BF2840046E687 /* exampleApp-Bridging-Header.h */,
 				3A88FC062B6BDD900046E687 /* Swift.swift */,
 				13B07FAE1A68108700A75B9A /* exampleApp */,
@@ -506,8 +526,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A027BAE2C3BFC4D005415BB /* NotificationModule.m in Sources */,
 				3A88FC092B6BDF360046E687 /* AppDelegate.swift in Sources */,
 				3A88FC072B6BDD900046E687 /* Swift.swift in Sources */,
+				3A027BAC2C3BF24F005415BB /* NotificationModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,7 +537,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A175C372C3D1B800027776A /* MindboxRemoteMessage.swift in Sources */,
 				3ACCD51C2B728BD500C94F45 /* NotificationService.swift in Sources */,
+				3A175C362C3D1B800027776A /* PushAction.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,10 +882,7 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -929,10 +950,7 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
