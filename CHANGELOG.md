@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] 
+## [2.10.1] - 2024-07-10 
 
 ### Changes
 - Upgrade Android SDK dependency to v2.10.1
