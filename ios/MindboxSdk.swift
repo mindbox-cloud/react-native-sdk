@@ -1,4 +1,5 @@
 import Mindbox
+import MindboxLogger
 import CoreFoundation
 
 enum CustomError: Error {
@@ -187,5 +188,27 @@ class MindboxSdk: NSObject {
     @objc
     func updateNotificationPermissionStatus(_ granted: Bool) {
         Mindbox.shared.notificationsRequestAuthorization(granted: granted)
+    }
+
+    @objc
+    func writeNativeLog(_ message: String, level: Int) {
+        
+        let logLevel: LogLevel
+        
+        switch level {
+        case 0:
+            logLevel = .debug
+        case 1:
+            logLevel = .info
+        case 2:
+            logLevel = .default
+        case 3:
+            logLevel = .error
+        case 4:
+            logLevel = .fault
+        default:
+            logLevel = .none
+        }
+        Mindbox.logger.log(level: logLevel, message: message)
     }
 }

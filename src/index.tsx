@@ -12,7 +12,7 @@ import type {
 } from './types';
 import type { InAppCallback } from "./InAppCallback";
 
-import type {
+import {
   LogLevel,
 } from './LogLevel';
 
@@ -24,6 +24,7 @@ class MindboxSdkClass {
   private _callbacks: Array<() => void>;
   private _mindboxJsDeliveryEvents: NativeEventEmitter;
   private _emitterSubscribtion?: EmitterSubscription;
+  private readonly _prefix: string = "[RN]";
 
   constructor() {
     this._initialized = false;
@@ -150,6 +151,7 @@ class MindboxSdkClass {
       const payloadString = JSON.stringify(payload);
       this._initialized = await MindboxSdkNative.initialize(payloadString);
       this._initializing = false;
+      this.writeNativeLog("Init in RN ", LogLevel.INFO);
 
       for (let i = 0; i < this._callbacks.length; i++) {
         this._callbacks[i]();
@@ -449,6 +451,24 @@ class MindboxSdkClass {
   */
   public updateNotificationPermissionStatus(granted: Boolean) {
     return MindboxSdkNative.updateNotificationPermissionStatus(granted);
+  }
+
+  /**
+  * Writes a log message to the native Mindbox logging system.
+  *
+  * Usage example:
+  *
+  *  MindboxSdk..writeNativeLog(
+  *     message: "This is a debug message",
+  *     logLevel: LogLevel.DEBUG,
+  *  );
+  *
+  * @param message: The message to be logged.
+  * @param logLevel: The severity level of the log message [LogLevel].
+  */
+  public writeNativeLog(message: String, logLevel: LogLevel) {
+    const prefixedMessage = `${this._prefix} ${message}`;
+    return MindboxSdkNative.writeNativeLog(prefixedMessage, logLevel);
   }
 }
 

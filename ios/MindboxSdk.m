@@ -24,4 +24,6 @@ RCT_EXTERN_METHOD(pushDelivered:(NSString)uniqKey)
 
 RCT_EXTERN_METHOD(updateNotificationPermissionStatus:(BOOL)granted)
 
+RCT_EXTERN_METHOD(writeNativeLog:(NSString)message level:(NSInteger)level)
+
 @end
