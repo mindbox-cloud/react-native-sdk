@@ -216,4 +216,10 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
       context = reactApplicationContext.applicationContext,
     )
   }
+
+  @ReactMethod
+  fun writeNativeLog(message: String, logLevel: Int) {
+    val logLevel : Level = Level.values()[logLevel]
+    Mindbox.writeLog(message, logLevel)
+  }
 }
