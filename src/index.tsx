@@ -439,8 +439,10 @@ class MindboxSdkClass {
    * You must not call it otherwise.
    *
    * @param uniqKey unique identifier of push notification
+   * @deprecated since version 2.10.3. Use native methods
    */
   public pushDelivered(uniqKey: string) {
+    this.writeNativeLog("Used deprecated method pushDelivered. Use native methods", LogLevel.WARN)
     return MindboxSdkNative.pushDelivered(uniqKey);
   }
 
