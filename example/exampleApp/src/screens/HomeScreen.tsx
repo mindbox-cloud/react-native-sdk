@@ -13,8 +13,8 @@ const configuration = {
   // Set your endpoints system name for ios and android below
   endpointId:
     Platform.OS === 'ios'
-      ? 'Mpush-test.IosRnExample'
-      : 'Mpush-test.AndroidRnExample',
+      ? ''
+      : '',
   subscribeCustomerIfCreated: true,
   shouldCreateCustomer: true,
 };
