@@ -1,0 +1,30 @@
+name: Build application after merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - 'feature/*'
+      - 'develop'
+
+jobs:
+  trigger:
+    runs-on: macos-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get last 3 commit messages
+        run: |
+          commits=$(git log -3 --pretty=format:"%s")
+          echo "commits=$commits" >> $GITHUB_ENV
+
+      - name: Trigger build workflow in react-native-app repo
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.PAT_REACT_NATIVE_APP }}
+          workflow: buildApplicationAfterTrigger.yml
+          repo: mindbox-cloud/react-native-app
+          ref: develop
+          inputs: '{"branch": "{{ github.head_ref }}", "commits": "${{ env.commits }}", "sdkVersion": "${{ env.sdkVersion }}"}'
