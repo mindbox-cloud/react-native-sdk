@@ -27,4 +27,4 @@ jobs:
           workflow: buildApplicationAfterTrigger.yml
           repo: mindbox-cloud/react-native-app
           ref: develop
-          inputs: '{"branch": "{{ github.head_ref }}", "commits": "${{ env.commits }}", "sdkVersion": "${{ env.sdkVersion }}"}'
+          inputs: '{"branch": "{{ github.head_ref }}", "commits": "${{ env.commits }}", "sdkVersion": "1.0.0"}'
