@@ -17,7 +17,9 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
     var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
       if (newValue) {
         delayedIntent?.let {
-            it.extras?.Mindbox.writeLog("[RN] Send push data from delayed ${it.extras}", Level.INFO)
+            it.extras?.let {
+                Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
+            }
             INSTANCE?.sendPushClicked(it)
         }
       }
@@ -61,7 +63,6 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
         }
       }
     } else {
-      Mindbox.writeLog("[RN] Listener for pushClicked is not set. Put in delayed", Level.INFO)
       delayedIntent = intent
     }
   }
