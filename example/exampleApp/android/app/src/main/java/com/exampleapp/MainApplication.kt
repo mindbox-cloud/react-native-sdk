@@ -36,7 +36,6 @@ class MainApplication : Application(), ReactApplication {
     override fun onCreate() {
         super.onCreate()
         //The fifth step of https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
-        Mindbox.initPushServices(this, listOf(MindboxFirebase, MindboxHuawei))
         SoLoader.init(this, false)
     }
 

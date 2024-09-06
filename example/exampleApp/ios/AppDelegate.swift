@@ -30,67 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.window!.rootViewController = rootViewController
         self.window!.makeKeyAndVisible()
 
-        // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
-        // Tracking app launch for analytics
-        let trackVisitData = TrackVisitData()
-        trackVisitData.launchOptions = launchOptions
-        Mindbox.shared.track(data: trackVisitData)
-
-        // Register background tasks for iOS 13 and later, or set background fetch interval for earlier versions
-        if #available(iOS 13.0, *) {
-            Mindbox.shared.registerBGTasks()
-        } else {
-            UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
-        }
-
         return true
-    }
-    func notifyReactNative() {
-      if let bridge = bridge, let eventEmitter = bridge.module(for: NotificationModule.self) as? NotificationModule {
-      eventEmitter.notifyReactNative()
-      }
-    }
-    // Handling remote notification fetch completion
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        Mindbox.shared.application(application, performFetchWithCompletionHandler: completionHandler)
-        notifyReactNative()
-    }
-
-    // Updating APNS token in Mindbox
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Mindbox.shared.apnsTokenUpdate(deviceToken: deviceToken)
-    }
-
-    // Handling Universal Links
-    // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        let trackVisitData = TrackVisitData()
-        trackVisitData.universalLink = userActivity
-        Mindbox.shared.track(data: trackVisitData)
-        return true
-    }
-
-    // Displaying notifications when the app is active
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        notifyReactNative()
-        completionHandler([.alert, .sound, .badge])
-    }
-
-    // Handling push notification clicks
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        // https://developers.mindbox.ru/docs/ios-get-click-react-native
-        Mindbox.shared.pushClicked(response: response)
-        // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
-        // Tracking push notification clicks for analytics
-        let trackVisitData = TrackVisitData()
-        trackVisitData.push = response
-        Mindbox.shared.track(data: trackVisitData)
-
-        // Emitting event for further handling in JavaScript
-        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
-        MindboxJsDelivery.emitEvent(response)
-
-        completionHandler()
     }
 }
 
@@ -102,10 +42,4 @@ extension AppDelegate: RCTBridgeDelegate {
             return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
         #endif
     }
-
-    func extraModules(for bridge: RCTBridge!) -> [RCTBridgeModule]! {
-      var modules = [RCTBridgeModule]()
-      modules.append(NotificationModule())
-      return modules
-   }
 }

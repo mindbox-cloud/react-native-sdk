@@ -2,11 +2,11 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native';
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
   InAppCallback, UrlInAppCallback } from "mindbox-sdk";
-import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations';
+import { sendSync, sendAsync } from '../utils/MindboxOperations';
 import { requestNotificationPermission } from '../utils/RequestPermission';
 import PushNotificationScreen from './screens/PushNotificationScreen';
 import { useNavigation } from '@react-navigation/native';
-import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks';
+import messaging from '@react-native-firebase/messaging';
 
 const configuration = {
   domain: 'api.mindbox.ru',
@@ -28,53 +28,19 @@ const HomeScreen = () => {
 
   useEffect(() => {
     requestNotificationPermission()
-    appInitializationCallback();
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
-    MindboxSdk.setLogLevel(LogLevel.DEBUG);
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
-    MindboxSdk.getDeviceUUID(setDeviceUUID);
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
-    MindboxSdk.getToken(setToken);
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
-    MindboxSdk.getSdkVersion((version) => { setSdkVersion(version) });
-    // https://developers.mindbox.ru/docs/in-app#react-native
-    chooseInappCallback(RegisterInappCallback.DEFAULT)
-  }, []);
+    getFcmToken();
 
-  const appInitializationCallback = useCallback(async () => {
-    try {
-      // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#mindboxinitialize
-      await MindboxSdk.initialize(configuration);
-    } catch (error) {
-      console.log(error);
+  }, []);
+  const getFcmToken = async () => {
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      console.log('FCM Token:', fcmToken);
+      Alert.alert('FCM Token', fcmToken);
+    } else {
+      console.log('Failed to get FCM token');
     }
-  }, []);
-
-  const getPushData = useCallback((pushUrl: String | null, pushPayload: String | null) => {
-    setTimeout(() => {
-      // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
-      navigateToPushNotificationIfRequired(pushUrl);
-      setPushData({ pushUrl, pushPayload });
-    }, 600);
-  }, []);
-
-  useEffect(() => {
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
-    MindboxSdk.onPushClickReceived(getPushData);
-  }, [getPushData]);
-
-const handleSendAsyncPress = () => {
-    sendAsync()
   };
 
-const handleSendSyncPress = () => {
-    sendSync()
-  };
-
-const handleOpenNotificationCenterPress = () => {
-    asyncOperationNCOpen()
-    navigation.navigate('NotificationCenter');
-};
 
 const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
     if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
@@ -90,13 +56,7 @@ const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
         <Text style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
         <Text style={styles.text}>{`SdkVersion: ${sdkVersion}`}</Text>
       </View>
-       <View style={styles.buttonsContainer}>
-              <Button title="Send Async" onPress={handleSendAsyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Send Sync" onPress={handleSendSyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
-            </View>
+
     </SafeAreaView>
   );
 };
