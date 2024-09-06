@@ -7,6 +7,8 @@ import { requestNotificationPermission } from '../utils/RequestPermission';
 import PushNotificationScreen from './screens/PushNotificationScreen';
 import { useNavigation } from '@react-navigation/native';
 import messaging from '@react-native-firebase/messaging';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const configuration = {
   domain: 'api.mindbox.ru',
@@ -27,20 +29,35 @@ const HomeScreen = () => {
   const [sdkVersion, setSdkVersion] = useState('Empty');
 
   useEffect(() => {
+
     requestNotificationPermission()
     getFcmToken();
+    checkIfUpdatedOrReinstalled()
 
   }, []);
   const getFcmToken = async () => {
     const fcmToken = await messaging().getToken();
     if (fcmToken) {
       console.log('FCM Token:', fcmToken);
-      Alert.alert('FCM Token', fcmToken);
+
     } else {
       console.log('Failed to get FCM token');
     }
   };
 
+  const checkIfUpdatedOrReinstalled = async () => {
+    try {
+      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+      if (isFirstLaunch === null) {
+        await AsyncStorage.setItem('hasLaunched', 'true');
+        console.log('App Installed or Reinstalled');
+      } else {
+        console.log('App Updated');
+      }
+    } catch (error) {
+      console.error('Error checking app status', error);
+    }
+  };
 
 const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
     if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
