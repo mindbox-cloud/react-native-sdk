@@ -2,9 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native';
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
   InAppCallback, UrlInAppCallback } from "mindbox-sdk";
-import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations';
 import { requestNotificationPermission } from '../utils/RequestPermission';
-import PushNotificationScreen from './screens/PushNotificationScreen';
 import { useNavigation } from '@react-navigation/native';
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks';
 
@@ -37,8 +35,7 @@ const HomeScreen = () => {
     MindboxSdk.getToken(setToken);
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
     MindboxSdk.getSdkVersion((version) => { setSdkVersion(version) });
-    // https://developers.mindbox.ru/docs/in-app#react-native
-    chooseInappCallback(RegisterInappCallback.DEFAULT)
+
   }, []);
 
   const appInitializationCallback = useCallback(async () => {
@@ -50,31 +47,6 @@ const HomeScreen = () => {
     }
   }, []);
 
-  const getPushData = useCallback((pushUrl: String | null, pushPayload: String | null) => {
-    setTimeout(() => {
-      // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
-      navigateToPushNotificationIfRequired(pushUrl);
-      setPushData({ pushUrl, pushPayload });
-    }, 600);
-  }, []);
-
-  useEffect(() => {
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
-    MindboxSdk.onPushClickReceived(getPushData);
-  }, [getPushData]);
-
-const handleSendAsyncPress = () => {
-    sendAsync()
-  };
-
-const handleSendSyncPress = () => {
-    sendSync()
-  };
-
-const handleOpenNotificationCenterPress = () => {
-    asyncOperationNCOpen()
-    navigation.navigate('NotificationCenter');
-};
 
 const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
     if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
@@ -90,13 +62,6 @@ const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
         <Text style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
         <Text style={styles.text}>{`SdkVersion: ${sdkVersion}`}</Text>
       </View>
-       <View style={styles.buttonsContainer}>
-              <Button title="Send Async" onPress={handleSendAsyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Send Sync" onPress={handleSendSyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
-            </View>
     </SafeAreaView>
   );
 };
