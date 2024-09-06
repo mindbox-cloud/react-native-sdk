@@ -6,6 +6,8 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import org.json.JSONObject
 import kotlin.properties.Delegates
+import cloud.mindbox.mobile_sdk.Mindbox
+import cloud.mindbox.mobile_sdk.logger.Level
 
 class MindboxJsDelivery private constructor(private val mReactContext: ReactContext) {
   companion object Shared {
@@ -14,9 +16,13 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
 
     var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
       if (newValue) {
-        delayedIntent?.let { INSTANCE?.sendPushClicked(it) }
+        delayedIntent?.let {
+            it.extras?.let {
+                Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
+            }
+            INSTANCE?.sendPushClicked(it)
+        }
       }
-
       delayedIntent = null
     }
 
@@ -38,6 +44,7 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
       var payload = JSONObject();
       payload.put("pushUrl", bundle.getString("push_url", ""));
       payload.put("pushPayload", bundle.getString("push_payload", ""));
+      Mindbox.writeLog("[RN] Send push data to listener with ${payload.toString()}", Level.INFO)
       mReactContext
         .getJSModule(RCTDeviceEventEmitter::class.java)
         .emit(eventName, payload.toString())
@@ -51,6 +58,8 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
         val key = bundle.getString("uniq_push_key")
         if (key != null) {
           sendEvent("pushNotificationClicked", bundle)
+        } else {
+          Mindbox.writeLog("[RN] Push was received without uniq_push_key it is not our push", Level.INFO)
         }
       }
     } else {

@@ -282,11 +282,12 @@ class MindboxSdkClass {
     callback: (pushUrl: string | null, pushPayload: string | null) => void
   ) {
     if (!callback || typeof callback !== 'function') {
+      this.writeNativeLog('PushClick callback is not set', LogLevel.ERROR);
       throw new Error('callback is required!');
     }
 
     this.removeOnPushClickReceived();
-
+    this.writeNativeLog(`Set push click listener`, LogLevel.INFO);
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
       (dataString: string) => {
@@ -295,6 +296,7 @@ class MindboxSdkClass {
       }
     );
     if (Platform.OS === 'android') {
+      this.writeNativeLog('Register push click listener for android', LogLevel.INFO);
       MindboxSdkNative.onPushClickedIsRegistered(true);
     }
   }
