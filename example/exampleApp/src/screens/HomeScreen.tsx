@@ -5,6 +5,8 @@ import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
 import { requestNotificationPermission } from '../utils/RequestPermission';
 import { useNavigation } from '@react-navigation/native';
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 const configuration = {
   domain: 'api.mindbox.ru',
@@ -25,8 +27,9 @@ const HomeScreen = () => {
   const [sdkVersion, setSdkVersion] = useState('Empty');
 
   useEffect(() => {
+    checkIfUpdatedOrReinstalled()
     requestNotificationPermission()
-    appInitializationCallback();
+    appInitializationCallback()
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
     MindboxSdk.setLogLevel(LogLevel.DEBUG);
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
@@ -47,7 +50,19 @@ const HomeScreen = () => {
     }
   }, []);
 
-
+  const checkIfUpdatedOrReinstalled = async () => {
+    try {
+      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+      if (isFirstLaunch === null) {
+        await AsyncStorage.setItem('hasLaunched', 'true');
+        Alert.alert('App Installed or Reinstalled');
+      } else {
+        Alert.alert('App Updated');
+      }
+    } catch (error) {
+      console.error('Error checking app status', error);
+    }
+  };
 const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
     if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
       navigation.navigate('PushNotification');
