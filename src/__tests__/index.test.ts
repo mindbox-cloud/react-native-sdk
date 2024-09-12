@@ -152,6 +152,11 @@ jest.mock('react-native', () => {
           }
         })
     ),
+    writeNativeLog: jest.fn((message, logLevel) =>
+       new Promise((resolve) => {
+           resolve(true);
+       })
+    ),
   };
 
   actualReactNative.NativeModules.MindboxJsDelivery = {
