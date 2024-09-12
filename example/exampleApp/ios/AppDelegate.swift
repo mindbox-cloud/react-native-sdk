@@ -14,11 +14,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
+
         // Set the current instance of UNUserNotificationCenter's delegate to self.
         // This enables the AppDelegate to respond to notification events
         UNUserNotificationCenter.current().delegate = self
-      
+
         // Setting up React Native bridge
         bridge = RCTBridge(delegate: self, launchOptions: launchOptions)
         let rootView = RCTRootView(bridge: bridge, moduleName: "exampleApp", initialProperties: nil)
@@ -45,10 +45,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
         return true
     }
-
+    func notifyReactNative() {
+      if let bridge = bridge, let eventEmitter = bridge.module(for: NotificationModule.self) as? NotificationModule {
+      eventEmitter.notifyReactNative()
+      }
+    }
     // Handling remote notification fetch completion
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         Mindbox.shared.application(application, performFetchWithCompletionHandler: completionHandler)
+        notifyReactNative()
     }
 
     // Updating APNS token in Mindbox
@@ -67,6 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Displaying notifications when the app is active
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        notifyReactNative()
         completionHandler([.alert, .sound, .badge])
     }
 
@@ -96,4 +102,10 @@ extension AppDelegate: RCTBridgeDelegate {
             return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
         #endif
     }
+
+    func extraModules(for bridge: RCTBridge!) -> [RCTBridgeModule]! {
+      var modules = [RCTBridgeModule]()
+      modules.append(NotificationModule())
+      return modules
+   }
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native';
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
   InAppCallback, UrlInAppCallback } from "mindbox-sdk";
-import { sendSync, sendAsync } from '../utils/MindboxOperations';
+import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations';
 import { requestNotificationPermission } from '../utils/RequestPermission';
 import PushNotificationScreen from './screens/PushNotificationScreen';
 import { useNavigation } from '@react-navigation/native';
@@ -71,6 +71,11 @@ const handleSendSyncPress = () => {
     sendSync()
   };
 
+const handleOpenNotificationCenterPress = () => {
+    asyncOperationNCOpen()
+    navigation.navigate('NotificationCenter');
+};
+
 const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
     if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
       navigation.navigate('PushNotification');
@@ -89,6 +94,8 @@ const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
               <Button title="Send Async" onPress={handleSendAsyncPress} />
               <View style={styles.buttonSpacing} />
               <Button title="Send Sync" onPress={handleSendSyncPress} />
+              <View style={styles.buttonSpacing} />
+              <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
             </View>
     </SafeAreaView>
   );

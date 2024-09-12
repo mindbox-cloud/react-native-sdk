@@ -12,7 +12,7 @@ import type {
 } from './types';
 import type { InAppCallback } from "./InAppCallback";
 
-import type {
+import {
   LogLevel,
 } from './LogLevel';
 
@@ -24,6 +24,7 @@ class MindboxSdkClass {
   private _callbacks: Array<() => void>;
   private _mindboxJsDeliveryEvents: NativeEventEmitter;
   private _emitterSubscribtion?: EmitterSubscription;
+  private readonly _prefix: string = "[RN]";
 
   constructor() {
     this._initialized = false;
@@ -150,6 +151,7 @@ class MindboxSdkClass {
       const payloadString = JSON.stringify(payload);
       this._initialized = await MindboxSdkNative.initialize(payloadString);
       this._initializing = false;
+      this.writeNativeLog("Init in RN ", LogLevel.INFO);
 
       for (let i = 0; i < this._callbacks.length; i++) {
         this._callbacks[i]();
@@ -280,11 +282,12 @@ class MindboxSdkClass {
     callback: (pushUrl: string | null, pushPayload: string | null) => void
   ) {
     if (!callback || typeof callback !== 'function') {
+      this.writeNativeLog('PushClick callback is not set', LogLevel.ERROR);
       throw new Error('callback is required!');
     }
 
     this.removeOnPushClickReceived();
-
+    this.writeNativeLog(`Set push click listener`, LogLevel.INFO);
     this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener(
       'pushNotificationClicked',
       (dataString: string) => {
@@ -293,6 +296,7 @@ class MindboxSdkClass {
       }
     );
     if (Platform.OS === 'android') {
+      this.writeNativeLog('Register push click listener for android', LogLevel.INFO);
       MindboxSdkNative.onPushClickedIsRegistered(true);
     }
   }
@@ -437,8 +441,10 @@ class MindboxSdkClass {
    * You must not call it otherwise.
    *
    * @param uniqKey unique identifier of push notification
+   * @deprecated since version 2.10.3. Use native methods
    */
   public pushDelivered(uniqKey: string) {
+    this.writeNativeLog("Used deprecated method pushDelivered. Use native methods", LogLevel.WARN)
     return MindboxSdkNative.pushDelivered(uniqKey);
   }
 
@@ -449,6 +455,24 @@ class MindboxSdkClass {
   */
   public updateNotificationPermissionStatus(granted: Boolean) {
     return MindboxSdkNative.updateNotificationPermissionStatus(granted);
+  }
+
+  /**
+  * Writes a log message to the native Mindbox logging system.
+  *
+  * Usage example:
+  *
+  *  MindboxSdk..writeNativeLog(
+  *     message: "This is a debug message",
+  *     logLevel: LogLevel.DEBUG,
+  *  );
+  *
+  * @param message: The message to be logged.
+  * @param logLevel: The severity level of the log message [LogLevel].
+  */
+  public writeNativeLog(message: String, logLevel: LogLevel) {
+    const prefixedMessage = `${this._prefix} ${message}`;
+    return MindboxSdkNative.writeNativeLog(prefixedMessage, logLevel);
   }
 }
 

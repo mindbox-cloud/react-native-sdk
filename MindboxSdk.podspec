@@ -10,13 +10,13 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => "10.0" }
+  s.platforms    = { :ios => "12.0" }
   s.source       = { :git => "https://github.com/mindbox-moscow/react-native-sdk/.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
 
-  s.dependency "Mindbox", "2.10.2"
-  s.dependency "MindboxNotifications", "2.10.2"
+  s.dependency "Mindbox", "2.11.0"
+  s.dependency "MindboxNotifications", "2.11.0"
 end
