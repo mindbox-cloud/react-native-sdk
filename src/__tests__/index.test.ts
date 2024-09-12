@@ -152,7 +152,7 @@ jest.mock('react-native', () => {
           }
         })
     ),
-    writeNativeLog: jest.fn((message, logLevel) =>
+    writeNativeLog: jest.fn(() =>
        new Promise((resolve) => {
            resolve(true);
        })
@@ -544,6 +544,7 @@ describe('Testing Mindbox RN SDK', () => {
 
     it('getToken method works correctly', async () => {
       const MindboxSdk = require('../index').default;
+      await MindboxSdk.initialize(initializationData);
 
       expect.assertions(2);
 
@@ -557,7 +558,7 @@ describe('Testing Mindbox RN SDK', () => {
         expect(token).toEqual('FMS');
       });
 
-      await MindboxSdk.initialize(initializationData);
+
     });
 
     it('updateToken method resolves successfully', async () => {
