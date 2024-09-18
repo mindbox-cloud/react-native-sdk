@@ -2,58 +2,27 @@ name: RN SDK CI
 
 on:
     pull_request:
+        types: [opened, synchronize]
         branches:
             - develop
-    push:
-        branches:
-            - '**'
-            - '!master'
         paths-ignore:
             - '**.md'
 
 jobs:
     unit-tests:
         runs-on: ubuntu-latest
-
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v4
 
-            -   name: Check for open PR
-                id: check_pr
-                run: |
-                    if [ "${{ github.event_name }}" == "pull_request" ]; then
-                      echo "Event is a Pull Request. Running unit tests."
-                      echo "skip=false" >> $GITHUB_ENV
-
-                    elif [ "${{ github.event_name }}" == "push" ]; then
-                      echo "Install GitHub CLI"
-                      sudo apt-get update
-                      sudo apt-get install -y gh jq
-                      PR_COUNT=$(gh pr list --head "${{ github.ref }}" --state open --json number | jq '. | length')
-                       if [ -z "$PR_COUNT" ]; then
-                         PR_COUNT=0
-                       fi
-
-                      echo "Open PR count: $BRANCH_NAME: $PR_COUNT"
-
-                      if [ "$PR_COUNT" -eq 0 ]; then
-                        echo "No open PR for this branch. Skip run unit tests"
-                        echo "skip=true" >> $GITHUB_ENV
-                      fi
-                    fi
-
             -   name: Setup node JS
-                if: env.skip != 'true'
                 uses: actions/setup-node@v2
                 with:
                     node-version: 14
                     registry-url: https://registry.npmjs.org
 
             -   name: Setup local environment
-                if: env.skip != 'true'
                 run: yarn
 
             -   name: Run unit tests
-                if: env.skip != 'true'
                 run: yarn test
