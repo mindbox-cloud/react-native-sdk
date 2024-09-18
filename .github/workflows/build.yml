@@ -36,19 +36,22 @@ jobs:
                       echo "Open PR count: $BRANCH_NAME: $PR_COUNT"
 
                       if [ "$PR_COUNT" -eq 0 ]; then
-                        echo "No open PR for this branch."
-                        exit 1
+                        echo "No open PR for this branch. Skip run unit tests"
+                        echo "skip=true" >> $GITHUB_ENV
                       fi
                     fi
 
             -   name: Setup node JS
+                if: env.skip != 'true'
                 uses: actions/setup-node@v2
                 with:
                     node-version: 14
                     registry-url: https://registry.npmjs.org
 
             -   name: Setup local environment
+                if: env.skip != 'true'
                 run: yarn
 
             -   name: Run unit tests
+                if: env.skip != 'true'
                 run: yarn test
