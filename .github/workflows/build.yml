@@ -12,7 +12,7 @@ on:
             - '**.md'
 
 jobs:
-    test:
+    unit-tests:
         runs-on: ubuntu-latest
 
         steps:
@@ -20,7 +20,9 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Install GitHub CLI
-              uses: cli/cli@latest
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y gh jq
 
             - name: Check for open PR
               id: check_pr
