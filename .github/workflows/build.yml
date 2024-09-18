@@ -19,15 +19,17 @@ jobs:
             -   name: Checkout code
                 uses: actions/checkout@v4
 
-            -   name: Install GitHub CLI
-                run: |
-                    sudo apt-get update
-                    sudo apt-get install -y gh jq
-
             -   name: Check for open PR
                 id: check_pr
                 run: |
-                    if [ "${{ github.event_name }}" == "push" ]; then
+                    if [ "${{ github.event_name }}" == "pull_request" ]; then
+                      echo "Event is a Pull Request. Running unit tests."
+                      echo "skip=false" >> $GITHUB_ENV
+
+                    elif [ "${{ github.event_name }}" == "push" ]; then
+                      echo "Install GitHub CLI"
+                      sudo apt-get update
+                      sudo apt-get install -y gh jq
                       PR_COUNT=$(gh pr list --head "${{ github.ref }}" --state open --json number | jq '. | length')
                        if [ -z "$PR_COUNT" ]; then
                          PR_COUNT=0
