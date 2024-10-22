@@ -12,14 +12,8 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen
-          name="PushNotification"
-          component={PushNotificationScreen}
-        />
-        <Stack.Screen
-          name="NotificationCenter"
-          component={NotificationCenterScreen}
-        />
+        <Stack.Screen name="PushNotification" component={PushNotificationScreen} />
+        <Stack.Screen name="NotificationCenter" component={NotificationCenterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )

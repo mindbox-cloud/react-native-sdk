@@ -1,31 +1,11 @@
 import React, { useEffect, useCallback, useState } from 'react'
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-  Button,
-} from 'react-native'
-import MindboxSdk, {
-  LogLevel,
-  CopyPayloadInAppCallback,
-  EmptyInAppCallback,
-  InAppCallback,
-  UrlInAppCallback,
-} from 'mindbox-sdk'
-import {
-  sendSync,
-  sendAsync,
-  asyncOperationNCOpen,
-} from '../utils/MindboxOperations'
+import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native'
+import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback, InAppCallback, UrlInAppCallback } from 'mindbox-sdk'
+import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations'
 import { requestNotificationPermission } from '../utils/RequestPermission'
 import PushNotificationScreen from './screens/PushNotificationScreen'
 import { useNavigation } from '@react-navigation/native'
-import {
-  chooseInappCallback,
-  RegisterInappCallback,
-} from '../utils/InAppCallbacks'
+import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks'
 
 const configuration = {
   domain: 'api.mindbox.ru',
@@ -114,8 +94,7 @@ const HomeScreen = () => {
         <Text style={styles.text}>{`Device UUID: ${deviceUUID}`}</Text>
         <Text style={styles.text}>{`Token: ${token}`}</Text>
         <Text style={styles.text}>{`Push URL: ${pushData.pushUrl}`}</Text>
-        <Text
-          style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
+        <Text style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
         <Text style={styles.text}>{`SdkVersion: ${sdkVersion}`}</Text>
       </View>
       <View style={styles.buttonsContainer}>
@@ -123,10 +102,7 @@ const HomeScreen = () => {
         <View style={styles.buttonSpacing} />
         <Button title="Send Sync" onPress={handleSendSyncPress} />
         <View style={styles.buttonSpacing} />
-        <Button
-          title="Go to notification center"
-          onPress={handleOpenNotificationCenterPress}
-        />
+        <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
       </View>
     </SafeAreaView>
   )

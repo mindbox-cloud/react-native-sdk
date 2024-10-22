@@ -1,9 +1,4 @@
-import MindboxSdk, {
-  CopyPayloadInAppCallback,
-  EmptyInAppCallback,
-  InAppCallback,
-  UrlInAppCallback,
-} from 'mindbox-sdk'
+import MindboxSdk, { CopyPayloadInAppCallback, EmptyInAppCallback, InAppCallback, UrlInAppCallback } from 'mindbox-sdk'
 
 export enum RegisterInappCallback {
   DEFAULT,
@@ -19,9 +14,7 @@ class TestCallback implements InAppCallback {
   }
 
   onInAppClick(id: string, redirectUrl: string, payload: string): void {
-    console.log(
-      `rn inapp click with id = ${id} url = ${redirectUrl} payload = ${payload}`
-    )
+    console.log(`rn inapp click with id = ${id} url = ${redirectUrl} payload = ${payload}`)
   }
 
   onInAppDismissed(id: string): void {
@@ -29,9 +22,7 @@ class TestCallback implements InAppCallback {
   }
 }
 
-export const chooseInappCallback = (
-  selectedInappCallback: RegisterInappCallback
-) => {
+export const chooseInappCallback = (selectedInappCallback: RegisterInappCallback) => {
   switch (selectedInappCallback) {
     case RegisterInappCallback.DEFAULT:
       // Used default callback

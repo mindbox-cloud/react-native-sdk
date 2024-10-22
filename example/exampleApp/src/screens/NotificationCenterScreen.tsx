@@ -16,12 +16,9 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
   useEffect(() => {
     loadNotifications()
 
-    const subscription = notificationEmitter.addListener(
-      'newNotification',
-      () => {
-        loadNotifications()
-      }
-    )
+    const subscription = notificationEmitter.addListener('newNotification', () => {
+      loadNotifications()
+    })
 
     return () => {
       subscription.remove()
@@ -32,26 +29,24 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
     try {
       const result = await NotificationModule.getNotifications()
       const notificationStrings = JSON.parse(result)
-      const notificationList = notificationStrings.map(
-        (notificationString: string) => {
-          const notification = JSON.parse(notificationString)
-          /*
+      const notificationList = notificationStrings.map((notificationString: string) => {
+        const notification = JSON.parse(notificationString)
+        /*
         Assuming payload of push notification has this structure:
            {"pushName":"<Push name>",
             "pushDate":"<Push date>"
             }
         */
-          if (notification.payload) {
-            const payload = JSON.parse(notification.payload)
-            notification.pushName = payload.pushName
-            notification.pushDate = payload.pushDate
-          } else {
-            notification.pushName = ''
-            notification.pushDate = ''
-          }
-          return notification
+        if (notification.payload) {
+          const payload = JSON.parse(notification.payload)
+          notification.pushName = payload.pushName
+          notification.pushDate = payload.pushDate
+        } else {
+          notification.pushName = ''
+          notification.pushDate = ''
         }
-      )
+        return notification
+      })
       setNotifications([...initialNotifications, ...notificationList].reverse())
     } catch (error) {
       console.error('Failed to load notifications:', error)
@@ -72,16 +67,7 @@ const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
   }
   return (
     <View style={styles.container}>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.uniqueKey}
-        renderItem={({ item }) => (
-          <NotificationItem
-            notification={item}
-            onPushClick={() => handlePushClick(item.pushName, item.pushDate)}
-          />
-        )}
-      />
+      <FlatList data={notifications} keyExtractor={(item) => item.uniqueKey} renderItem={({ item }) => <NotificationItem notification={item} onPushClick={() => handlePushClick(item.pushName, item.pushDate)} />} />
       <View style={styles.buttonContainer}>
         <View style={styles.buttonWrapper}>
           <Button title="Clear Notification" onPress={clearNotifications} />

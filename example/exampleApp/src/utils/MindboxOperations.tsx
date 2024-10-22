@@ -52,17 +52,11 @@ const sendSync = async () => {
     operationBody: requestRecoBodySync,
     onSuccess: (data) => {
       // On success, display the response data
-      Alert.alert(
-        'Mindbox Sync Operation Success',
-        JSON.stringify(data, null, 2)
-      )
+      Alert.alert('Mindbox Sync Operation Success', JSON.stringify(data, null, 2))
     },
     onError: (error) => {
       // On error, display the error message
-      Alert.alert(
-        'Mindbox Sync Operation Error',
-        JSON.stringify(error, null, 2)
-      )
+      Alert.alert('Mindbox Sync Operation Error', JSON.stringify(error, null, 2))
     },
   })
 }
