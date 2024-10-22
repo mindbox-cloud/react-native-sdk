@@ -1,105 +1,136 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native';
-import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback,
-  InAppCallback, UrlInAppCallback } from "mindbox-sdk";
-import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations';
-import { requestNotificationPermission } from '../utils/RequestPermission';
-import PushNotificationScreen from './screens/PushNotificationScreen';
-import { useNavigation } from '@react-navigation/native';
-import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks';
+import React, { useEffect, useCallback, useState } from 'react'
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  Button,
+} from 'react-native'
+import MindboxSdk, {
+  LogLevel,
+  CopyPayloadInAppCallback,
+  EmptyInAppCallback,
+  InAppCallback,
+  UrlInAppCallback,
+} from 'mindbox-sdk'
+import {
+  sendSync,
+  sendAsync,
+  asyncOperationNCOpen,
+} from '../utils/MindboxOperations'
+import { requestNotificationPermission } from '../utils/RequestPermission'
+import PushNotificationScreen from './screens/PushNotificationScreen'
+import { useNavigation } from '@react-navigation/native'
+import {
+  chooseInappCallback,
+  RegisterInappCallback,
+} from '../utils/InAppCallbacks'
 
 const configuration = {
   domain: 'api.mindbox.ru',
   // Set your endpoints system name for ios and android below
-  endpointId:
-    Platform.OS === 'ios'
-      ? ''
-      : '',
+  endpointId: Platform.OS === 'ios' ? '' : '',
   subscribeCustomerIfCreated: true,
   shouldCreateCustomer: true,
-};
+}
 
 const HomeScreen = () => {
-  const navigation = useNavigation();
-  const [deviceUUID, setDeviceUUID] = useState('Empty');
-  const [token, setToken] = useState('Empty');
-  const [pushData, setPushData] = useState({ pushUrl: null, pushPayload: null });
-  const [sdkVersion, setSdkVersion] = useState('Empty');
+  const navigation = useNavigation()
+  const [deviceUUID, setDeviceUUID] = useState('Empty')
+  const [token, setToken] = useState('Empty')
+  const [pushData, setPushData] = useState({
+    pushUrl: null,
+    pushPayload: null,
+  })
+  const [sdkVersion, setSdkVersion] = useState('Empty')
 
   useEffect(() => {
     requestNotificationPermission()
-    appInitializationCallback();
+    appInitializationCallback()
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
-    MindboxSdk.setLogLevel(LogLevel.DEBUG);
+    MindboxSdk.setLogLevel(LogLevel.DEBUG)
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
-    MindboxSdk.getDeviceUUID(setDeviceUUID);
+    MindboxSdk.getDeviceUUID(setDeviceUUID)
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
-    MindboxSdk.getToken(setToken);
+    MindboxSdk.getToken(setToken)
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
-    MindboxSdk.getSdkVersion((version) => { setSdkVersion(version) });
+    MindboxSdk.getSdkVersion((version) => {
+      setSdkVersion(version)
+    })
     // https://developers.mindbox.ru/docs/in-app#react-native
     chooseInappCallback(RegisterInappCallback.DEFAULT)
-  }, []);
+  }, [appInitializationCallback])
 
   const appInitializationCallback = useCallback(async () => {
     try {
       // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#mindboxinitialize
-      await MindboxSdk.initialize(configuration);
+      await MindboxSdk.initialize(configuration)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  }, []);
+  }, [])
 
-  const getPushData = useCallback((pushUrl: String | null, pushPayload: String | null) => {
-    setTimeout(() => {
-      // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
-      navigateToPushNotificationIfRequired(pushUrl);
-      setPushData({ pushUrl, pushPayload });
-    }, 600);
-  }, []);
+  const getPushData = useCallback(
+    (pushUrl: String | null, pushPayload: String | null) => {
+      setTimeout(() => {
+        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
+        navigateToPushNotificationIfRequired(pushUrl)
+        setPushData({ pushUrl, pushPayload })
+      }, 600)
+    },
+    [navigateToPushNotificationIfRequired]
+  )
 
   useEffect(() => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
-    MindboxSdk.onPushClickReceived(getPushData);
-  }, [getPushData]);
+    MindboxSdk.onPushClickReceived(getPushData)
+  }, [getPushData])
 
-const handleSendAsyncPress = () => {
+  const handleSendAsyncPress = () => {
     sendAsync()
-  };
+  }
 
-const handleSendSyncPress = () => {
+  const handleSendSyncPress = () => {
     sendSync()
-  };
+  }
 
-const handleOpenNotificationCenterPress = () => {
+  const handleOpenNotificationCenterPress = () => {
     asyncOperationNCOpen()
-    navigation.navigate('NotificationCenter');
-};
+    navigation.navigate('NotificationCenter')
+  }
 
-const navigateToPushNotificationIfRequired = useCallback((pushUrl) => {
-    if (pushUrl && pushUrl.includes("gotoanotherscreen")) {
-      navigation.navigate('PushNotification');
-    }
-  }, [navigation]);
+  const navigateToPushNotificationIfRequired = useCallback(
+    (pushUrl) => {
+      if (pushUrl && pushUrl.includes('gotoanotherscreen')) {
+        navigation.navigate('PushNotification')
+      }
+    },
+    [navigation]
+  )
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.text}>{`Device UUID: ${deviceUUID}`}</Text>
         <Text style={styles.text}>{`Token: ${token}`}</Text>
         <Text style={styles.text}>{`Push URL: ${pushData.pushUrl}`}</Text>
-        <Text style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
+        <Text
+          style={styles.text}>{`Push Payload: ${pushData.pushPayload}`}</Text>
         <Text style={styles.text}>{`SdkVersion: ${sdkVersion}`}</Text>
       </View>
-       <View style={styles.buttonsContainer}>
-              <Button title="Send Async" onPress={handleSendAsyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Send Sync" onPress={handleSendSyncPress} />
-              <View style={styles.buttonSpacing} />
-              <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
-            </View>
+      <View style={styles.buttonsContainer}>
+        <Button title="Send Async" onPress={handleSendAsyncPress} />
+        <View style={styles.buttonSpacing} />
+        <Button title="Send Sync" onPress={handleSendSyncPress} />
+        <View style={styles.buttonSpacing} />
+        <Button
+          title="Go to notification center"
+          onPress={handleOpenNotificationCenterPress}
+        />
+      </View>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -121,6 +152,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginVertical: 5,
   },
-});
+})
 
-export default HomeScreen;
+export default HomeScreen

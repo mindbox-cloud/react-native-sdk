@@ -1,4 +1,4 @@
 export type ExecuteSyncOperationSuccess = {
-  status: 'Success';
-  [key: string]: any;
-};
+  status: 'Success'
+  [key: string]: any
+}

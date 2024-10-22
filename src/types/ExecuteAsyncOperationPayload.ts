@@ -1,4 +1,4 @@
 export type ExecuteAsyncOperationPayload = {
-  operationSystemName: string;
-  operationBody: { [key: string]: any };
-};
+  operationSystemName: string
+  operationBody: { [key: string]: any }
+}
