@@ -40,7 +40,7 @@ const HomeScreen = () => {
     })
     // https://developers.mindbox.ru/docs/in-app#react-native
     chooseInappCallback(RegisterInappCallback.DEFAULT)
-  }, [])
+  }, [appInitializationCallback])
 
   const appInitializationCallback = useCallback(async () => {
     try {

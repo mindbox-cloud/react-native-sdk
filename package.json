@@ -86,7 +86,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged || exit 0"
+      "pre-commit": "lint-staged"
     }
   },
   "release-it": {
