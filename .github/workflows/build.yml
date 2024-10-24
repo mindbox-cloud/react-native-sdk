@@ -26,3 +26,21 @@ jobs:
 
             -   name: Run unit tests
                 run: yarn test
+
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
+
+            -   name: Setup node JS
+                uses: actions/setup-node@v2
+                with:
+                    node-version: 14
+                    registry-url: https://registry.npmjs.org
+
+            -   name: Setup local environment
+                run: yarn
+
+            -   name: Run linting
+                run: yarn lint
