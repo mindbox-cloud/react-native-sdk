@@ -2,7 +2,7 @@ name: Validate PR description is not empty
 
 on:
   pull_request:
-    types: [opened, edited, reopened]
+    types: [opened, edited, reopened, synchronize]
   issue_comment:
     types: [created]
 
