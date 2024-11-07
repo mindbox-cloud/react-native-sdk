@@ -1,0 +1,64 @@
+name: Validate PR description is not empty
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  check-description:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4
+    
+    - name: Check PR description
+      id: validate_description_step
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const pr = context.payload.pull_request;
+          if (!pr || !pr.body || pr.body.trim().length === 0) {
+            core.setOutput('pr_description_check_passed', 'false');
+          } 
+          else {
+            core.setOutput('pr_description_check_passed', 'true');
+          }
+    - name: Find Comment
+      uses: peter-evans/find-comment@v3
+      id: fc
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+    - name: Update comment with validation failed statement
+      if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'false' }}
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        edit-mode: replace
+        body: |
+          ⚠️ **Пожалуйста, добавь описание к pull request.**
+          Описание pull request помогает лучше понять изменения, которые вы вносите, облегчает процесс ревью и поиска причин инцидентов.
+          Описание должно содержать **причину** изменений: какую **проблему** решаем, **зачем** делаем изменение, а не что изменилось.
+          Причина может быть в описании issue или в треде, тогда достаточно указать ссылку.
+          * Добавь ссылку на issue или тред, в котором раскрыта причина изменения
+          * Если требуется, коротко опиши зачем делаешь изменение, какую проблему решаешь
+          Спасибо!
+    - name: Update comment with check succeeded statement
+      if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'true' }}
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        edit-mode: replace
+        body: |
+          :white_check_mark: Спасибо, что добавил описание :heart:
+    - name: Fail the job if description is empty
+      if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'false' }}
+      run: |
+        echo "⚠️ Ошибка: Пожалуйста, добавьте описание к pull request."
+        exit 1
