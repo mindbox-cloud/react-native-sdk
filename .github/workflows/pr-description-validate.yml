@@ -33,6 +33,7 @@ jobs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
+
     - name: Update comment with validation failed statement
       if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'false' }}
       uses: peter-evans/create-or-update-comment@v4
@@ -48,15 +49,7 @@ jobs:
           * Добавь ссылку на issue или тред, в котором раскрыта причина изменения
           * Если требуется, коротко опиши зачем делаешь изменение, какую проблему решаешь
           Спасибо!
-    - name: Update comment with check succeeded statement
-      if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'true' }}
-      uses: peter-evans/create-or-update-comment@v4
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        comment-id: ${{ steps.fc.outputs.comment-id }}
-        edit-mode: replace
-        body: |
-          :white_check_mark: Спасибо, что добавил описание :heart:
+
     - name: Fail the job if description is empty
       if: ${{ steps.validate_description_step.outputs.pr_description_check_passed == 'false' }}
       run: |
