@@ -16,22 +16,25 @@ import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.soloader.SoLoader
-import com.exampleapp.NotificationPackage
+import com.facebook.react.ReactHost
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
+import com.facebook.react.defaults.DefaultReactNativeHost
 
 class MainApplication : Application(), ReactApplication {
 
     override val reactNativeHost: ReactNativeHost =
-        object : ReactNativeHost(this) {
+        object : DefaultReactNativeHost(this) {
             override fun getPackages(): List<ReactPackage> =
-                PackageList(this).packages.apply {
-                    add(NotificationPackage())
-                }
+                PackageList(this).packages.apply {}
             override fun getJSMainModuleName(): String = "index"
             override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
         }
+
+    override val reactHost: ReactHost
+        get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
 
     override fun onCreate() {
         super.onCreate()
@@ -40,31 +43,4 @@ class MainApplication : Application(), ReactApplication {
         SoLoader.init(this, false)
     }
 
-    private val gson = Gson()
-
-    fun saveNotification(message: MindboxRemoteMessage) {
-        val sharedPreferences = getSharedPreferences("notifications", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val notificationsJson = sharedPreferences.getString("notifications", "[]")
-        val type = object : TypeToken<MutableList<String>>() {}.type
-        val notifications: MutableList<String> = gson.fromJson(notificationsJson, type)
-        notifications.add(gson.toJson(message))
-        editor.putString("notifications", gson.toJson(notifications))
-        editor.apply()
-        notifyJS()
-    }
-
-    private fun notifyJS() {
-        val handler = Handler(Looper.getMainLooper())
-        handler.post {
-            try {
-                val reactInstanceManager = reactNativeHost.reactInstanceManager
-                reactInstanceManager.currentReactContext
-                    ?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                    ?.emit("newNotification", null)
-            } catch (e: Exception) {
-                Log.e("MainApplication", "Error notifying React Native", e)
-            }
-        }
-    }
 }

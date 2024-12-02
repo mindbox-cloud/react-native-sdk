@@ -43,13 +43,6 @@ class MindboxHuaweiMessagingService : HmsMessageService() {
                 channelDescription = channelDescription
             )
 
-            // https://developers.mindbox.ru/docs/android-sdk-methods#converttomindboxremotemessage-since-284
-            val mindboxMessage = MindboxHuawei.convertToMindboxRemoteMessage(remoteMessage)
-            if (mindboxMessage != null) {
-                val app = applicationContext as MainApplication
-                app.saveNotification(mindboxMessage)
-            }
-
             // If the push notification was not from Mindbox or contains incorrect data, a fallback can be implemented for its handling
             if (!messageWasHandled) {
                 Log.d("PushNotification", "Received an unsupported or incorrect push notification.")
