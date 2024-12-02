@@ -5,7 +5,7 @@ buildscript {
     compileSdkVersion = 34
     targetSdkVersion = 34
     ndkVersion = "25.1.8937393"
-    kotlinVersion = "1.8.0"
+    kotlinVersion = "1.9.22"
   }
   repositories {
     google()
@@ -13,7 +13,7 @@ buildscript {
     maven { url 'https://developer.huawei.com/repo/' }
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:4.2.1")
+    classpath("com.android.tools.build:gradle:8.6.0")
     classpath("com.facebook.react:react-native-gradle-plugin:7.5")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     classpath 'com.google.gms:google-services:4.3.14'
