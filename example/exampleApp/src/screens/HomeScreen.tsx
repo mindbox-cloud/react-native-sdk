@@ -153,7 +153,7 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.container}>
       {canLoadWebView ? (
         <>
-          <WebView style={{ flex: 1 }} ref={webViewRef} source={{ uri: webViewUrl }} javaScriptEnabled={true} domStorageEnabled={true} injectedJavaScriptBeforeContentLoaded={synchronizeDeviceUUID(deviceUUID)} onMessage={onMessage} />
+          <WebView style={styles.webView} ref={webViewRef} source={{ uri: webViewUrl }} javaScriptEnabled={true} domStorageEnabled={true} injectedJavaScriptBeforeContentLoaded={synchronizeDeviceUUID(deviceUUID)} onMessage={onMessage} />
           <View style={styles.buttonContainer}>
             <Button title="Show Data" onPress={showData} />
           </View>
@@ -170,6 +170,9 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  webView: {
     flex: 1,
   },
   loadingContainer: {
