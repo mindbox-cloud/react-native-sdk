@@ -47,7 +47,6 @@ class MindboxHuaweiMessagingService : HmsMessageService() {
             val mindboxMessage = MindboxHuawei.convertToMindboxRemoteMessage(remoteMessage)
             if (mindboxMessage != null) {
                 val app = applicationContext as MainApplication
-                app.saveNotification(mindboxMessage)
             }
 
             // If the push notification was not from Mindbox or contains incorrect data, a fallback can be implemented for its handling
