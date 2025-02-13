@@ -27,6 +27,7 @@ import org.json.JSONObject
 class MindboxSdkModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private var deviceUuidSubscription: String? = null
   private var fmsTokenSubscription: String? = null
+  private var getTokensSubscription: String? = null
 
   override fun getName(): String {
     return "MindboxSdk"
@@ -152,9 +153,25 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
   }
 
   @ReactMethod
+  fun getTokens(promise: Promise) {
+   try {
+      if (this.getTokensSubscription != null) {
+          Mindbox.disposePushTokenSubscription(this.getTokensSubscription!!)
+      }
+
+      this.getTokensSubscription = Mindbox.subscribePushTokens {
+          tokens -> promise.resolve(tokens)
+      }
+   } catch (error: Throwable) {
+        promise.reject(error)
+    }
+  }
+
+  @ReactMethod
   fun updateFMSToken(token: String, promise: Promise) {
     try {
-      Mindbox.updatePushToken(reactApplicationContext.applicationContext, token)
+      //It's stub. Used because deprecate updateToken on RN sdk
+      Mindbox.updateNotificationPermissionStatus(reactApplicationContext.applicationContext)
       promise.resolve(true)
     } catch (error: Throwable) {
       promise.reject(error)

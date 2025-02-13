@@ -170,7 +170,7 @@ class MindboxSdkClass {
    * @name getToken
    * @description Requires a callback that will return FMS (Android) / APNS (iOS) token.
    * @param {function(token: String): void} callback Callback will return FMS (Android) / APNS (iOS) token
-   *
+   * @deprecated since version 2.12.0. Use getTokens
    * @example
    * MindboxSdk.getToken((token: string) => { ... });
    */
@@ -205,12 +205,37 @@ class MindboxSdkClass {
       this._callbacks.push(callbackHandler)
     }
   }
+  /**
+   * @name getTokens
+   * @description Requires a callback that will return FMS (Android) / APNS (iOS) token .
+   * method return jsin string like {"FCM":"token1","HMS":"token2","RuStore":"token3"}
+   * @param {function(token: String): void} callback Callback will return FMS/HCM/RuStore (Android) / APNS (iOS) token
+   * @example
+   * MindboxSdk.getTokens((token: string) => { ... });
+   */
+  public getTokens(callback: (token: string) => void) {
+    if (!callback || typeof callback !== 'function') {
+      throw new Error('callback is required!')
+    }
+
+    const callbackHandler = () => {
+      let promise = null
+      promise = MindboxSdkNative.getTokens()
+      promise.then((token: string) => callback(token))
+    }
+
+    if (this._initialized) {
+      callbackHandler()
+    } else {
+      this._callbacks.push(callbackHandler)
+    }
+  }
 
   /**
    * @name updateToken
    * @description Updates your FMS/APNS token.
    * @param {String} token Your new fms/apns token
-   *
+   * @deprecated since version 2.12.0. Use native methods
    * @example
    * await MindboxSdk.updateToken('your-fms/apns-token');
    */

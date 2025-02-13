@@ -33,7 +33,7 @@ const HomeScreen = () => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
     MindboxSdk.getDeviceUUID(setDeviceUUID)
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
-    MindboxSdk.getToken(setToken)
+    MindboxSdk.getTokens(setToken)
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
     MindboxSdk.getSdkVersion((version) => {
       setSdkVersion(version)
