@@ -43,6 +43,12 @@ jest.mock('react-native', () => {
           resolve('FMS')
         })
     ),
+    getTokens: jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolve('Tokens')
+        })
+    ),
     updateAPNSToken: jest.fn(
       (payloadString: string) =>
         new Promise((resolve, reject) => {
@@ -486,6 +492,23 @@ describe('Testing Mindbox RN SDK', () => {
 
       MindboxSdk.getToken((token: string) => {
         expect(token).toEqual('FMS')
+      })
+    })
+
+    it('getTokens method works correctly', async () => {
+      const MindboxSdk = require('../index').default
+      await MindboxSdk.initialize(initializationData)
+
+      expect.assertions(2)
+
+      MindboxSdk.getToken((token: string) => {
+        expect(token).toEqual('Tokens')
+      })
+
+      Platform.OS = 'android'
+
+      MindboxSdk.getToken((token: string) => {
+        expect(token).toEqual('Tokens')
       })
     })
 
