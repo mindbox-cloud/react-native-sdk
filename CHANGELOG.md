@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.13.0] - 2025-03-07
 
 ### Changes
 - Upgrade Android SDK dependency to v2.13.0
