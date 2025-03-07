@@ -74,6 +74,13 @@ class MindboxSdk: NSObject {
         }
     }
 
+    @objc(getTokens:rejecter:)
+    func getTokens(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) -> Void {
+        Mindbox.shared.getAPNSToken{
+            ApnsToken in resolve("{\"APNS\":\"\(ApnsToken)\"}")
+        }
+    }
+
     @objc func registerCallbacks(_ callbacks: [String]) {
         var cb = [InAppMessagesDelegate]()
 
@@ -192,9 +199,9 @@ class MindboxSdk: NSObject {
 
     @objc
     func writeNativeLog(_ message: String, level: Int) {
-        
+
         let logLevel: LogLevel
-        
+
         switch level {
         case 0:
             logLevel = .debug

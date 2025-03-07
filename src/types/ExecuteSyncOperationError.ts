@@ -1,56 +1,49 @@
 type MindboxAPITransactionError = {
-  status: 'TransactionAlreadyProcessed';
-};
+  status: 'TransactionAlreadyProcessed'
+}
 
 type MindboxAPIValidationError = {
-  status: 'ValidationError';
-  validationMessages: { message: string; location?: string }[];
-};
+  status: 'ValidationError'
+  validationMessages: { message: string; location?: string }[]
+}
 
 type MindboxAPIProtocolError = {
-  status: 'ProtocolError';
-  errorMessage: string;
-  errorId: string;
-  httpStatusCode: string;
-};
+  status: 'ProtocolError'
+  errorMessage: string
+  errorId: string
+  httpStatusCode: string
+}
 
 type MindboxAPIInternalError = {
-  status: 'InternalServerError';
-  errorMessage: string;
-  errorId: string;
-  httpStatusCode: string;
-};
+  status: 'InternalServerError'
+  errorMessage: string
+  errorId: string
+  httpStatusCode: string
+}
 
 type ExecuteSyncOperationMindboxError = {
-  type: 'MindboxError';
-  data:
-    | MindboxAPITransactionError
-    | MindboxAPIValidationError
-    | MindboxAPIProtocolError
-    | MindboxAPIInternalError;
-};
+  type: 'MindboxError'
+  data: MindboxAPITransactionError | MindboxAPIValidationError | MindboxAPIProtocolError | MindboxAPIInternalError
+}
 
 type ExecuteSyncOperationNetworkError = {
-  type: 'NetworkError';
+  type: 'NetworkError'
   data: {
-    httpStatusCode?: string;
-    errorMessage?: string;
-    statusCode?: number;
-    status?: string;
-    errorId?: string;
-  };
-};
+    httpStatusCode?: string
+    errorMessage?: string
+    statusCode?: number
+    status?: string
+    errorId?: string
+  }
+}
 
 type ExecuteSyncOperationInternalError = {
-  type: 'InternalError';
+  type: 'InternalError'
   data: {
-    errorKey?: string;
-    errorName?: string;
-    errorMessage?: string;
-  };
-};
+    errorKey?: string
+    errorName?: string
+    errorMessage?: string
+  }
+}
 
-export type ExecuteSyncOperationError =
-  | ExecuteSyncOperationMindboxError
-  | ExecuteSyncOperationNetworkError
-  | ExecuteSyncOperationInternalError;
+export type ExecuteSyncOperationError = ExecuteSyncOperationMindboxError | ExecuteSyncOperationNetworkError | ExecuteSyncOperationInternalError

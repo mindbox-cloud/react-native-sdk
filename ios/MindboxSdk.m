@@ -26,4 +26,6 @@ RCT_EXTERN_METHOD(updateNotificationPermissionStatus:(BOOL)granted)
 
 RCT_EXTERN_METHOD(writeNativeLog:(NSString)message level:(NSInteger)level)
 
+RCT_EXTERN_METHOD(getTokens:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

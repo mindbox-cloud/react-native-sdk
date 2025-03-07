@@ -1,4 +1,4 @@
-import { Notification } from './Notification';
+import { Notification } from './Notification'
 
 const initialNotifications: Notification[] = [
   {
@@ -28,6 +28,6 @@ const initialNotifications: Notification[] = [
     pushName: 'Push name 3',
     pushDate: 'Push date 3',
   },
-];
+]
 
-export default initialNotifications;
+export default initialNotifications

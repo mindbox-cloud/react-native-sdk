@@ -1,6 +1,5 @@
 import UserNotifications
 import MindboxNotifications
-import Mindbox
 
 // https://developers.mindbox.ru/docs/ios-send-rich-push-react-native
 class NotificationService: UNNotificationServiceExtension {
@@ -24,7 +23,7 @@ class NotificationService: UNNotificationServiceExtension {
     // save data from notification to userDefaults
     // don't use userDefault on your application, it's only for example
     func saveNotification(request: UNNotificationRequest) {
-            guard let pushData = Mindbox.shared.getMindboxPushData(userInfo: request.content.userInfo) else {
+            guard let pushData = mindboxService.getMindboxPushData(userInfo: request.content.userInfo) else {
                 print("Failed to get Mindbox push data")
                 return
             }
