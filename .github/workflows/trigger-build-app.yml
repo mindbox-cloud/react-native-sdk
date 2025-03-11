@@ -22,7 +22,7 @@ jobs:
 
       - name: Trigger build workflow in react-native-app repo
         run: |
-          curl --location 'https://mindbox.gitlab.yandexcloud.net/api/v4/projects/1487/trigger/pipeline' \
+          curl --location 'https://mindbox.gitlab.yandexcloud.net/api/v4/projects/1512/trigger/pipeline' \
             --form 'token="${{ secrets.GITLAB_TRIGGER_TOKEN }}"' \
             --form 'ref="develop"' \
             --form "variables[INPUT_BRANCH]=\"${{ github.head_ref }}\"" \
