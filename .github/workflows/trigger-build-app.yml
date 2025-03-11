@@ -1,16 +1,14 @@
 name: Build application after merge
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
-      - 'feature/*'
-      - 'develop'
+      - 'poziev/gitlab-cicd-port'
 
 jobs:
   trigger:
     runs-on: macos-latest
-    if: github.event.pull_request.merged == true
+    #if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,11 +18,10 @@ jobs:
           commits=$(git log -3 --pretty=format:"%s")
           echo "commits=$commits" >> $GITHUB_ENV
 
-      - name: Trigger build workflow in react-native-app repo
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          token: ${{ secrets.PAT_REACT_NATIVE_APP }}
-          workflow: buildApplicationAfterTrigger.yml
-          repo: mindbox-cloud/react-native-app
-          ref: develop
-          inputs: '{"branch": "${{ github.head_ref }}", "commits": "${{ env.commits }}"}'
+      - name: trigger build & send to FAD
+        run: |
+          curl --location 'https://mindbox.gitlab.yandexcloud.net/api/v4/projects/1487/trigger/pipeline' \
+            --form 'token="${{ secrets.GITLAB_TRIGGER_TOKEN }}"' \
+            --form 'ref="test_branch"' \
+            --form "variables[INPUT_BRANCH]=\"${{ github.head_ref }}\"" \
+            --form "variables[INPUT_COMMITS]=\"${{ env.commits }}\""
