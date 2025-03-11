@@ -1,14 +1,16 @@
 name: Build application after merge
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
-      - 'poziev/gitlab-cicd-port'
+      - 'feature/*'
+      - 'develop'
 
 jobs:
   trigger:
     runs-on: macos-latest
-    #if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
