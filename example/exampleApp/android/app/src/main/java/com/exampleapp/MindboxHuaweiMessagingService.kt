@@ -10,13 +10,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-// https://developers.mindbox.ru/docs/huawei-send-push-notifications-react-native
 class MindboxHuaweiMessagingService : HmsMessageService() {
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
-        // https://developers.mindbox.ru/docs/android-sdk-methods#updatepushtoken
         Mindbox.updatePushToken(applicationContext, token, MindboxHuawei)
     }
 
@@ -43,7 +41,6 @@ class MindboxHuaweiMessagingService : HmsMessageService() {
                 channelDescription = channelDescription
             )
 
-            // https://developers.mindbox.ru/docs/android-sdk-methods#converttomindboxremotemessage-since-284
             val mindboxMessage = MindboxHuawei.convertToMindboxRemoteMessage(remoteMessage)
             if (mindboxMessage != null) {
                 val app = applicationContext as MainApplication

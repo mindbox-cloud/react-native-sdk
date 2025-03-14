@@ -6,7 +6,6 @@ import cloud.mindbox.mobile_sdk.Mindbox
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-// https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
 class MindboxFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         Mindbox.updatePushToken(applicationContext, token, MindboxFirebase)
@@ -31,7 +30,6 @@ class MindboxFirebaseMessagingService : FirebaseMessagingService() {
             channelDescription = channelDescription
         )
 
-        // https://developers.mindbox.ru/docs/android-sdk-methods#converttomindboxremotemessage-since-284
         val mindboxMessage = MindboxFirebase.convertToMindboxRemoteMessage(remoteMessage)
         if (mindboxMessage != null) {
             val app = applicationContext as MainApplication

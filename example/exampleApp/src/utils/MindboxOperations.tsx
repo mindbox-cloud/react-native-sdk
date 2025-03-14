@@ -37,7 +37,6 @@ const requestRecoBodySync = {
 }
 
 const sendAsync = () => {
-  // https://developers.mindbox.ru/docs/integration-actions-react-native
   MindboxSdk.executeAsyncOperation({
     operationSystemName: asyncViewProductOperationName,
     operationBody: requestProductOperationBodyAsync,
@@ -46,7 +45,6 @@ const sendAsync = () => {
 }
 
 const sendSync = async () => {
-  // https://developers.mindbox.ru/docs/integration-actions-react-native
   MindboxSdk.executeSyncOperation({
     operationSystemName: syncRecoOperationName,
     operationBody: requestRecoBodySync,

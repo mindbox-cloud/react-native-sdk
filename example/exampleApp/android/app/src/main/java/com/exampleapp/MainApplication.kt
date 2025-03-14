@@ -20,7 +20,6 @@ import com.exampleapp.NotificationPackage
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import cloud.mindbox.mindbox_rustore.MindboxRuStore
 
 class MainApplication : Application(), ReactApplication {
 
@@ -36,7 +35,6 @@ class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
         super.onCreate()
-        //The fifth step of https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
         Mindbox.initPushServices(this, listOf(MindboxFirebase, MindboxHuawei, MindboxRuStore))
         SoLoader.init(this, false)
     }

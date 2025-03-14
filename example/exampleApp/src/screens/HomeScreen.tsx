@@ -28,23 +28,17 @@ const HomeScreen = () => {
   useEffect(() => {
     requestNotificationPermission()
     appInitializationCallback()
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
     MindboxSdk.setLogLevel(LogLevel.DEBUG)
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
     MindboxSdk.getDeviceUUID(setDeviceUUID)
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
     MindboxSdk.getTokens(setToken)
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
     MindboxSdk.getSdkVersion((version) => {
       setSdkVersion(version)
     })
-    // https://developers.mindbox.ru/docs/in-app#react-native
     chooseInappCallback(RegisterInappCallback.DEFAULT)
   }, [appInitializationCallback])
 
   const appInitializationCallback = useCallback(async () => {
     try {
-      // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#mindboxinitialize
       await MindboxSdk.initialize(configuration)
     } catch (error) {
       console.log(error)
@@ -54,7 +48,6 @@ const HomeScreen = () => {
   const getPushData = useCallback(
     (pushUrl: String | null, pushPayload: String | null) => {
       setTimeout(() => {
-        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
         navigateToPushNotificationIfRequired(pushUrl)
         setPushData({ pushUrl, pushPayload })
       }, 600)
@@ -63,7 +56,6 @@ const HomeScreen = () => {
   )
 
   useEffect(() => {
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
     MindboxSdk.onPushClickReceived(getPushData)
   }, [getPushData])
 

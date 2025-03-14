@@ -3,9 +3,8 @@ import UserNotifications
 import UserNotificationsUI
 import MindboxNotifications
 
-// https://developers.mindbox.ru/docs/ios-send-rich-push-react-native
 class NotificationViewController: UIViewController, UNNotificationContentExtension {
-    
+
     // Lazy initialization of MindboxNotificationService to handle notification content.
     lazy var mindboxService = MindboxNotificationService()
 

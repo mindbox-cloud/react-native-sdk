@@ -37,13 +37,5 @@
         <action android:name="com.huawei.push.action.MESSAGING_EVENT"/>
       </intent-filter>
     </service>
-    <service android:name=".MindboxRuStoreMessagingService" android:exported="true">
-      <intent-filter>
-        <action android:name="ru.rustore.sdk.pushclient.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
-    <meta-data
-      android:name="ru.rustore.sdk.pushclient.project_id"
-      android:value="l3JnmQZv0CdlZ39y9VERUA8c-P2ys1Ud" />
   </application>
 </manifest>

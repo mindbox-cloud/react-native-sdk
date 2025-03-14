@@ -5,7 +5,6 @@ import Mindbox
 import MindboxSdk
 
 
-// https://developers.mindbox.ru/docs/ios-send-push-notifications-react-native
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
@@ -30,7 +29,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.window!.rootViewController = rootViewController
         self.window!.makeKeyAndVisible()
 
-        // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
         // Tracking app launch for analytics
         let trackVisitData = TrackVisitData()
         trackVisitData.launchOptions = launchOptions
@@ -62,7 +60,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
 
     // Handling Universal Links
-    // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         let trackVisitData = TrackVisitData()
         trackVisitData.universalLink = userActivity
@@ -78,16 +75,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Handling push notification clicks
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        // https://developers.mindbox.ru/docs/ios-get-click-react-native
         Mindbox.shared.pushClicked(response: response)
-        // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
         // Tracking push notification clicks for analytics
         let trackVisitData = TrackVisitData()
         trackVisitData.push = response
         Mindbox.shared.track(data: trackVisitData)
 
         // Emitting event for further handling in JavaScript
-        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
         MindboxJsDelivery.emitEvent(response)
 
         completionHandler()
