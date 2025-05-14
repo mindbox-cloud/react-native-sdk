@@ -1,0 +1,19 @@
+name: Build application when create PR into master/support/mission
+
+on:
+  pull_request:
+    branches:
+      - master
+      - support/*
+      - mission/*
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  call-reusable:
+    if: ${{ startsWith(github.event.pull_request.head.ref, 'release/') }}
+    uses: ./.github/workflows/trigger-build-app-reusable.yml
+    with:
+      branch: ${{ github.event.pull_request.head.ref }}
+    secrets: inherit

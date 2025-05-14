@@ -1,15 +1,15 @@
 name: Release to NPM
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - master
+    workflow_call:
+        inputs:
+            branch:
+                required: true
+                type: string
 
 jobs:
   checkingVersion:
     name: Checking version
-    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     outputs:
       isRunable: ${{ fromJson(steps.package.outputs.content).version != fromJson(steps.package.outputs.content).target-version }}
@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            ref: ${{ inputs.branch }}
       - name: Read package.json
         id: package
         uses: juliangruber/read-file-action@v1
@@ -36,6 +38,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            ref: ${{ inputs.branch }}
       - name: Setup node JS
         uses: actions/setup-node@v2
         with:
@@ -54,6 +58,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            ref: ${{ inputs.branch }}
       - name: Setup node JS
         uses: actions/setup-node@v2
         with:
