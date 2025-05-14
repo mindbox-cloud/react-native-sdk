@@ -33,6 +33,27 @@ sed -i '' "s/\"target-version\": \".*\"/\"target-version\": \"$version\"/" $pack
 echo "Bump SDK version from $current_version to $version."
 
 git add $package_json
-git commit -m "Bump SDK version to $version" --no-verify
+
+android_gradle="android/build.gradle"
+ios_podspec="MindboxSdk.podspec"
+
+sed -i '' "s/  api 'cloud.mindbox:mobile-sdk:.*/  api 'cloud.mindbox:mobile-sdk:${version}'/" "$android_gradle"
+echo "Bump $android_gradle to $version"
+
+sed -i '' "s/  s.dependency \"Mindbox\", .*/  s.dependency \"Mindbox\", \"${version}\"/" "$ios_podspec"
+sed -i '' "s/  s.dependency \"MindboxNotifications\", .*/  s.dependency \"MindboxNotifications\", \"${version}\"/" "$ios_podspec"
+echo "Bump $ios_podspec to $version"
+
+git add "$android_gradle" "$ios_podspec"
+
+changelog="CHANGELOG.md"
+
+awk -v ver="$version" 'NR==3{print "## [Unreleased]\n\n ### Changes\n - Upgrade Android SDK dependency to v"ver"\n - Upgrade iOS SDK dependency to v"ver"\n"}1' "$changelog" > "${changelog}.tmp" && mv "${changelog}.tmp" "$changelog"
+
+echo "Insert Unreleased section to $changelog"
+
+git add "$changelog"
 
 echo "Branch $branch_name has been created."
+
+git commit -m "Bump SDK version to $version" --no-verify
