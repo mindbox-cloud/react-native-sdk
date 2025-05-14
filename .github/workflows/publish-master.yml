@@ -2,10 +2,10 @@ name: SDK publish RN master and support
 
 on:
   pull_request:
-    types: [closed]
+    types: [ closed ]
     branches:
-      - 'master'
-      - 'support/*'
+    - 'master'
+    - 'support/*'
 
 jobs:
   call-reusable:
