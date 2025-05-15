@@ -1,0 +1,113 @@
+name: SDK publish
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+
+jobs:
+  checkingVersion:
+    name: Checking version
+    runs-on: ubuntu-latest
+    outputs:
+      isRunable: ${{ fromJson(steps.package.outputs.content).version != fromJson(steps.package.outputs.content).target-version }}
+      newVersion: ${{ fromJson(steps.package.outputs.content).target-version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch }}
+    - name: Read package.json
+      id: package
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: ./package.json
+    - name: Version check
+      if: ${{ fromJson(steps.package.outputs.content).version == fromJson(steps.package.outputs.content).target-version }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('Packet version and target version are equivalent!')
+  testing:
+    name: Testing
+    needs: [ checkingVersion ]
+    if: needs.checkingVersion.outputs.isRunable == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch }}
+    - name: Setup node JS
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+        registry-url: https://registry.npmjs.org
+    - name: Setup local environment
+      run: yarn
+    - name: Run tests
+      run: yarn test
+
+  releasing:
+    name: Releasing
+    needs: [ checkingVersion, testing ]
+    if: needs.checkingVersion.outputs.isRunable == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch }}
+    - name: Setup node JS
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+        registry-url: https://registry.npmjs.org
+    - name: Setup GIT
+      run: |
+        git config user.email '$GITHUB_ACTOR@users.noreply.github.com'
+        git config user.name '$GITHUB_ACTOR'
+    - name: Setup local environment
+      run: yarn
+    - name: Determine Pre-Release Status
+      run: |
+        VERSION=${{ needs.checkingVersion.outputs.newVersion }}
+        if [[ "$VERSION" == *"rc"* ]]; then
+          echo "::set-output name=is_prerelease::true"
+        else
+          echo "::set-output name=is_prerelease::false"
+        fi
+    - name: Release
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_CICD_SECRET }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ ${{ steps.prerelease_check.outputs.is_prerelease }} == "true" ]; then
+          yarn release ${{ needs.checkingVersion.outputs.newVersion }} --pre-release --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
+        else
+          yarn release ${{ needs.checkingVersion.outputs.newVersion }} --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
+        fi
+
+  merge:
+    needs: [ releasing ]
+    if: |
+      startsWith(github.head_ref, 'release') &&
+      github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout develop branch
+      uses: actions/checkout@v4
+      with:
+        ref: develop
+    - name: Create Pull Request
+      run: gh pr create --base develop --head master --title "Merge 'master' into 'develop' after release" --body "Automated Pull Request to merge 'master' into 'develop' after release"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
+    - name: Merge Pull Request
+      run: |
+        pr_number=$(gh pr list --base develop --head master --json number --jq '.[0].number')
+        gh pr merge $pr_number --merge --auto
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
