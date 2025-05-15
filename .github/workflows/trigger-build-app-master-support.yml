@@ -1,4 +1,4 @@
-name: Build application when create PR into master/support/mission
+name: Distribute PushOk (Release / Support PR / Mission)
 
 on:
   pull_request:

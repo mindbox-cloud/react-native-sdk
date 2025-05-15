@@ -1,4 +1,4 @@
-name: Build application after merge into develop
+name: Distribute PushOk (Develop PR Merge)
 
 on:
   pull_request:

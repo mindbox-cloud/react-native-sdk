@@ -1,4 +1,4 @@
-name: Build application manual
+name: Distribute PushOk (manual)
 
 on:
   workflow_dispatch:

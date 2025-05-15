@@ -1,4 +1,4 @@
-name: Release to NPM
+name: SDK publish
 
 on:
   workflow_call:
@@ -89,3 +89,25 @@ jobs:
         else
           yarn release ${{ needs.checkingVersion.outputs.newVersion }} --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
         fi
+
+  merge:
+    needs: [ releasing ]
+    if: |
+      startsWith(github.head_ref, 'release') &&
+      github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout develop branch
+      uses: actions/checkout@v4
+      with:
+        ref: develop
+    - name: Create Pull Request
+      run: gh pr create --base develop --head master --title "Merge 'master' into 'develop' after release" --body "Automated Pull Request to merge 'master' into 'develop' after release"
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
+    - name: Merge Pull Request
+      run: |
+        pr_number=$(gh pr list --base develop --head master --json number --jq '.[0].number')
+        gh pr merge $pr_number --merge --auto
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
