@@ -1,4 +1,4 @@
-name: release-version-check
+name: Branch Protection
 
 on:
   pull_request:

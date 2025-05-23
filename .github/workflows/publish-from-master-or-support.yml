@@ -2,7 +2,7 @@ name: SDK publish from master or support branch
 
 on:
   pull_request:
-    types: [ closed ]
+    types: [closed]
     branches:
     - 'master'
     - 'support/*'
