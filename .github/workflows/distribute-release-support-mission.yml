@@ -1,4 +1,4 @@
-name: Distribute PushOk (Release / Support PR / Mission)
+name: Distribute PushOk (Release / Support / Mission PRs)
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
 jobs:
   call-reusable:
     if: ${{ startsWith(github.event.pull_request.head.ref, 'release/') }}
-    uses: ./.github/workflows/trigger-build-app-reusable.yml
+    uses: ./.github/workflows/distribute-reusable.yml
     with:
       branch: ${{ github.event.pull_request.head.ref }}
     secrets: inherit
