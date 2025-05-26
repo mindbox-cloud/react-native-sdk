@@ -1,12 +1,15 @@
-name: RN SDK CI
+name: UnitTests + Lint
 
 on:
-  pull_request:
-    types: [ opened, synchronize ]
+  push:
     branches:
-    - develop
-    paths-ignore:
-    - '**.md'
+      - develop
+      - mission/*
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
   unit-tests:
