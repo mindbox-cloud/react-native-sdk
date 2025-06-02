@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.13.2-rc] - 2025-06-02
 
 ### Changes
 - Upgrade Android SDK dependency to v2.13.2-rc
