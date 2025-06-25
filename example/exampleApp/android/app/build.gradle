@@ -47,7 +47,7 @@ android {
 
 dependencies {
   implementation("com.facebook.react:react-android")
-  implementation "com.facebook.react:react-native:0.73.3"
+  implementation "com.facebook.react:react-native:0.74.0"
 
   // Integration of Mindbox SDK and necessary Firebase and Huawei services for mobile push notifications functionality
   implementation platform('com.google.firebase:firebase-bom:29.3.1')

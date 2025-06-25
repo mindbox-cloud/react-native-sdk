@@ -1,0 +1,192 @@
+name: "Manual Release Prep: React Native"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'React Native release version (semver: X.Y.Z or X.Y.Z-rc)'
+        required: true
+      android_sdk_version:
+        description: 'Native Android SDK version (optional, defaults to RN version)'
+        required: false
+        default: ''
+      ios_sdk_version:
+        description: 'Native iOS SDK version (optional, defaults to RN version)'
+        required: false
+        default: ''
+      source_branch:
+        description: 'Create branch from'
+        required: true
+        default: 'develop'
+      target_branch:
+        description: 'Pull Request to'
+        required: true
+        default: 'master'
+
+jobs:
+  validate-input:
+    name: Validate versions format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check release_version
+        run: |
+          V=${{ github.event.inputs.release_version }}
+          echo "Input release_version=$V"
+          if ! [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc)?$ ]]; then
+            echo "❌ release_version must be X.Y.Z or X.Y.Z-rc"
+            exit 1
+          fi
+      - name: Check android_sdk_version if set
+        if: ${{ github.event.inputs.android_sdk_version != '' }}
+        run: |
+          A=${{ github.event.inputs.android_sdk_version }}
+          echo "Input android_sdk_version=$A"
+          if ! [[ "$A" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc)?$ ]]; then
+            echo "❌ android_sdk_version must be X.Y.Z or X.Y.Z-rc"
+            exit 1
+          fi
+      - name: Check ios_sdk_version if set
+        if: ${{ github.event.inputs.ios_sdk_version != '' }}
+        run: |
+          I=${{ github.event.inputs.ios_sdk_version }}
+          echo "Input ios_sdk_version=$I"
+          if ! [[ "$I" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc)?$ ]]; then
+            echo "❌ ios_sdk_version must be X.Y.Z or X.Y.Z-rc"
+            exit 1
+          fi
+
+  validate-branches:
+    name: Validate source & target branches exist
+    runs-on: ubuntu-latest
+    needs: validate-input
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Check source branch
+        run: |
+          SRC=${{ github.event.inputs.source_branch }}
+          if ! git ls-remote --heads origin "$SRC" | grep -q "$SRC"; then
+            echo "❌ source_branch '$SRC' does not exist on origin"
+            exit 1
+          fi
+      - name: Check target branch
+        run: |
+          DST=${{ github.event.inputs.target_branch }}
+          if ! git ls-remote --heads origin "$DST" | grep -q "$DST"; then
+            echo "❌ target_branch '$DST' does not exist on origin"
+            exit 1
+          fi
+
+  bump_and_branch:
+    name: Create release branch & bump versions
+    runs-on: ubuntu-latest
+    needs: validate-branches
+    outputs:
+      release_branch: ${{ steps.bump.outputs.release_branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_branch }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - id: bump
+        name: Create branch & apply bumps
+        run: |
+          set -euo pipefail
+          VERSION="${{ github.event.inputs.release_version }}"
+          AND_VER="${{ github.event.inputs.android_sdk_version }}"
+          IO_VER="${{ github.event.inputs.ios_sdk_version }}"
+          SRC="${{ github.event.inputs.source_branch }}"
+          REL="release/$VERSION"
+
+          # fallback to RN version
+          [ -z "$AND_VER" ] && AND_VER="$VERSION"
+          [ -z "$IO_VER"  ] && IO_VER="$VERSION"
+
+          echo "→ Branching from $SRC into $REL"
+          git checkout -b "$REL"
+
+          ##############################################################################
+          # 1) package.json: bump "target-version"
+          ##############################################################################
+          echo "→ Bumping package.json target-version"
+          sed -i "s/\"target-version\": \".*\"/\"target-version\": \"$VERSION\"/" package.json
+          git add package.json
+
+          ##############################################################################
+          # 2) Android build.gradle: bump cloud.mindbox:mobile-sdk:<version>
+          ##############################################################################
+          echo "→ Bumping Android SDK in android/build.gradle"
+          sed -i "s|\(api 'cloud.mindbox:mobile-sdk:\).*|\1$AND_VER'|" android/build.gradle
+          git add android/build.gradle
+
+          ##############################################################################
+          # 3) iOS podspec: bump Mindbox and MindboxNotifications dependencies
+          ##############################################################################
+          echo "→ Bumping iOS SDK in MindboxSdk.podspec"
+          sed -i -E "s/(s\.dependency \"Mindbox\", \").*(\")/\1$IO_VER\2/" MindboxSdk.podspec
+          sed -i -E "s/(s\.dependency \"MindboxNotifications\", \").*(\")/\1$IO_VER\2/" MindboxSdk.podspec
+          git add MindboxSdk.podspec
+
+          ##############################################################################
+          # 4) CHANGELOG.md: insert Unreleased section at top
+          ##############################################################################
+          echo "→ Inserting Unreleased section into CHANGELOG.md"
+          awk -v a="$AND_VER" -v i="$IO_VER" '
+            /^# Changelog/ {
+              print
+              print ""
+              print "## [Unreleased]"
+              print ""
+              print "### Changes"
+              print "- Upgrade Android SDK dependency to v" a
+              print "- Upgrade iOS SDK dependency to v" i
+              print ""
+              next
+            }
+            { print }
+          ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          git add CHANGELOG.md
+
+          ##############################################################################
+          # 5) Final commit
+          ##############################################################################
+          git commit -m "Bump RN SDK versions: core=$VERSION, android=$AND_VER, ios=$IO_VER"
+          echo "release_branch=$REL" >> $GITHUB_OUTPUT
+
+      - name: Push release branch
+        run: git push --set-upstream origin ${{ steps.bump.outputs.release_branch }}
+
+  create_pull_request:
+    name: Create Pull Request
+    runs-on: ubuntu-latest
+    needs: bump_and_branch
+    steps:
+      - name: Build PR body and open PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
+          SRC: ${{ needs.bump_and_branch.outputs.release_branch }}
+          DST: ${{ github.event.inputs.target_branch }}
+          REPO: ${{ github.repository }}
+        run: |
+          AND_VER=${{ github.event.inputs.android_sdk_version }}
+          IO_VER=${{ github.event.inputs.ios_sdk_version }}
+          [ -z "$AND_VER" ] && AND_VER="${{ github.event.inputs.release_version }}"
+          [ -z "$IO_VER"  ] && IO_VER="${{ github.event.inputs.release_version }}"
+
+          BODY=$(
+            printf 'Automated PR: merge `%s` into `%s`\n\n**Versions:**\n- React Native SDK: `%s`\n- Android SDK: `%s`\n- iOS SDK: `%s`' \
+              "$SRC" "$DST" "${{ github.event.inputs.release_version }}" "$AND_VER" "$IO_VER"
+          )
+
+          gh pr create \
+            --repo "$REPO" \
+            --base "$DST" \
+            --head "$SRC" \
+            --title "Release ${{ github.event.inputs.release_version }}" \
+            --body "$BODY"
