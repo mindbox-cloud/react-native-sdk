@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.5-rc] - 2025-07-25
+
+### Changes
+- Upgrade Android SDK dependency to v2.13.5-rc
+- Upgrade iOS SDK dependency to v2.13.5-rc
+
+
 ## [2.13.4] - 2025-06-25
 
 ### Changes
