@@ -126,5 +126,5 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  api 'cloud.mindbox:mobile-sdk:2.13.4'
+  api 'cloud.mindbox:mobile-sdk:2.14.0-rc'
 }
