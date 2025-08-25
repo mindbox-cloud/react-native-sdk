@@ -66,6 +66,13 @@ internal class MindboxSdkLifecycleListener private constructor(
         }
 
         reactInstanceManager?.addReactInstanceEventListener(wrapperListener)
+        // RN 0.78+ introduced ReactHost.addReactInstanceEventListener(...).
+        // Older RN versions (<= 0.74) expose only ReactInstanceManager.addReactInstanceEventListener(...).
+        // In New Architecture the ReactInstanceManager listener might not fire
+        // To support RN 0.78+ reliably while keeping backward compatibility,
+        // we try to register via ReactHost using reflection (no compile-time dependency).
+        // If ReactHost API is unavailable (older RN), this call is silently ignored and we rely on
+        // the ReactInstanceManager path.
         addReactHostListener(application, wrapperListener)
     }
 
