@@ -18,11 +18,11 @@ internal class MindboxEventEmitter (
 
     private var jsDelivery: MindboxJsDelivery? = null
 
-    override fun onEvent(event: MindboxSdkLifecyceEvent) {
+    override fun onEvent(event: MindboxSdkLifecycleEvent) {
         when (event) {
-            is MindboxSdkLifecyceEvent.NewIntent -> handleNewIntent(event.reactContext, event.intent)
-            is MindboxSdkLifecyceEvent.ActivityCreated -> handleActivityCreated(event.reactContext, event.activity)
-            is MindboxSdkLifecyceEvent.ActivityDestroyed -> handleActivityDestroyed()
+            is MindboxSdkLifecycleEvent.NewIntent -> handleNewIntent(event.reactContext, event.intent)
+            is MindboxSdkLifecycleEvent.ActivityCreated -> handleActivityCreated(event.reactContext, event.activity)
+            is MindboxSdkLifecycleEvent.ActivityDestroyed -> handleActivityDestroyed()
         }
     }
 

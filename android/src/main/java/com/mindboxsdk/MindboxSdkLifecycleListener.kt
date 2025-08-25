@@ -46,7 +46,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     private fun onReactContextAvailable(reactContext: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] ReactContext ready", Level.INFO)
         addActivityEventListener(reactContext)
-        subscriber.onEvent(MindboxSdkLifecyceEvent.ActivityCreated(reactContext, activity))
+        subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityCreated(reactContext, activity))
     }
 
     private fun registerReactContextListener(
@@ -93,7 +93,7 @@ internal class MindboxSdkLifecycleListener private constructor(
                     ?.takeIf { isMainActivity(it) }
                     ?.let {
                         subscriber.onEvent(
-                            MindboxSdkLifecyceEvent.NewIntent(
+                            MindboxSdkLifecycleEvent.NewIntent(
                                 reactContext,
                                 intent
                             )
@@ -111,7 +111,7 @@ internal class MindboxSdkLifecycleListener private constructor(
 
     override fun onActivityDestroyed(activity: Activity) {
         if (!isMainActivity(activity)) return
-        subscriber.onEvent(MindboxSdkLifecyceEvent.ActivityDestroyed(activity))
+        subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityDestroyed(activity))
         getReactInstanceManager()
             ?.currentReactContext
             ?.removeActivityEventListener(activityEventListener)
@@ -135,7 +135,7 @@ internal class MindboxSdkLifecycleListener private constructor(
         wrapperListener: ReactInstanceManager.ReactInstanceEventListener
     ) {
         runCatching {
-            val reactApplication = application as? ReactApplication ?: return@runCatching
+            val reactApplication = application as ReactApplication
 
             val hostClass = Class.forName("com.facebook.react.ReactHost")
             val listenerClass = Class.forName("com.facebook.react.ReactInstanceEventListener")
@@ -157,7 +157,7 @@ internal class MindboxSdkLifecycleListener private constructor(
             addMethod.invoke(reactHost, proxy)
             Mindbox.writeLog("[RN] success added react context listener for reactHost", Level.INFO)
         }.onFailure {
-            Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.INFO)
+            Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.ERROR)
         }
     }
 }
