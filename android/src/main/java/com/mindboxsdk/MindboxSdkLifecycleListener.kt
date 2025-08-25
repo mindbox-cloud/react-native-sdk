@@ -9,8 +9,9 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.ReactHost
 import java.util.concurrent.atomic.AtomicBoolean
+import cloud.mindbox.mobile_sdk.Mindbox
+import cloud.mindbox.mobile_sdk.logger.Level
 
 
 internal class MindboxSdkLifecycleListener private constructor(
@@ -43,7 +44,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     private var activityEventListener: ActivityEventListener? = null
 
     private fun onReactContextAvailable(reactContext: ReactContext, activity: Activity) {
-        Log.i("Mindbox", "Context avialable")
+        Mindbox.writeLog("[RN] ReactContext ready", Level.INFO)
         addActivityEventListener(reactContext)
         subscriber.onEvent(MindboxSdkLifecyceEvent.ActivityCreated(reactContext, activity))
     }
@@ -54,7 +55,6 @@ internal class MindboxSdkLifecycleListener private constructor(
     ) {
         val reactApplication = application.getReactApplication() ?: return
         val reactInstanceManager = getReactInstanceManager()
-        val reactHost = reactApplication.reactHost
 
         val wrapperListener = object : ReactInstanceManager.ReactInstanceEventListener {
             private val called = AtomicBoolean(false)
@@ -66,14 +66,18 @@ internal class MindboxSdkLifecycleListener private constructor(
         }
 
         reactInstanceManager?.addReactInstanceEventListener(wrapperListener)
-
-        runCatching {
-            reactHost?.addReactInstanceEventListener(wrapperListener)
-        }
+        addReactHostListener(application, wrapperListener)
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (!isMainActivity(activity)) return
+
+        getReactInstanceManager()?.currentReactContext?.let {
+            onReactContextAvailable(it, activity)
+            Mindbox.writeLog("[RN] ReactContext already available; skipping listener registration ", Level.INFO)
+            return
+        }
+
         registerReactContextListener(application) { reactContext ->
             onReactContextAvailable(reactContext, activity)
         }
@@ -126,4 +130,34 @@ internal class MindboxSdkLifecycleListener private constructor(
 
     private fun Application.getReactApplication() = this as? ReactApplication
 
+    private fun addReactHostListener(
+        application: Application,
+        wrapperListener: ReactInstanceManager.ReactInstanceEventListener
+    ) {
+        runCatching {
+            val reactApplication = application as? ReactApplication ?: return@runCatching
+
+            val hostClass = Class.forName("com.facebook.react.ReactHost")
+            val listenerClass = Class.forName("com.facebook.react.ReactInstanceEventListener")
+
+            val addMethod = hostClass.getMethod("addReactInstanceEventListener", listenerClass)
+            val getHostMethod = reactApplication.javaClass.getMethod("getReactHost")
+            val reactHost = getHostMethod.invoke(reactApplication)
+
+            val proxy = java.lang.reflect.Proxy.newProxyInstance(
+                listenerClass.classLoader,
+                arrayOf(listenerClass)
+            ) { _, method, args ->
+                if (method.name == "onReactContextInitialized" && args?.size == 1 && args[0] is ReactContext) {
+                    wrapperListener.onReactContextInitialized(args[0] as ReactContext)
+                }
+                null
+            }
+
+            addMethod.invoke(reactHost, proxy)
+            Mindbox.writeLog("[RN] success added react context listener for reactHost", Level.INFO)
+        }.onFailure {
+            Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.INFO)
+        }
+    }
 }
