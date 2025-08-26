@@ -12,21 +12,22 @@ internal class MindboxSdkInitProvider : ContentProvider() {
 
     companion object {
         private const val AUTO_INIT_ENABLED_KEY = "com.mindbox.sdk.AUTO_INIT_ENABLED"
+        private const val TAG = "MindboxSdkInitProvider"
     }
 
     override fun onCreate(): Boolean {
         runCatching {
-            Log.i("MindboxSdkInitProvider", "onCreate initProvider.")
+            Log.i(TAG, "onCreate initProvider.")
             (context?.applicationContext as? Application)?.let { application ->
                 if (isAutoInitEnabled(application)) {
-                    Log.i("MindboxSdkInitProvider", "Automatic initialization is enabled.")
+                    Log.i(TAG, "Automatic initialization is enabled.")
                     MindboxSdkLifecycleListener.register(application)
                 } else {
-                    Log.i("MindboxSdkInitProvider", "Automatic initialization is disabled.")
+                    Log.i(TAG, "Automatic initialization is disabled.")
                 }
             }
         }.onFailure { error ->
-            Log.e("MindboxSdkInitProvider", "Automatic initialization failed", error)
+            Log.e(TAG, "Automatic initialization failed", error)
         }
         return true
     }
@@ -39,7 +40,7 @@ internal class MindboxSdkInitProvider : ContentProvider() {
             )
             appInfo.metaData
                 ?.getBoolean(AUTO_INIT_ENABLED_KEY, false)
-                ?.also { Log.i("Mindbox", "Result of reading mindbox metadata is $it") }
+                ?.also { Log.i(TAG, "Result of reading mindbox metadata is $it") }
                 ?: false
         }.getOrElse { false }
 
