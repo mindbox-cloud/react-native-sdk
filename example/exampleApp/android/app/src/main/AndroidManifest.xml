@@ -45,5 +45,9 @@
     <meta-data
       android:name="ru.rustore.sdk.pushclient.project_id"
       android:value="l3JnmQZv0CdlZ39y9VERUA8c-P2ys1Ud" />
+
+    <meta-data
+      android:name="com.mindbox.sdk.AUTO_INIT_ENABLED"
+      android:value="false" />
   </application>
 </manifest>
