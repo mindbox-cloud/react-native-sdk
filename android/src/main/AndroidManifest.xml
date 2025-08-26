@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.mindboxsdk">
-
+    <application>
+        <provider
+            android:name="com.mindboxsdk.MindboxSdkInitProvider"
+            android:authorities="${applicationId}.mindbox.init"
+            android:exported="false" />
+    </application>
 </manifest>
