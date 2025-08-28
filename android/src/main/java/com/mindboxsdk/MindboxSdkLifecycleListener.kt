@@ -31,8 +31,9 @@ internal class MindboxSdkLifecycleListener private constructor(
                 synchronized(this) {
                     if (listener == null) {
                         Mindbox.writeLog("[RN] Initialize MindboxSdkLifecycleListener", Level.INFO)
-                        listener = MindboxSdkLifecycleListener(application, subscriber)
-                        application.registerActivityLifecycleCallbacks(listener)
+                        val lifecycleListener = MindboxSdkLifecycleListener(application, subscriber)
+                        application.registerActivityLifecycleCallbacks(lifecycleListener)
+                        listener = lifecycleListener
                     }
                 }
             }
@@ -179,7 +180,30 @@ internal class MindboxSdkLifecycleListener private constructor(
     }
 }
 
-public fun Mindbox.setupPushServices(application: Application, pushServices: List<MindboxPushService>){
+/**
+ * Initializes push notification services for React Native integration.
+ *
+ * This method performs two crucial initialization steps:
+ * 1. Initializes the specified push services (FCM, HMS, RuStore) through Mindbox SDK
+ * 2. Registers the Mindbox lifecycle listener to handle React Native specific events
+ *
+ * @param application The Android Application context used for initialization
+ * @param pushServices List of push notification services to initialize. Typically includes
+ *                     [MindboxFirebase] for Firebase Cloud Messaging and/or
+ *                     [MindboxHuawei] for Huawei Cloud Messaging and/or
+ *                     [MindboxRuStore] for Huawei Cloud Messaging
+ *
+ * @example
+ * // Typical usage:
+ * Mindbox.initPushServicesForReactNative(
+ *     application,
+ *     listOf(MindboxFirebase, MindboxHuawei, MindboxRuStore)
+ * )
+ *
+ * @note This method should be called once during application startup,
+ *       in the Application.onCreate() method.
+ */
+public fun Mindbox.initPushServicesForReactNative(application: Application, pushServices: List<MindboxPushService>) {
     Mindbox.initPushServices(application, pushServices)
     MindboxSdkLifecycleListener.register(application)
 }
