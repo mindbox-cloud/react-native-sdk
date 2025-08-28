@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReactContext
 import java.util.concurrent.atomic.AtomicBoolean
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
+import cloud.mindbox.mobile_sdk.pushes.MindboxPushService
 
 
 internal class MindboxSdkLifecycleListener private constructor(
@@ -20,12 +21,22 @@ internal class MindboxSdkLifecycleListener private constructor(
 ) : Application.ActivityLifecycleCallbacks {
 
     companion object {
+        @Volatile
+        private var listener: MindboxSdkLifecycleListener? = null
+
         fun register(
             application: Application,
             subscriber: MindboxEventSubscriber = MindboxEventEmitter(application)
         ) {
-            val listener = MindboxSdkLifecycleListener(application, subscriber)
-            application.registerActivityLifecycleCallbacks(listener)
+            if (listener == null) {
+                synchronized(this) {
+                    if (listener == null) {
+                        Mindbox.writeLog("[RN] Initialize MindboxSdkLifecycleListener", Level.INFO)
+                        listener = MindboxSdkLifecycleListener(application, subscriber)
+                        application.registerActivityLifecycleCallbacks(listener)
+                    }
+                }
+            }
         }
     }
 
@@ -167,4 +178,9 @@ internal class MindboxSdkLifecycleListener private constructor(
             Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.ERROR)
         }
     }
+}
+
+public fun Mindbox.initPushes(application: Application, pushServices: List<MindboxPushService>){
+    Mindbox.initPushServices(application, pushServices)
+    MindboxSdkLifecycleListener.register(application)
 }
