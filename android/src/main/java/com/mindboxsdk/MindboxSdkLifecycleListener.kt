@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.bridge.ActivityEventListener
@@ -180,7 +179,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     }
 }
 
-public fun Mindbox.initPushes(application: Application, pushServices: List<MindboxPushService>){
+public fun Mindbox.setupPushServices(application: Application, pushServices: List<MindboxPushService>){
     Mindbox.initPushServices(application, pushServices)
     MindboxSdkLifecycleListener.register(application)
 }
