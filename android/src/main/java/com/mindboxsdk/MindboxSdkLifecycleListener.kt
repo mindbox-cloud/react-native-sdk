@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.bridge.ActivityEventListener
@@ -12,6 +11,7 @@ import com.facebook.react.bridge.ReactContext
 import java.util.concurrent.atomic.AtomicBoolean
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
+import cloud.mindbox.mobile_sdk.pushes.MindboxPushService
 
 
 internal class MindboxSdkLifecycleListener private constructor(
@@ -20,12 +20,23 @@ internal class MindboxSdkLifecycleListener private constructor(
 ) : Application.ActivityLifecycleCallbacks {
 
     companion object {
+        @Volatile
+        private var listener: MindboxSdkLifecycleListener? = null
+
         fun register(
             application: Application,
             subscriber: MindboxEventSubscriber = MindboxEventEmitter(application)
         ) {
-            val listener = MindboxSdkLifecycleListener(application, subscriber)
-            application.registerActivityLifecycleCallbacks(listener)
+            if (listener == null) {
+                synchronized(this) {
+                    if (listener == null) {
+                        Mindbox.writeLog("[RN] Initialize MindboxSdkLifecycleListener", Level.INFO)
+                        val lifecycleListener = MindboxSdkLifecycleListener(application, subscriber)
+                        application.registerActivityLifecycleCallbacks(lifecycleListener)
+                        listener = lifecycleListener
+                    }
+                }
+            }
         }
     }
 
@@ -167,4 +178,32 @@ internal class MindboxSdkLifecycleListener private constructor(
             Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.ERROR)
         }
     }
+}
+
+/**
+ * Initializes push notification services for React Native integration.
+ *
+ * This method performs two crucial initialization steps:
+ * 1. Initializes the specified push services (FCM, HMS, RuStore) through Mindbox SDK
+ * 2. Registers the Mindbox lifecycle listener to handle React Native specific events
+ *
+ * @param application The Android Application context used for initialization
+ * @param pushServices List of push notification services to initialize. Typically includes
+ *                     [MindboxFirebase] for Firebase Cloud Messaging and/or
+ *                     [MindboxHuawei] for Huawei Cloud Messaging and/or
+ *                     [MindboxRuStore] for Huawei Cloud Messaging
+ *
+ * @example
+ * // Typical usage:
+ * Mindbox.initPushServicesForReactNative(
+ *     application,
+ *     listOf(MindboxFirebase, MindboxHuawei, MindboxRuStore)
+ * )
+ *
+ * @note This method should be called once during application startup,
+ *       in the Application.onCreate() method.
+ */
+public fun Mindbox.initPushServicesForReactNative(application: Application, pushServices: List<MindboxPushService>) {
+    Mindbox.initPushServices(application, pushServices)
+    MindboxSdkLifecycleListener.register(application)
 }
