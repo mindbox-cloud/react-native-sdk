@@ -11,8 +11,9 @@ internal class MindboxPushServicesDiscovery(private val meta: Bundle?) {
         private const val PUSH_PROVIDER_PREFIX = "cloud.mindbox.push.provider."
     }
 
-    private val preferredProviders: List<String> = listOf("FCM", "HCM", "RuStore")
-    private val orderIndexByTag: Map<String, Int> = preferredProviders.withIndex().associate { it.value to it.index }
+    private val providerPriority: Map<String, Int> by lazy(LazyThreadSafetyMode.NONE) {
+        mapOf("FCM" to 0, "HCM" to 1, "RuStore" to 2)
+    }
 
     val services: List<MindboxPushService> by lazy(LazyThreadSafetyMode.NONE) {
         if (meta == null) {
@@ -25,9 +26,8 @@ internal class MindboxPushServicesDiscovery(private val meta: Bundle?) {
             .mapNotNull { className -> loadPushService(className) }
             .distinctBy { it::class.java.name }
             .sortedWith(
-                compareBy<MindboxPushService> { orderIndexByTag[it.tag] ?: Int.MAX_VALUE }
+                compareBy<MindboxPushService> { providerPriority[it.tag] ?: Int.MAX_VALUE }
                     .thenBy { it.tag }
-                    .thenBy { it::class.java.name }
             )
             .toList()
             .also { list ->
