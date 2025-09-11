@@ -6,7 +6,10 @@ import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
+import cloud.mindbox.mobile_sdk.pushes.MindboxPushService
+import cloud.mindbox.mobile_sdk.Mindbox
 
 internal class MindboxSdkInitProvider : ContentProvider() {
 
@@ -19,8 +22,10 @@ internal class MindboxSdkInitProvider : ContentProvider() {
         runCatching {
             Log.i(TAG, "onCreate initProvider.")
             (context?.applicationContext as? Application)?.let { application ->
-                if (isAutoInitEnabled(application)) {
+                val meta = application.readMetaData()
+                if (isAutoInitEnabled(application, meta)) {
                     Log.i(TAG, "Automatic initialization is enabled.")
+                    Mindbox.initPushServices(application, MindboxPushServicesDiscovery(meta).services)
                     MindboxSdkLifecycleListener.register(application)
                 } else {
                     Log.i(TAG, "Automatic initialization is disabled.")
@@ -32,17 +37,14 @@ internal class MindboxSdkInitProvider : ContentProvider() {
         return true
     }
 
-    private fun isAutoInitEnabled(application: Application): Boolean =
-        runCatching {
-            val appInfo = application.packageManager.getApplicationInfo(
-                application.packageName,
-                PackageManager.GET_META_DATA
-            )
-            appInfo.metaData
-                ?.getBoolean(AUTO_INIT_ENABLED_KEY, false)
-                ?.also { Log.i(TAG, "Result of reading mindbox metadata is $it") }
-                ?: false
-        }.getOrElse { false }
+    private fun isAutoInitEnabled(application: Application, metaData: Bundle?): Boolean =
+        metaData
+            ?.getBoolean(AUTO_INIT_ENABLED_KEY, false)
+            ?: false
+
+    private fun Application.readMetaData(): Bundle? = runCatching {
+        packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
+    }.getOrNull()
 
     override fun query(
         uri: Uri,
