@@ -105,8 +105,7 @@ internal class MindboxSdkLifecycleListener private constructor(
         activityEventListener?.let { reactContext.removeActivityEventListener(it) }
 
         activityEventListener = object : ActivityEventListener {
-            override fun onNewIntent(intent: Intent?) {
-                intent ?: return
+            override fun onNewIntent(intent: Intent) {
                 reactContext.currentActivity
                     ?.takeIf { isMainActivity(it) }
                     ?.let {
@@ -120,7 +119,7 @@ internal class MindboxSdkLifecycleListener private constructor(
             }
 
             override fun onActivityResult(
-                activity: Activity?, requestCode: Int, resultCode: Int, data: Intent?
+                activity: Activity, requestCode: Int, resultCode: Int, data: Intent?
             ) {
             }
         }
