@@ -12,6 +12,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@notifee/react-native": "^7.9.0",
+    "@react-native-firebase/app": "^20.0.0",
+    "@react-native-firebase/messaging": "^20.0.0",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.17",
     "@react-navigation/stack": "^6.3.20",

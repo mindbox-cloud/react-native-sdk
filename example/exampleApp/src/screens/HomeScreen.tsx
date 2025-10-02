@@ -6,6 +6,7 @@ import { requestNotificationPermission } from '../utils/RequestPermission'
 import PushNotificationScreen from './screens/PushNotificationScreen'
 import { useNavigation } from '@react-navigation/native'
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks'
+import messaging from '@react-native-firebase/messaging'
 
 const configuration = {
   domain: 'api.mindbox.ru',
@@ -26,6 +27,9 @@ const HomeScreen = () => {
   const [sdkVersion, setSdkVersion] = useState('Empty')
 
   useEffect(() => {
+    messaging().getToken().then(token => {
+      console.log('FCM token:', token)
+    })
     requestNotificationPermission()
     appInitializationCallback()
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
