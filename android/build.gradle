@@ -33,6 +33,7 @@ android {
     targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
     versionCode 1
     versionName "1.0"
+    consumerProguardFiles 'consumer-rules.pro'
   }
 
   buildTypes {
@@ -126,5 +127,5 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  api 'cloud.mindbox:mobile-sdk:2.14.1'
+  api 'cloud.mindbox:mobile-sdk:2.14.2'
 }

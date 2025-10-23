@@ -13,7 +13,7 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mindboxsdk.MindboxJsDelivery
 
 class MainActivity : ReactActivity() {
-    private var mJsDelivery: MindboxJsDelivery? = null
+    private var jsDelivery: MindboxJsDelivery? = null
     override fun getMainComponentName(): String = "exampleApp"
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
@@ -22,7 +22,7 @@ class MainActivity : ReactActivity() {
     // Initializes MindboxJsDelivery and sends the current intent to React Native
     // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
     private fun initializeAndSentIntent(context: ReactContext) {
-        mJsDelivery = MindboxJsDelivery.Shared.getInstance(context)
+        jsDelivery = MindboxJsDelivery.Shared.getInstance(context)
         if (context.hasCurrentActivity()) {
             sendIntent(context, context.getCurrentActivity()!!.getIntent())
         } else {
@@ -32,8 +32,8 @@ class MainActivity : ReactActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val mReactInstanceManager = getReactNativeHost().getReactInstanceManager();
-        val reactContext = mReactInstanceManager.getCurrentReactContext();
+        val reactInstanceManager = getReactNativeHost().getReactInstanceManager();
+        val reactContext = reactInstanceManager.getCurrentReactContext();
 
         // Initialize and send intent if React context is already available
         // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
@@ -41,11 +41,11 @@ class MainActivity : ReactActivity() {
             initializeAndSentIntent(reactContext);
         } else {
             // Add listener to initialize and send intent once React context is initialized
-            mReactInstanceManager.addReactInstanceEventListener(object :
+            reactInstanceManager.addReactInstanceEventListener(object :
                 ReactInstanceManager.ReactInstanceEventListener {
                 override fun onReactContextInitialized(context: ReactContext) {
                     initializeAndSentIntent(context)
-                    mReactInstanceManager.removeReactInstanceEventListener(this)
+                    reactInstanceManager.removeReactInstanceEventListener(this)
                 }
             })
         }
@@ -63,6 +63,6 @@ class MainActivity : ReactActivity() {
         Mindbox.onNewIntent(intent)
         //send click action
         Mindbox.onPushClicked(context, intent)
-        mJsDelivery?.sendPushClicked(intent);
+        jsDelivery?.sendPushClicked(intent);
     }
 }

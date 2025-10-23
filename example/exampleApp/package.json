@@ -7,6 +7,8 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
+    "wipe": "rm -rf ./node_modules && rm -f yarn.lock && rm -f yarn-error.log && cd ./ios && rm -rf ./Pods && rm -f Podfile.lock && cd ../android && rm -rf ./build && rm -rf ./.gradle && cd ./app && rm -rf ./build && cd ../../",
+    "assemble-debug": "mkdir -p android/app/src/main/assets && npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && cd android && ./gradlew assembleDebug",
     "test": "jest"
   },
   "dependencies": {
@@ -16,8 +18,8 @@
     "mindbox-sdk": "^2.13.1",
     "react": "18.2.0",
     "react-native": "0.74.0",
-    "react-native-gesture-handler": "^2.21.2",
-    "react-native-permissions": "^5.0.0",
+    "react-native-gesture-handler": "2.21.2",
+    "react-native-permissions": "^5.4.0",
     "react-native-safe-area-context": "^4.9.0",
     "react-native-screens": "^3.29.0",
     "react-native-snackbar": "^2.8.0"
