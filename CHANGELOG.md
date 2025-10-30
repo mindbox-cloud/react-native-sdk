@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.4] - 2025-10-30
+
+### Changes
+- Upgrade Android SDK dependency to v2.14.3
+- Upgrade iOS SDK dependency to v2.14.3
+
+
 ## [2.14.3] - 2025-10-23
 
 ### Changes
