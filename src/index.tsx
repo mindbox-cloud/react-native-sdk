@@ -439,11 +439,12 @@ class MindboxSdkClass {
    * from the last known value, sends an update to the backend.
    *
    * @param granted current permission status
-   * @deprecated Use ``refreshNotificationPermissionStatus()`` instead.
+   * @deprecated Use `refreshNotificationPermissionStatus()` instead.
    */
   public updateNotificationPermissionStatus(granted: Boolean) {
+    // eslint-disable-next-line no-void
+    void granted
     console.warn('updateNotificationPermissionStatus is deprecated. Use refreshNotificationPermissionStatus instead.')
-    void granted;
     return MindboxSdkNative.refreshNotificationPermissionStatus()
   }
 
