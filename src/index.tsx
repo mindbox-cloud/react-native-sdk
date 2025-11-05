@@ -442,9 +442,7 @@ class MindboxSdkClass {
    * @deprecated Use `refreshNotificationPermissionStatus()` instead.
    */
   public updateNotificationPermissionStatus(granted: Boolean) {
-    // eslint-disable-next-line no-void
-    void granted
-    console.warn('updateNotificationPermissionStatus is deprecated. Use refreshNotificationPermissionStatus instead.')
+    console.warn(`updateNotificationPermissionStatus(granted=${String(granted)}) is deprecated. Use refreshNotificationPermissionStatus instead.`)
     return MindboxSdkNative.refreshNotificationPermissionStatus()
   }
 
