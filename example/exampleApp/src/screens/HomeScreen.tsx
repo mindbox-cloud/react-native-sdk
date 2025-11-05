@@ -10,7 +10,7 @@ import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallba
 const configuration = {
   domain: 'api.mindbox.ru',
   // Set your endpoints system name for ios and android below
-  endpointId: Platform.OS === 'ios' ? '' : '',
+  endpointId: Platform.OS === 'ios' ? 'Mpush-test.IosRnExample' : 'Mpush-test.AndroidRnExample',
   subscribeCustomerIfCreated: true,
   shouldCreateCustomer: true,
 }
@@ -26,18 +26,27 @@ const HomeScreen = () => {
   const [sdkVersion, setSdkVersion] = useState('Empty')
 
   useEffect(() => {
-    requestNotificationPermission()
-    appInitializationCallback()
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
     MindboxSdk.setLogLevel(LogLevel.DEBUG)
+
+    requestNotificationPermission()
+    appInitializationCallback()
+
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getdeviceuuid
-    MindboxSdk.getDeviceUUID(setDeviceUUID)
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
-    MindboxSdk.getTokens(setToken)
-    // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
-    MindboxSdk.getSdkVersion((version) => {
-      setSdkVersion(version)
+    MindboxSdk.getDeviceUUID((uuid: string) => {
+      setDeviceUUID(uuid)
+
+      // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#gettoken
+      MindboxSdk.getTokens((token: string) => {
+        setToken(token)
+
+        // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#getsdkversion-since-280
+        MindboxSdk.getSdkVersion((version) => {
+          setSdkVersion(version)
+        })
+      })
     })
+
     // https://developers.mindbox.ru/docs/in-app#react-native
     chooseInappCallback(RegisterInappCallback.DEFAULT)
   }, [appInitializationCallback])
