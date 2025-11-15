@@ -434,12 +434,27 @@ class MindboxSdkClass {
   }
 
   /**
-   * This method is used to inform sdk when the notification permission status changed
+   * This method is kept for backward compatibility. The `granted` argument is ignored.
+   * The SDK reads the current system authorization status and, if it differs
+   * from the last known value, sends an update to the backend.
    *
    * @param granted current permission status
+   * @deprecated Use `refreshNotificationPermissionStatus()` instead.
    */
   public updateNotificationPermissionStatus(granted: Boolean) {
-    return MindboxSdkNative.updateNotificationPermissionStatus(granted)
+    console.warn(`updateNotificationPermissionStatus(granted=${String(granted)}) is deprecated. Use refreshNotificationPermissionStatus instead.`)
+    return MindboxSdkNative.refreshNotificationPermissionStatus()
+  }
+
+  /**
+   * Checks the current system authorization status for push notifications
+   * and reports any changes to Mindbox.
+   *
+   * @example
+   * MindboxSdk.refreshNotificationPermissionStatus()
+   */
+  public refreshNotificationPermissionStatus() {
+    return MindboxSdkNative.refreshNotificationPermissionStatus()
   }
 
   /**

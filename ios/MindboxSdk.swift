@@ -193,8 +193,8 @@ class MindboxSdk: NSObject {
     }
 
     @objc
-    func updateNotificationPermissionStatus(_ granted: Bool) {
-        Mindbox.shared.notificationsRequestAuthorization(granted: granted)
+    func refreshNotificationPermissionStatus() {
+        Mindbox.shared.refreshNotificationPermissionStatus()
     }
 
     @objc

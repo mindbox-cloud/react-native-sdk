@@ -21,6 +21,7 @@
 		3ACCD5252B736C0000C94F45 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3ACCD5242B736C0000C94F45 /* UserNotificationsUI.framework */; };
 		3ACCD5282B736C0000C94F45 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCD5272B736C0000C94F45 /* NotificationViewController.swift */; };
 		3ACCD52F2B736C0000C94F45 /* MindboxNotificationContentExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3ACCD5212B736C0000C94F45 /* MindboxNotificationContentExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		47632DE92EBB68C1005CF203 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 47632DE82EBB68C1005CF203 /* PrivacyInfo.xcprivacy */; };
 		6FA2F0A6E649B5D37A50E5DF /* libPods-exampleApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 225AB1FB2853D87400D56406 /* libPods-exampleApp.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		D12DD691CE76549C9A289F4A /* libPods-exampleApp-MindboxNotificationContentExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F94D0E16F83CA4229F8935E5 /* libPods-exampleApp-MindboxNotificationContentExtension.a */; };
@@ -85,6 +86,7 @@
 		3ACCD5332B736C3600C94F45 /* MindboxNotificationContentExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MindboxNotificationContentExtension.entitlements; sourceTree = "<group>"; };
 		443E0C92268BE125C44414DB /* Pods-exampleApp-MindboxNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exampleApp-MindboxNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-exampleApp-MindboxNotificationServiceExtension/Pods-exampleApp-MindboxNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		47152D5D7BA14904B8BB519A /* Pods-exampleApp-MindboxNotificationContentExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exampleApp-MindboxNotificationContentExtension.release.xcconfig"; path = "Target Support Files/Pods-exampleApp-MindboxNotificationContentExtension/Pods-exampleApp-MindboxNotificationContentExtension.release.xcconfig"; sourceTree = "<group>"; };
+		47632DE82EBB68C1005CF203 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = exampleApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		47AD8F18AB85B027D3981AE3 /* Pods-exampleApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exampleApp.debug.xcconfig"; path = "Target Support Files/Pods-exampleApp/Pods-exampleApp.debug.xcconfig"; sourceTree = "<group>"; };
 		52276FFC6E12FB80FA062002 /* libPods-exampleApp-exampleAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-exampleApp-exampleAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A5E00695C40D3AAF012A013 /* Pods-exampleApp-MindboxNotificationContentExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exampleApp-MindboxNotificationContentExtension.debug.xcconfig"; path = "Target Support Files/Pods-exampleApp-MindboxNotificationContentExtension/Pods-exampleApp-MindboxNotificationContentExtension.debug.xcconfig"; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 		13B07FAE1A68108700A75B9A /* exampleApp */ = {
 			isa = PBXGroup;
 			children = (
+				47632DE82EBB68C1005CF203 /* PrivacyInfo.xcprivacy */,
 				3A88FC0B2B6CEE180046E687 /* exampleApp.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -348,6 +351,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				47632DE92EBB68C1005CF203 /* PrivacyInfo.xcprivacy in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -393,13 +397,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp/Pods-exampleApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp/Pods-exampleApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -414,13 +414,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp/Pods-exampleApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp/Pods-exampleApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -435,13 +431,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp-MindboxNotificationContentExtension/Pods-exampleApp-MindboxNotificationContentExtension-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp-MindboxNotificationContentExtension/Pods-exampleApp-MindboxNotificationContentExtension-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -500,13 +492,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp-MindboxNotificationServiceExtension/Pods-exampleApp-MindboxNotificationServiceExtension-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-exampleApp-MindboxNotificationServiceExtension/Pods-exampleApp-MindboxNotificationServiceExtension-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -610,6 +598,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = mindbox.RN.Example;
 				PRODUCT_NAME = exampleApp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "exampleApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -643,6 +632,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = mindbox.RN.Example;
 				PRODUCT_NAME = exampleApp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "exampleApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -833,6 +823,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = "$(inherited)";
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -860,6 +851,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -879,6 +871,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -898,9 +892,13 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				USE_HERMES = true;
 			};
 			name = Debug;
@@ -909,6 +907,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = "$(inherited)";
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -936,6 +935,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				CXX = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = i386;
@@ -948,6 +948,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -966,7 +968,10 @@
 					"-DFOLLY_USE_LIBCPP=1",
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
