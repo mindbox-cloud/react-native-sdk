@@ -228,7 +228,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
   }
 
   @ReactMethod
-  fun updateNotificationPermissionStatus(granted: Boolean) {
+  fun refreshNotificationPermissionStatus() {
     Mindbox.updateNotificationPermissionStatus(
       context = reactApplicationContext.applicationContext,
     )
