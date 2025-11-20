@@ -143,7 +143,13 @@ internal class MindboxSdkLifecycleListener private constructor(
 
 
     private fun getReactInstanceManager(): ReactInstanceManager? =
-        application.getReactApplication()?.reactNativeHost?.reactInstanceManager
+        runCatching {
+            application.getReactApplication()
+                ?.reactNativeHost
+                ?.reactInstanceManager
+        }.onFailure {
+            Mindbox.writeLog("[RN] Bridgeless: ReactInstanceManager unsupported. Fallback to ReactHost", Level.INFO)
+        }.getOrNull()
 
     private fun Application.getReactApplication() = this as? ReactApplication
 
