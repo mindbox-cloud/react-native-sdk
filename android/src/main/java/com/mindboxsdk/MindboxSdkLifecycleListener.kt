@@ -64,13 +64,13 @@ internal class MindboxSdkLifecycleListener private constructor(
         application: Application,
         onReady: (ReactContext) -> Unit
     ) {
-        val reactApplication = application.getReactApplication() ?: return
         val reactInstanceManager = getReactInstanceManager()
 
         val wrapperListener = object : ReactInstanceManager.ReactInstanceEventListener {
             private val called = AtomicBoolean(false)
             override fun onReactContextInitialized(context: ReactContext) {
                 if (called.compareAndSet(false, true)) {
+                    Mindbox.writeLog("[RN] ReactContext initialized (listener)", Level.INFO)
                     onReady(context)
                 }
             }
@@ -90,14 +90,19 @@ internal class MindboxSdkLifecycleListener private constructor(
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (!isMainActivity(activity)) return
 
-        getReactInstanceManager()?.currentReactContext?.let {
-            onReactContextAvailable(it, activity)
-            Mindbox.writeLog("[RN] ReactContext already available; skipping listener registration ", Level.INFO)
-            return
-        }
+        val hasConsumedReactContext = AtomicBoolean(false)
 
         registerReactContextListener(application) { reactContext ->
-            onReactContextAvailable(reactContext, activity)
+            if (hasConsumedReactContext.compareAndSet(false, true)) {
+                onReactContextAvailable(reactContext, activity)
+            }
+        }
+
+        getReactContext()?.let {
+            if (hasConsumedReactContext.compareAndSet(false, true)) {
+                onReactContextAvailable(it, activity)
+                Mindbox.writeLog("[RN] ReactContext available (pre-existing)", Level.INFO)
+            }
         }
     }
 
@@ -129,9 +134,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     override fun onActivityDestroyed(activity: Activity) {
         if (!isMainActivity(activity)) return
         subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityDestroyed(activity))
-        getReactInstanceManager()
-            ?.currentReactContext
-            ?.removeActivityEventListener(activityEventListener)
+        getReactContext()?.removeActivityEventListener(activityEventListener)
         activityEventListener = null
     }
 
@@ -152,6 +155,26 @@ internal class MindboxSdkLifecycleListener private constructor(
         }.getOrNull()
 
     private fun Application.getReactApplication() = this as? ReactApplication
+
+    private fun getReactContext(): ReactContext? {
+        return getReactInstanceManagerContext() ?: getReactHostContext(application)
+    }
+
+    private fun getReactInstanceManagerContext(): ReactContext? {
+        return getReactInstanceManager()?.currentReactContext
+    }
+
+    private fun getReactHostContext(application: Application): ReactContext? =
+        runCatching {
+            // RN 0.78+ moves reactContext from reactNativeHost.reactInstanceManager to reactHost
+            val reactApplication = application as ReactApplication
+            val getHostMethod = reactApplication.javaClass.getMethod("getReactHost")
+            val reactHost = getHostMethod.invoke(reactApplication)
+            val getContextMethod = reactHost.javaClass.getMethod("getCurrentReactContext")
+            getContextMethod.invoke(reactHost) as? ReactContext
+        }.onFailure {
+            Mindbox.writeLog("[RN] ReactHost currentReactContext unavailable", Level.INFO)
+        }.getOrNull()
 
     private fun addReactHostListener(
         application: Application,
