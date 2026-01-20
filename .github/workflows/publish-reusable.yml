@@ -6,6 +6,10 @@ on:
       branch:
         required: true
         type: string
+        
+permissions:
+  id-token: write
+  contents: write
 
 jobs:
   checkingVersion:
@@ -41,9 +45,9 @@ jobs:
       with:
         ref: ${{ inputs.branch }}
     - name: Setup node JS
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 'lts/*'
         registry-url: https://registry.npmjs.org
     - name: Setup local environment
       run: yarn
@@ -81,9 +85,9 @@ jobs:
         fi
     - name: Release
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_CICD_SECRET }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        npm install -g npm@latest
         if [ ${{ steps.prerelease_check.outputs.is_prerelease }} == "true" ]; then
           yarn release ${{ needs.checkingVersion.outputs.newVersion }} --pre-release --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
         else
