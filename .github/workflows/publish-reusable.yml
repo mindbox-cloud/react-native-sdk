@@ -88,7 +88,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         npm install -g npm@latest
-        unset NODE_AUTH_TOKEN
+        NODE_AUTH_TOKEN=""
         if [ ${{ steps.prerelease_check.outputs.is_prerelease }} == "true" ]; then
           yarn release ${{ needs.checkingVersion.outputs.newVersion }} --pre-release --no-plugins.@release-it/keep-a-changelog.strictLatest --ci
         else
