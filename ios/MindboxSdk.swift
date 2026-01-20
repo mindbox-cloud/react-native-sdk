@@ -1,6 +1,5 @@
 import Mindbox
 import MindboxLogger
-import CoreFoundation
 
 enum CustomError: Error {
     case tokenAPNSisNull
