@@ -83,6 +83,43 @@ jobs:
         else
           echo "::set-output name=is_prerelease::false"
         fi
+        
+    - name: Debug OIDC availability
+      run: |
+        echo "ACTIONS_ID_TOKEN_REQUEST_URL is ${ACTIONS_ID_TOKEN_REQUEST_URL:+SET}"
+        echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN is ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+SET}"
+    - name: Debug runtime versions
+      run: |
+        node -v
+        npm -v
+        yarn -v
+        echo "actor=$GITHUB_ACTOR"
+        echo "ref=$GITHUB_REF"
+        echo "sha=$GITHUB_SHA"
+        echo "workflow=$GITHUB_WORKFLOW"
+        echo "run_id=$GITHUB_RUN_ID"
+
+    - name: Debug auth env
+      run: |
+        echo "NODE_AUTH_TOKEN is ${NODE_AUTH_TOKEN:+SET}"
+        echo "NPM_TOKEN is ${NPM_TOKEN:+SET}"
+        echo "NPM_CONFIG_USERCONFIG=$NPM_CONFIG_USERCONFIG"
+    - name: Debug npmrc (safe)
+      run: |
+        if [ -n "$NPM_CONFIG_USERCONFIG" ] && [ -f "$NPM_CONFIG_USERCONFIG" ]; then
+          echo "--- temp userconfig (filtered) ---"
+          grep -nE "registry|authToken|always-auth|_auth|//registry" "$NPM_CONFIG_USERCONFIG" || true
+        else
+          echo "No NPM_CONFIG_USERCONFIG file"
+        fi
+
+        if [ -f .npmrc ]; then
+          echo "--- repo .npmrc (filtered) ---"
+          grep -nE "registry|authToken|always-auth|_auth|//registry" .npmrc || true
+        else
+          echo "No .npmrc in repo root"
+        fi
+        
     - name: Remove npm auth config (for trusted publishing)
       run: |
         echo "NPM_CONFIG_USERCONFIG=$NPM_CONFIG_USERCONFIG"
@@ -92,10 +129,7 @@ jobs:
         else
           echo "No temp .npmrc found"
         fi
-    - name: Debug OIDC availability
-      run: |
-        echo "ACTIONS_ID_TOKEN_REQUEST_URL is ${ACTIONS_ID_TOKEN_REQUEST_URL:+SET}"
-        echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN is ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+SET}"
+        
     - name: Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
