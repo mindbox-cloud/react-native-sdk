@@ -100,7 +100,8 @@
       "after:bump": "npx auto-changelog -p"
     },
     "npm": {
-      "publish": true
+      "publish": true,
+      "skipChecks": true
     },
     "github": {
       "release": true
