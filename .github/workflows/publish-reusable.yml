@@ -68,6 +68,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 'lts/*'
+        registry-url: https://registry.npmjs.org
     - name: Setup GIT
       run: |
         git config user.email '$GITHUB_ACTOR@users.noreply.github.com'
@@ -81,15 +82,6 @@ jobs:
           echo "::set-output name=is_prerelease::true"
         else
           echo "::set-output name=is_prerelease::false"
-        fi
-    - name: Remove npm auth config (for trusted publishing)
-      run: |
-        echo "NPM_CONFIG_USERCONFIG=$NPM_CONFIG_USERCONFIG"
-        if [ -n "$NPM_CONFIG_USERCONFIG" ] && [ -f "$NPM_CONFIG_USERCONFIG" ]; then
-          rm -f "$NPM_CONFIG_USERCONFIG"
-          echo "Removed temp .npmrc"
-        else
-          echo "No temp .npmrc found"
         fi
     - name: Release
       env:
