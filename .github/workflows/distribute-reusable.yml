@@ -42,6 +42,7 @@ jobs:
           INPUT_COMMITS: ${{ env.commits }}
         run: |
           set -euo pipefail
+
           APP_REF_OVERRIDE="$(printf '%s' "${APP_REF_OVERRIDE:-}" | xargs)"
 
           echo "---- DEBUG (GitHub -> GitLab trigger payload) ----"
@@ -49,9 +50,11 @@ jobs:
           echo "Manual App ref override: ${APP_REF_OVERRIDE:-<empty>}"
           echo "Default App ref: $DEFAULT_APP_REF"
           echo ""
-          echo "RAW INPUT_COMMITS (cat -A):"
-          printf '%s' "${INPUT_COMMITS:-}" | cat -A
+          
+          echo "RAW INPUT_COMMITS (sed -n 'l' shows line endings):"
+          printf '%s' "${INPUT_COMMITS:-}" | sed -n 'l'
           echo ""
+          
           echo "RAW INPUT_COMMITS (printf %q):"
           printf '%q\n' "${INPUT_COMMITS:-}"
           echo "--------------------------------------------------"
