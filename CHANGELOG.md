@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.15.0-rc] - 2026-03-11
+
+### Changes
+- Upgrade Android SDK dependency to v2.15.0-rc
+- Upgrade iOS SDK dependency to v2.15.0-rc
+
+
 ## [2.14.6] - 2026-01-20
 
 ### Changes
