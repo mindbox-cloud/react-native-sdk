@@ -1,14 +1,14 @@
-def node_require(script)
-   # Resolve script with node to allow for hoisting
-   require Pod::Executable.execute_command('node', ['-p',
-    "require.resolve(
-      '#{script}',
-       {paths: [process.argv[1]]},
-     )", __dir__]).strip
-end
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
-node_require('react-native/scripts/react_native_pods.rb')
-node_require('react-native-permissions/scripts/setup.rb')
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native-permissions/scripts/setup.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -26,26 +26,25 @@ target 'exampleApp' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   pod 'Mindbox'
 
-target 'MindboxNotificationServiceExtension' do
-     pod 'MindboxNotifications'
+  target 'MindboxNotificationServiceExtension' do
+    pod 'MindboxNotifications'
   end
 
-target 'MindboxNotificationContentExtension' do
-   pod 'MindboxNotifications'
+  target 'MindboxNotificationContentExtension' do
+    pod 'MindboxNotifications'
   end
 
   post_install do |installer|
     installer.pods_project.targets.each do |target|
-       target.build_configurations.each do |config|
-         config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'No'
-       end
-     end
+      target.build_configurations.each do |buildConfig|
+        buildConfig.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'No'
+      end
+    end
     react_native_post_install(
       installer,
       config[:reactNativePath],
@@ -53,4 +52,3 @@ target 'MindboxNotificationContentExtension' do
     )
   end
 end
-

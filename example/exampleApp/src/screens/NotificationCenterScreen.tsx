@@ -6,11 +6,13 @@ import { asyncOperationNCPushOpen } from '../utils/MindboxOperations'
 import initialNotifications from '../utils/NotificationStub'
 import styles from '../components/NotificationScreenStyles'
 import { Notification } from '../utils/Notification'
+import { useAppNavigation } from '../navigation/AppNavigationContext'
 
 const { NotificationModule } = NativeModules
 const notificationEmitter = new NativeEventEmitter(NotificationModule)
 
-const NotificationCenterScreen = ({ navigation }: { navigation: any }) => {
+const NotificationCenterScreen = () => {
+  const navigation = useAppNavigation()
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   useEffect(() => {

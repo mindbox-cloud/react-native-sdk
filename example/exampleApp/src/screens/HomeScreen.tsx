@@ -3,8 +3,7 @@ import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-na
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback, InAppCallback, UrlInAppCallback } from 'mindbox-sdk'
 import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations'
 import { requestNotificationPermission } from '../utils/RequestPermission'
-import PushNotificationScreen from './screens/PushNotificationScreen'
-import { useNavigation } from '@react-navigation/native'
+import { useAppNavigation } from '../navigation/AppNavigationContext'
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks'
 
 const configuration = {
@@ -16,7 +15,7 @@ const configuration = {
 }
 
 const HomeScreen = () => {
-  const navigation = useNavigation()
+  const navigation = useAppNavigation()
   const [deviceUUID, setDeviceUUID] = useState('Empty')
   const [token, setToken] = useState('Empty')
   const [pushData, setPushData] = useState({
@@ -24,6 +23,35 @@ const HomeScreen = () => {
     pushPayload: null,
   })
   const [sdkVersion, setSdkVersion] = useState('Empty')
+
+  const appInitializationCallback = useCallback(async () => {
+    try {
+      // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#mindboxinitialize
+      await MindboxSdk.initialize(configuration)
+    } catch (error) {
+      console.log(error)
+    }
+  }, [])
+
+  const navigateToPushNotificationIfRequired = useCallback(
+    (pushUrl: string | null) => {
+      if (pushUrl != null && pushUrl.includes('gotoanotherscreen')) {
+        navigation.navigate('PushNotification')
+      }
+    },
+    [navigation]
+  )
+
+  const getPushData = useCallback(
+    (pushUrl: string | null, pushPayload: string | null) => {
+      setTimeout(() => {
+        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
+        navigateToPushNotificationIfRequired(pushUrl)
+        setPushData({ pushUrl, pushPayload })
+      }, 600)
+    },
+    [navigateToPushNotificationIfRequired]
+  )
 
   useEffect(() => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#setloglevel-since-280
@@ -51,26 +79,6 @@ const HomeScreen = () => {
     chooseInappCallback(RegisterInappCallback.DEFAULT)
   }, [appInitializationCallback])
 
-  const appInitializationCallback = useCallback(async () => {
-    try {
-      // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#mindboxinitialize
-      await MindboxSdk.initialize(configuration)
-    } catch (error) {
-      console.log(error)
-    }
-  }, [])
-
-  const getPushData = useCallback(
-    (pushUrl: String | null, pushPayload: String | null) => {
-      setTimeout(() => {
-        // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
-        navigateToPushNotificationIfRequired(pushUrl)
-        setPushData({ pushUrl, pushPayload })
-      }, 600)
-    },
-    [navigateToPushNotificationIfRequired]
-  )
-
   useEffect(() => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
     MindboxSdk.onPushClickReceived(getPushData)
@@ -88,15 +96,6 @@ const HomeScreen = () => {
     asyncOperationNCOpen()
     navigation.navigate('NotificationCenter')
   }
-
-  const navigateToPushNotificationIfRequired = useCallback(
-    (pushUrl) => {
-      if (pushUrl && pushUrl.includes('gotoanotherscreen')) {
-        navigation.navigate('PushNotification')
-      }
-    },
-    [navigation]
-  )
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.textContainer}>
