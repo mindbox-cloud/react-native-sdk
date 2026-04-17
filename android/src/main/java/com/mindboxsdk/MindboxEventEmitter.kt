@@ -2,18 +2,13 @@ package com.mindboxsdk
 
 import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.content.Intent
-import android.util.Log
-import com.facebook.react.ReactApplication
-import com.facebook.react.ReactInstanceManager
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.ReactActivity
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
 
-internal class MindboxEventEmitter (
-    private val application: Application
+internal class MindboxEventEmitter(
+    private val application: Application,
 ) : MindboxEventSubscriber {
 
     private var jsDelivery: MindboxJsDelivery? = null
@@ -33,7 +28,7 @@ internal class MindboxEventEmitter (
         jsDelivery?.sendPushClicked(intent)
     }
 
-    private fun handleActivityCreated(reactContext:ReactContext, activity: Activity) {
+    private fun handleActivityCreated(reactContext: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] Handle activity created", Level.INFO)
         runCatching {
             reactContext.let { reactContext ->
@@ -45,7 +40,7 @@ internal class MindboxEventEmitter (
     private fun initializeAndSendIntent(context: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] Initialize MindboxJsDelivery", Level.INFO)
         jsDelivery = MindboxJsDelivery.Shared.getInstance(context)
-        val currentActivity = context.currentActivity ?: activity
+        val currentActivity: Activity = context.currentActivity ?: activity
         currentActivity.intent?.let { handleNewIntent(context, it) }
     }
 

@@ -1,71 +1,85 @@
-import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native'
+import { Platform } from 'react-native'
 
 import type { InitializationData, ExecuteSyncOperationPayload, ExecuteAsyncOperationPayload } from './types'
 import type { InAppCallback } from './InAppCallback'
+import MindboxSdkNative from './NativeMindboxSdk'
 
 import { LogLevel } from './LogLevel'
 
-const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules
+type RemovableSubscription = {
+  remove(): void
+}
+
+type InAppClickEventPayload = {
+  id: string
+  redirectUrl: string
+  payload: string
+}
+
+type InAppDismissEventPayload = {
+  id: string
+}
+
+type PushNotificationClickedPayload = {
+  pushUrl: string
+  pushPayload: string
+}
+
+type MindboxSdkIosNativeModule = {
+  getAPNSToken(): Promise<string>
+  updateAPNSToken(token: string): Promise<boolean>
+}
 
 class MindboxSdkClass {
   private _initialized: boolean
   private _initializing: boolean
   private _callbacks: Array<() => void>
-  private _mindboxJsDeliveryEvents: NativeEventEmitter
-  private _emitterSubscribtion?: EmitterSubscription
+  private _pushSubscription?: RemovableSubscription
+  private _inAppClickSubscription?: RemovableSubscription
+  private _inAppDismissSubscription?: RemovableSubscription
   private readonly _prefix: string = '[RN]'
 
   constructor() {
     this._initialized = false
     this._initializing = false
     this._callbacks = []
-    this._mindboxJsDeliveryEvents = new NativeEventEmitter(MindboxJsDelivery)
   }
 
-  /**
-   * @name initialized
-   * @type {boolean}
-   * @description Is MindboxSdk already initialized.
-   */
   get initialized() {
     return this._initialized
   }
 
-  /**
-   * @name subscribedForPushClickedEvent
-   * @type {boolean}
-   * @description Is there any subscription on push notification tapped.
-   */
   get subscribedForPushClickedEvent() {
-    return !!this._emitterSubscribtion
+    return !!this._pushSubscription
   }
 
   public registerInAppCallbacks(callbacks: Array<InAppCallback>) {
+    this._inAppClickSubscription?.remove()
+    this._inAppDismissSubscription?.remove()
+    this._inAppClickSubscription = undefined
+    this._inAppDismissSubscription = undefined
+
     let customCallback: InAppCallback | undefined
     const callbackNames = callbacks.map((callback) => {
       const name = callback.getName()
       switch (name) {
-        case 'urlInAppCallback': {
+        case 'urlInAppCallback':
+        case 'copyPayloadInAppCallback':
+        case 'emptyInAppCallback':
           break
-        }
-        case 'copyPayloadInAppCallback': {
-          break
-        }
-        case 'emptyInAppCallback': {
-          break
-        }
-        default: {
+        default:
           customCallback = callback
-        }
       }
       return name
     })
-    this._mindboxJsDeliveryEvents.addListener('Click', (event) => {
+
+    this._inAppClickSubscription = MindboxSdkNative.onInAppClick((event: InAppClickEventPayload) => {
       customCallback?.onInAppClick(event.id, event.redirectUrl, event.payload)
     })
-    this._mindboxJsDeliveryEvents.addListener('Dismiss', (event) => {
+    this._inAppDismissSubscription = MindboxSdkNative.onInAppDismiss((event: InAppDismissEventPayload) => {
       customCallback?.onInAppDismissed(event.id)
     })
+
     MindboxSdkNative.registerCallbacks(callbackNames)
   }
 
@@ -180,11 +194,12 @@ class MindboxSdkClass {
     }
 
     const callbackHandler = () => {
-      let promise = null
+      const iosNativeModule = MindboxSdkNative as unknown as MindboxSdkIosNativeModule
+      let promise: Promise<string>
 
       switch (Platform.OS) {
         case 'ios':
-          promise = MindboxSdkNative.getAPNSToken()
+          promise = iosNativeModule.getAPNSToken()
           break
 
         case 'android':
@@ -192,7 +207,7 @@ class MindboxSdkClass {
           break
 
         default:
-          promise = MindboxSdkNative.getAPNSToken()
+          promise = iosNativeModule.getAPNSToken()
           break
       }
 
@@ -219,9 +234,7 @@ class MindboxSdkClass {
     }
 
     const callbackHandler = () => {
-      let promise = null
-      promise = MindboxSdkNative.getTokens()
-      promise.then((token: string) => callback(token))
+      MindboxSdkNative.getTokens().then((token: string) => callback(token))
     }
 
     if (this._initialized) {
@@ -246,27 +259,15 @@ class MindboxSdkClass {
 
     switch (Platform.OS) {
       case 'ios':
-        try {
-          await MindboxSdkNative.updateAPNSToken(token)
-        } catch (error) {
-          throw error
-        }
+        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
         break
 
       case 'android':
-        try {
-          await MindboxSdkNative.updateFMSToken(token)
-        } catch (error) {
-          throw error
-        }
+        await MindboxSdkNative.updateFMSToken(token)
         break
 
       default:
-        try {
-          await MindboxSdkNative.updateAPNSToken(token)
-        } catch (error) {
-          throw error
-        }
+        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
         break
     }
   }
@@ -286,11 +287,12 @@ class MindboxSdkClass {
     }
 
     this.removeOnPushClickReceived()
-    this.writeNativeLog(`Set push click listener`, LogLevel.INFO)
-    this._emitterSubscribtion = this._mindboxJsDeliveryEvents.addListener('pushNotificationClicked', (dataString: string) => {
-      const data = JSON.parse(dataString)
-      callback(data.pushUrl || null, data.pushPayload || null)
+    this.writeNativeLog('Set push click listener', LogLevel.INFO)
+
+    this._pushSubscription = MindboxSdkNative.onPushNotificationClicked((event: PushNotificationClickedPayload) => {
+      callback(event.pushUrl || null, event.pushPayload || null)
     })
+
     if (Platform.OS === 'android') {
       this.writeNativeLog('Register push click listener for android', LogLevel.INFO)
       MindboxSdkNative.onPushClickedIsRegistered(true)
@@ -305,9 +307,9 @@ class MindboxSdkClass {
    * MindboxSdk.removeOnPushClickReceived();
    */
   public removeOnPushClickReceived() {
-    if (this._emitterSubscribtion) {
-      this._emitterSubscribtion.remove()
-      this._emitterSubscribtion = undefined
+    if (this._pushSubscription) {
+      this._pushSubscription.remove()
+      this._pushSubscription = undefined
       if (Platform.OS === 'android') {
         MindboxSdkNative.onPushClickedIsRegistered(false)
       }

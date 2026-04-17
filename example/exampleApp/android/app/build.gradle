@@ -1,14 +1,14 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'kotlin-android'
-apply plugin: 'com.huawei.agconnect'
-
+apply plugin: "com.google.gms.google-services"
+apply plugin: "kotlin-android"
+apply plugin: "com.huawei.agconnect"
 
 react {
-
+  autolinkLibrariesWithApp()
 }
+
 def enableProguardInReleaseBuilds = false
 def jscFlavor = 'org.webkit:android-jsc:+'
 
@@ -47,9 +47,6 @@ android {
 
 dependencies {
   implementation("com.facebook.react:react-android")
-  implementation "com.facebook.react:react-native:0.74.0"
-
-  // Integration of Mindbox SDK and necessary Firebase and Huawei services for mobile push notifications functionality
   implementation platform('com.google.firebase:firebase-bom:29.3.1')
   implementation 'com.google.firebase:firebase-analytics-ktx'
   implementation 'com.google.firebase:firebase-messaging-ktx'
@@ -58,8 +55,6 @@ dependencies {
   implementation 'com.huawei.hms:push:6.7.0.300'
   implementation 'cloud.mindbox:mindbox-rustore'
   implementation 'ru.rustore.sdk:pushclient:6.5.1'
-
-  //gson
   implementation 'com.google.code.gson:gson:2.8.8'
 
   if (hermesEnabled.toBoolean()) {
@@ -68,6 +63,3 @@ dependencies {
     implementation jscFlavor
   }
 }
-
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
-

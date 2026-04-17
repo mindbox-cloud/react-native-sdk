@@ -146,6 +146,20 @@ jest.mock('react-native', () => {
           resolve(true)
         })
     ),
+    getSdkVersion: jest.fn(() => Promise.resolve('1.0.0')),
+    refreshNotificationPermissionStatus: jest.fn(() => Promise.resolve()),
+    pushDelivered: jest.fn(),
+    registerCallbacks: jest.fn(),
+    setLogLevel: jest.fn(),
+    onPushClickedIsRegistered: jest.fn(),
+    onInAppClick: jest.fn(() => ({ remove: jest.fn() })),
+    onInAppDismiss: jest.fn(() => ({ remove: jest.fn() })),
+    onPushNotificationClicked: jest.fn(() => ({ remove: jest.fn() })),
+  }
+
+  actualReactNative.TurboModuleRegistry = {
+    ...(actualReactNative.TurboModuleRegistry || {}),
+    getEnforcing: jest.fn(() => actualReactNative.NativeModules.MindboxSdk),
   }
 
   actualReactNative.NativeModules.MindboxJsDelivery = {
@@ -501,13 +515,13 @@ describe('Testing Mindbox RN SDK', () => {
 
       expect.assertions(2)
 
-      MindboxSdk.getToken((token: string) => {
+      MindboxSdk.getTokens((token: string) => {
         expect(token).toEqual('Tokens')
       })
 
       Platform.OS = 'android'
 
-      MindboxSdk.getToken((token: string) => {
+      MindboxSdk.getTokens((token: string) => {
         expect(token).toEqual('Tokens')
       })
     })
