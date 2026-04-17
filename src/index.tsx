@@ -111,8 +111,7 @@ class MindboxSdkClass {
       throw new Error('Wrong initialization data!')
     }
 
-    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid } =
-      initializationData
+    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid } = initializationData
 
     if (!domain || !endpointId) {
       this._initializing = false
