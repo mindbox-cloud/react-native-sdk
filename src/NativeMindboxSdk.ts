@@ -1,6 +1,11 @@
 import type { TurboModule } from 'react-native'
-import type { EventEmitter } from 'react-native/Libraries/Types/CodegenTypes'
 import { TurboModuleRegistry } from 'react-native'
+
+type EventSubscriptionLike = {
+  remove(): void
+}
+
+type EventEmitter<T> = (handler: (event: T) => void | Promise<void>) => EventSubscriptionLike
 
 export interface Spec extends TurboModule {
   initialize(payloadString: string): Promise<boolean>
