@@ -18,6 +18,26 @@ apply plugin: "com.facebook.react"
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+def readBooleanGradleProperty = { String name ->
+  def value = project.findProperty(name)
+  if (value == null) {
+    value = rootProject.findProperty(name)
+  }
+  if (value == null) {
+    return null
+  }
+  return value.toString().toBoolean()
+}
+
+def isNewArchEnabled = readBooleanGradleProperty("newArchEnabled")
+
+if (isNewArchEnabled == false) {
+  throw new GradleException(
+    "${project.name}: Mindbox SDK supports only React Native New Architecture on Android.\n" +
+    "Remove `newArchEnabled=false` from gradle.properties or enable the New Architecture."
+  )
+}
+
 android {
   namespace 'com.mindboxsdk'
   compileSdkVersion safeExtGet('compileSdkVersion', 35)
@@ -39,15 +59,18 @@ android {
     jvmTarget = '17'
   }
 
+  sourceSets {
+    main {
+      java.srcDirs += ["$buildDir/generated/source/codegen/java"]
+    }
+  }
+
   lintOptions {
     abortOnError false
   }
 }
 
 repositories {
-  maven {
-    url("${rootProject.projectDir}/../node_modules/react-native/android")
-  }
   mavenCentral()
   google()
 }

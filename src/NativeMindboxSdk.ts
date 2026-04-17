@@ -39,8 +39,7 @@ function resolveMindboxTurbo(): Spec {
 const mindboxTurboModule: Spec = new Proxy({} as Spec, {
   get(_target, prop: string | symbol) {
     const m: Spec = resolveMindboxTurbo()
-    const key: string = String(prop)
-    const value: unknown = (m as Record<string, unknown>)[key]
+    const value: unknown = Reflect.get(m as object, prop)
     if (typeof value === 'function') {
       return (value as (...args: unknown[]) => unknown).bind(m)
     }

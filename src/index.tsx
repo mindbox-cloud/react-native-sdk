@@ -25,6 +25,11 @@ type PushNotificationClickedPayload = {
   pushPayload: string
 }
 
+type MindboxSdkIosNativeModule = {
+  getAPNSToken(): Promise<string>
+  updateAPNSToken(token: string): Promise<boolean>
+}
+
 class MindboxSdkClass {
   private _initialized: boolean
   private _initializing: boolean
@@ -190,11 +195,12 @@ class MindboxSdkClass {
     }
 
     const callbackHandler = () => {
-      let promise = null
+      const iosNativeModule = MindboxSdkNative as unknown as MindboxSdkIosNativeModule
+      let promise: Promise<string>
 
       switch (Platform.OS) {
         case 'ios':
-          promise = (MindboxSdkNative as { getAPNSToken(): Promise<string> }).getAPNSToken()
+          promise = iosNativeModule.getAPNSToken()
           break
 
         case 'android':
@@ -202,7 +208,7 @@ class MindboxSdkClass {
           break
 
         default:
-          promise = (MindboxSdkNative as { getAPNSToken(): Promise<string> }).getAPNSToken()
+          promise = iosNativeModule.getAPNSToken()
           break
       }
 
@@ -254,7 +260,7 @@ class MindboxSdkClass {
 
     switch (Platform.OS) {
       case 'ios':
-        await (MindboxSdkNative as { updateAPNSToken(t: string): Promise<boolean> }).updateAPNSToken(token)
+        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
         break
 
       case 'android':
@@ -262,7 +268,7 @@ class MindboxSdkClass {
         break
 
       default:
-        await (MindboxSdkNative as { updateAPNSToken(t: string): Promise<boolean> }).updateAPNSToken(token)
+        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
         break
     }
   }

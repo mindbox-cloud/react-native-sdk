@@ -515,13 +515,13 @@ describe('Testing Mindbox RN SDK', () => {
 
       expect.assertions(2)
 
-      MindboxSdk.getToken((token: string) => {
+      MindboxSdk.getTokens((token: string) => {
         expect(token).toEqual('Tokens')
       })
 
       Platform.OS = 'android'
 
-      MindboxSdk.getToken((token: string) => {
+      MindboxSdk.getTokens((token: string) => {
         expect(token).toEqual('Tokens')
       })
     })
