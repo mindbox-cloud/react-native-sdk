@@ -5,7 +5,8 @@ import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import com.facebook.react.ReactApplication
-import com.facebook.react.ReactInstanceManager
+import com.facebook.react.ReactHost
+import com.facebook.react.ReactInstanceEventListener
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.ReactContext
 import java.util.concurrent.atomic.AtomicBoolean
@@ -53,6 +54,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     }
 
     private var activityEventListener: ActivityEventListener? = null
+    private var reactInstanceEventListener: ReactInstanceEventListener? = null
 
     private fun onReactContextAvailable(reactContext: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] ReactContext ready", Level.INFO)
@@ -60,31 +62,24 @@ internal class MindboxSdkLifecycleListener private constructor(
         subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityCreated(reactContext, activity))
     }
 
-    private fun registerReactContextListener(
-        application: Application,
-        onReady: (ReactContext) -> Unit
-    ) {
-        val reactInstanceManager = getReactInstanceManager()
-
-        val wrapperListener = object : ReactInstanceManager.ReactInstanceEventListener {
-            private val called = AtomicBoolean(false)
+    private fun registerReactContextListener(onReady: (ReactContext) -> Unit) {
+        val host = getReactHost(application) ?: run {
+            Mindbox.writeLog(
+                "[RN] registerReactContextListener: ReactHost is null, skip listener. " +
+                    "Ensure Application is ReactApplication and new architecture is enabled.",
+                Level.WARN
+            )
+            return
+        }
+        reactInstanceEventListener?.let { host.removeReactInstanceEventListener(it) }
+        val listener = object : ReactInstanceEventListener {
             override fun onReactContextInitialized(context: ReactContext) {
-                if (called.compareAndSet(false, true)) {
-                    Mindbox.writeLog("[RN] ReactContext initialized (listener)", Level.INFO)
-                    onReady(context)
-                }
+                Mindbox.writeLog("[RN] ReactContext initialized (listener)", Level.INFO)
+                onReady(context)
             }
         }
-
-        reactInstanceManager?.addReactInstanceEventListener(wrapperListener)
-        // RN 0.78+ introduced ReactHost.addReactInstanceEventListener(...).
-        // Older RN versions (<= 0.74) expose only ReactInstanceManager.addReactInstanceEventListener(...).
-        // In New Architecture the ReactInstanceManager listener might not fire
-        // To support RN 0.78+ reliably while keeping backward compatibility,
-        // we try to register via ReactHost using reflection (no compile-time dependency).
-        // If ReactHost API is unavailable (older RN), this call is silently ignored and we rely on
-        // the ReactInstanceManager path.
-        addReactHostListener(application, wrapperListener)
+        reactInstanceEventListener = listener
+        host.addReactInstanceEventListener(listener)
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -92,7 +87,7 @@ internal class MindboxSdkLifecycleListener private constructor(
 
         val hasConsumedReactContext = AtomicBoolean(false)
 
-        registerReactContextListener(application) { reactContext ->
+        registerReactContextListener { reactContext ->
             if (hasConsumedReactContext.compareAndSet(false, true)) {
                 onReactContextAvailable(reactContext, activity)
             }
@@ -100,8 +95,8 @@ internal class MindboxSdkLifecycleListener private constructor(
 
         getReactContext()?.let {
             if (hasConsumedReactContext.compareAndSet(false, true)) {
-                onReactContextAvailable(it, activity)
                 Mindbox.writeLog("[RN] ReactContext available (pre-existing)", Level.INFO)
+                onReactContextAvailable(it, activity)
             }
         }
     }
@@ -136,6 +131,10 @@ internal class MindboxSdkLifecycleListener private constructor(
         subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityDestroyed(activity))
         getReactContext()?.removeActivityEventListener(activityEventListener)
         activityEventListener = null
+        reactInstanceEventListener?.let { listener ->
+            getReactHost(application)?.removeReactInstanceEventListener(listener)
+        }
+        reactInstanceEventListener = null
     }
 
     override fun onActivityStarted(activity: Activity) {}
@@ -144,68 +143,10 @@ internal class MindboxSdkLifecycleListener private constructor(
     override fun onActivityStopped(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
+    private fun getReactHost(application: Application): ReactHost? =
+        (application as? ReactApplication)?.reactHost
 
-    private fun getReactInstanceManager(): ReactInstanceManager? =
-        runCatching {
-            application.getReactApplication()
-                ?.reactNativeHost
-                ?.reactInstanceManager
-        }.onFailure {
-            Mindbox.writeLog("[RN] Bridgeless: ReactInstanceManager unsupported. Fallback to ReactHost", Level.INFO)
-        }.getOrNull()
-
-    private fun Application.getReactApplication() = this as? ReactApplication
-
-    private fun getReactContext(): ReactContext? {
-        return getReactInstanceManagerContext() ?: getReactHostContext(application)
-    }
-
-    private fun getReactInstanceManagerContext(): ReactContext? {
-        return getReactInstanceManager()?.currentReactContext
-    }
-
-    private fun getReactHostContext(application: Application): ReactContext? =
-        runCatching {
-            // RN 0.78+ moves reactContext from reactNativeHost.reactInstanceManager to reactHost
-            val reactApplication = application as ReactApplication
-            val getHostMethod = reactApplication.javaClass.getMethod("getReactHost")
-            val reactHost = getHostMethod.invoke(reactApplication)
-            val getContextMethod = reactHost.javaClass.getMethod("getCurrentReactContext")
-            getContextMethod.invoke(reactHost) as? ReactContext
-        }.onFailure {
-            Mindbox.writeLog("[RN] ReactHost currentReactContext unavailable", Level.INFO)
-        }.getOrNull()
-
-    private fun addReactHostListener(
-        application: Application,
-        wrapperListener: ReactInstanceManager.ReactInstanceEventListener
-    ) {
-        runCatching {
-            val reactApplication = application as ReactApplication
-
-            val hostClass = Class.forName("com.facebook.react.ReactHost")
-            val listenerClass = Class.forName("com.facebook.react.ReactInstanceEventListener")
-
-            val addMethod = hostClass.getMethod("addReactInstanceEventListener", listenerClass)
-            val getHostMethod = reactApplication.javaClass.getMethod("getReactHost")
-            val reactHost = getHostMethod.invoke(reactApplication)
-
-            val proxy = java.lang.reflect.Proxy.newProxyInstance(
-                listenerClass.classLoader,
-                arrayOf(listenerClass)
-            ) { _, method, args ->
-                if (method.name == "onReactContextInitialized" && args?.size == 1 && args[0] is ReactContext) {
-                    wrapperListener.onReactContextInitialized(args[0] as ReactContext)
-                }
-                null
-            }
-
-            addMethod.invoke(reactHost, proxy)
-            Mindbox.writeLog("[RN] success added react context listener for reactHost", Level.INFO)
-        }.onFailure {
-            Mindbox.writeLog("[RN] failed added react context listener for reactHost ", Level.ERROR)
-        }
-    }
+    private fun getReactContext(): ReactContext? = getReactHost(application)?.currentReactContext
 }
 
 /**

@@ -39,7 +39,7 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
 
     private fun sendEvent(eventName: String, bundle: Bundle) {
         Mindbox.writeLog("[RN][MindboxJsDelivery] sendEvent($eventName) push_url=${bundle.getString("push_url")}", Level.INFO)
-        MindboxSdkModule.deliverPushNotificationClickedFromExternal(bundle, mReactContext)
+        MindboxSdkModule.deliverPushNotificationClickedFromExternal(bundle)
     }
 
     fun sendPushClicked(intent: Intent) {

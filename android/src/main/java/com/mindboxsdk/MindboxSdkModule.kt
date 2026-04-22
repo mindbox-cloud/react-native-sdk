@@ -42,7 +42,7 @@ class MindboxSdkModule(
             }
         }
 
-        fun deliverPushNotificationClickedFromExternal(bundle: Bundle, fallbackReactContext: ReactContext) {
+        fun deliverPushNotificationClickedFromExternal(bundle: Bundle) {
             val module: MindboxSdkModule? = activeModule
             if (module != null) {
                 module.emitPushFromDelivery(bundle)
