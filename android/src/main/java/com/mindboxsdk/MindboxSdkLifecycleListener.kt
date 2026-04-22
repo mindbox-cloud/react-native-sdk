@@ -65,8 +65,7 @@ internal class MindboxSdkLifecycleListener private constructor(
     private fun registerReactContextListener(onReady: (ReactContext) -> Unit) {
         val host = getReactHost(application) ?: run {
             Mindbox.writeLog(
-                "[RN] registerReactContextListener: ReactHost is null, skip listener. " +
-                    "Ensure Application is ReactApplication and new architecture is enabled.",
+                "[RN] registerReactContextListener: ReactHost is null, skip listener.",
                 Level.WARN
             )
             return
