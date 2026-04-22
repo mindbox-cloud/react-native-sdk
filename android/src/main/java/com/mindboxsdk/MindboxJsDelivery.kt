@@ -2,38 +2,24 @@ package com.mindboxsdk
 
 import android.content.Intent
 import android.os.Bundle
-import kotlin.properties.Delegates
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
+import kotlin.properties.Delegates
 
-class MindboxJsDelivery private constructor() {
-    companion object Shared {
-        private var INSTANCE: MindboxJsDelivery? = null
-        private var delayedIntent: Intent? = null
+object MindboxJsDelivery {
+    private var delayedIntent: Intent? = null
 
-        var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
-            Mindbox.writeLog("[RN][MindboxJsDelivery] hasListeners=$newValue", Level.DEBUG)
-            if (newValue) {
-                delayedIntent?.let { intent ->
-                    intent.extras?.let {
-                        Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
-                    }
-                    INSTANCE?.sendPushClicked(intent)
+    var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
+        Mindbox.writeLog("[RN][MindboxJsDelivery] hasListeners=$newValue", Level.DEBUG)
+        if (newValue) {
+            delayedIntent?.let { intent ->
+                intent.extras?.let {
+                    Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
                 }
+                sendPushClicked(intent)
             }
-            delayedIntent = null
         }
-
-        fun getInstance(): MindboxJsDelivery? {
-            if (INSTANCE == null) {
-                synchronized(MindboxJsDelivery::class.java) {
-                    if (INSTANCE == null) {
-                        INSTANCE = MindboxJsDelivery()
-                    }
-                }
-            }
-            return INSTANCE
-        }
+        delayedIntent = null
     }
 
     private fun sendEvent(eventName: String, bundle: Bundle) {

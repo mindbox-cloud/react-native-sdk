@@ -22,7 +22,7 @@ internal class MindboxEventEmitter(
         Mindbox.writeLog("[RN] Handle new intent in event emitter. ", Level.INFO)
         Mindbox.onNewIntent(intent)
         Mindbox.onPushClicked(context, intent)
-        MindboxJsDelivery.Shared.getInstance()?.sendPushClicked(intent)
+        MindboxJsDelivery.sendPushClicked(intent)
     }
 
     private fun handleActivityCreated(reactContext: ReactContext, activity: Activity) {
@@ -36,7 +36,6 @@ internal class MindboxEventEmitter(
 
     private fun initializeAndSendIntent(context: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] Initialize MindboxJsDelivery", Level.INFO)
-        MindboxJsDelivery.Shared.getInstance()
         val currentActivity: Activity = context.currentActivity ?: activity
         currentActivity.intent?.let { handleNewIntent(context, it) }
     }

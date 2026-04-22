@@ -14,7 +14,7 @@ class MainActivity : ReactActivity() {
     private fun handlePushIntent(intent: Intent) {
         Mindbox.onNewIntent(intent)
         Mindbox.onPushClicked(applicationContext, intent)
-        MindboxJsDelivery.Shared.getInstance()?.sendPushClicked(intent)
+        MindboxJsDelivery.sendPushClicked(intent)
     }
 
     override fun getMainComponentName(): String = "exampleApp"

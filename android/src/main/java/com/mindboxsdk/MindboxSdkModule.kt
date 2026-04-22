@@ -220,7 +220,7 @@ class MindboxSdkModule(
     }
 
     override fun onPushClickedIsRegistered(isRegistered: Boolean) {
-        MindboxJsDelivery.Shared.hasListeners = isRegistered
+        MindboxJsDelivery.hasListeners = isRegistered
     }
 
     override fun setLogLevel(level: Double) {
