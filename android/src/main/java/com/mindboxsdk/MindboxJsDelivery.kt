@@ -2,12 +2,11 @@ package com.mindboxsdk
 
 import android.content.Intent
 import android.os.Bundle
-import com.facebook.react.bridge.ReactContext
 import kotlin.properties.Delegates
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
 
-class MindboxJsDelivery private constructor(private val mReactContext: ReactContext) {
+class MindboxJsDelivery private constructor() {
     companion object Shared {
         private var INSTANCE: MindboxJsDelivery? = null
         private var delayedIntent: Intent? = null
@@ -25,11 +24,11 @@ class MindboxJsDelivery private constructor(private val mReactContext: ReactCont
             delayedIntent = null
         }
 
-        fun getInstance(reactContext: ReactContext): MindboxJsDelivery? {
+        fun getInstance(): MindboxJsDelivery? {
             if (INSTANCE == null) {
                 synchronized(MindboxJsDelivery::class.java) {
                     if (INSTANCE == null) {
-                        INSTANCE = MindboxJsDelivery(reactContext)
+                        INSTANCE = MindboxJsDelivery()
                     }
                 }
             }

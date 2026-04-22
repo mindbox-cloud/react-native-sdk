@@ -10,9 +10,6 @@ import cloud.mindbox.mobile_sdk.logger.Level
 internal class MindboxEventEmitter(
     private val application: Application,
 ) : MindboxEventSubscriber {
-
-    private var jsDelivery: MindboxJsDelivery? = null
-
     override fun onEvent(event: MindboxSdkLifecycleEvent) {
         when (event) {
             is MindboxSdkLifecycleEvent.NewIntent -> handleNewIntent(event.reactContext, event.intent)
@@ -25,7 +22,7 @@ internal class MindboxEventEmitter(
         Mindbox.writeLog("[RN] Handle new intent in event emitter. ", Level.INFO)
         Mindbox.onNewIntent(intent)
         Mindbox.onPushClicked(context, intent)
-        jsDelivery?.sendPushClicked(intent)
+        MindboxJsDelivery.Shared.getInstance()?.sendPushClicked(intent)
     }
 
     private fun handleActivityCreated(reactContext: ReactContext, activity: Activity) {
@@ -39,12 +36,10 @@ internal class MindboxEventEmitter(
 
     private fun initializeAndSendIntent(context: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] Initialize MindboxJsDelivery", Level.INFO)
-        jsDelivery = MindboxJsDelivery.Shared.getInstance(context)
+        MindboxJsDelivery.Shared.getInstance()
         val currentActivity: Activity = context.currentActivity ?: activity
         currentActivity.intent?.let { handleNewIntent(context, it) }
     }
 
-    private fun handleActivityDestroyed() {
-        jsDelivery = null
-    }
+    private fun handleActivityDestroyed() {}
 }
