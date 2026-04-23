@@ -9,7 +9,7 @@ import kotlin.properties.Delegates
 object MindboxJsDelivery {
     private var delayedIntent: Intent? = null
 
-    var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
+    internal var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
         Mindbox.writeLog("[RN][MindboxJsDelivery] hasListeners=$newValue", Level.DEBUG)
         if (newValue) {
             delayedIntent?.let { intent ->
@@ -27,6 +27,14 @@ object MindboxJsDelivery {
         MindboxSdkModule.deliverPushNotificationClickedFromExternal(bundle)
     }
 
+    /**
+     * Sends a push-click intent to JS or delays it until listeners are registered.
+     *
+     * If no listeners are registered, the intent is cached and replayed later. Intents without
+     * `uniq_push_key` are ignored.
+     *
+     * @param intent push-click intent to process
+     */
     fun sendPushClicked(intent: Intent) {
         if (hasListeners) {
             val bundle = intent.extras
