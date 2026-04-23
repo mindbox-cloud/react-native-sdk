@@ -42,7 +42,7 @@ class MindboxSdkModule(
             }
         }
 
-        fun deliverPushNotificationClickedFromExternal(bundle: Bundle, fallbackReactContext: ReactContext) {
+        internal fun deliverPushNotificationClickedFromExternal(bundle: Bundle) {
             val module: MindboxSdkModule? = activeModule
             if (module != null) {
                 module.emitPushFromDelivery(bundle)
@@ -220,7 +220,7 @@ class MindboxSdkModule(
     }
 
     override fun onPushClickedIsRegistered(isRegistered: Boolean) {
-        MindboxJsDelivery.Shared.hasListeners = isRegistered
+        MindboxJsDelivery.hasListeners = isRegistered
     }
 
     override fun setLogLevel(level: Double) {

@@ -2,46 +2,39 @@ package com.mindboxsdk
 
 import android.content.Intent
 import android.os.Bundle
-import com.facebook.react.bridge.ReactContext
-import kotlin.properties.Delegates
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.logger.Level
+import kotlin.properties.Delegates
 
-class MindboxJsDelivery private constructor(private val mReactContext: ReactContext) {
-    companion object Shared {
-        private var INSTANCE: MindboxJsDelivery? = null
-        private var delayedIntent: Intent? = null
+object MindboxJsDelivery {
+    private var delayedIntent: Intent? = null
 
-        var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
-            Mindbox.writeLog("[RN][MindboxJsDelivery] hasListeners=$newValue", Level.DEBUG)
-            if (newValue) {
-                delayedIntent?.let { intent ->
-                    intent.extras?.let {
-                        Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
-                    }
-                    INSTANCE?.sendPushClicked(intent)
+    internal var hasListeners: Boolean by Delegates.observable(false) { _, _, newValue ->
+        Mindbox.writeLog("[RN][MindboxJsDelivery] hasListeners=$newValue", Level.DEBUG)
+        if (newValue) {
+            delayedIntent?.let { intent ->
+                intent.extras?.let {
+                    Mindbox.writeLog("[RN] Send push data from delayed ${it}", Level.INFO)
                 }
+                sendPushClicked(intent)
             }
-            delayedIntent = null
         }
-
-        fun getInstance(reactContext: ReactContext): MindboxJsDelivery? {
-            if (INSTANCE == null) {
-                synchronized(MindboxJsDelivery::class.java) {
-                    if (INSTANCE == null) {
-                        INSTANCE = MindboxJsDelivery(reactContext)
-                    }
-                }
-            }
-            return INSTANCE
-        }
+        delayedIntent = null
     }
 
     private fun sendEvent(eventName: String, bundle: Bundle) {
         Mindbox.writeLog("[RN][MindboxJsDelivery] sendEvent($eventName) push_url=${bundle.getString("push_url")}", Level.INFO)
-        MindboxSdkModule.deliverPushNotificationClickedFromExternal(bundle, mReactContext)
+        MindboxSdkModule.deliverPushNotificationClickedFromExternal(bundle)
     }
 
+    /**
+     * Sends a push-click intent to JS or delays it until listeners are registered.
+     *
+     * If no listeners are registered, the intent is cached and replayed later. Intents without
+     * `uniq_push_key` are ignored.
+     *
+     * @param intent push-click intent to process
+     */
     fun sendPushClicked(intent: Intent) {
         if (hasListeners) {
             val bundle = intent.extras
