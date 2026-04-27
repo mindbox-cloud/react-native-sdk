@@ -1,5 +1,3 @@
-import { Platform } from 'react-native'
-
 import type { InitializationData, ExecuteSyncOperationPayload, ExecuteAsyncOperationPayload } from './types'
 import type { InAppCallback } from './InAppCallback'
 import MindboxSdkNative from './NativeMindboxSdk'
@@ -23,11 +21,6 @@ type InAppDismissEventPayload = {
 type PushNotificationClickedPayload = {
   pushUrl: string
   pushPayload: string
-}
-
-type MindboxSdkIosNativeModule = {
-  getAPNSToken(): Promise<string>
-  updateAPNSToken(token: string): Promise<boolean>
 }
 
 class MindboxSdkClass {
@@ -181,46 +174,6 @@ class MindboxSdkClass {
   }
 
   /**
-   * @name getToken
-   * @description Requires a callback that will return FMS (Android) / APNS (iOS) token.
-   * @param {function(token: String): void} callback Callback will return FMS (Android) / APNS (iOS) token
-   * @deprecated since version 2.12.0. Use getTokens
-   * @example
-   * MindboxSdk.getToken((token: string) => { ... });
-   */
-  public getToken(callback: (token: string) => void) {
-    if (!callback || typeof callback !== 'function') {
-      throw new Error('callback is required!')
-    }
-
-    const callbackHandler = () => {
-      const iosNativeModule = MindboxSdkNative as unknown as MindboxSdkIosNativeModule
-      let promise: Promise<string>
-
-      switch (Platform.OS) {
-        case 'ios':
-          promise = iosNativeModule.getAPNSToken()
-          break
-
-        case 'android':
-          promise = MindboxSdkNative.getFMSToken()
-          break
-
-        default:
-          promise = iosNativeModule.getAPNSToken()
-          break
-      }
-
-      promise.then((token: string) => callback(token))
-    }
-
-    if (this._initialized) {
-      callbackHandler()
-    } else {
-      this._callbacks.push(callbackHandler)
-    }
-  }
-  /**
    * @name getTokens
    * @description Requires a callback that will return FMS (Android) / APNS (iOS) token .
    * method return jsin string like {"FCM":"token1","HMS":"token2","RuStore":"token3"}
@@ -245,34 +198,6 @@ class MindboxSdkClass {
   }
 
   /**
-   * @name updateToken
-   * @description Updates your FMS/APNS token.
-   * @param {String} token Your new fms/apns token
-   * @deprecated since version 2.12.0. Use native methods
-   * @example
-   * await MindboxSdk.updateToken('your-fms/apns-token');
-   */
-  public async updateToken(token: string) {
-    if (!token || typeof token !== 'string') {
-      throw new Error('token is required!')
-    }
-
-    switch (Platform.OS) {
-      case 'ios':
-        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
-        break
-
-      case 'android':
-        await MindboxSdkNative.updateFMSToken(token)
-        break
-
-      default:
-        await (MindboxSdkNative as unknown as MindboxSdkIosNativeModule).updateAPNSToken(token)
-        break
-    }
-  }
-
-  /**
    * @name onPushClickReceived
    * @description Listens if push notification or push notification button were pressed.
    * @param {function(pushUrl: String, pushPayload: String): void} callback Callback will return push notification link or push notification button link
@@ -293,10 +218,8 @@ class MindboxSdkClass {
       callback(event.pushUrl || null, event.pushPayload || null)
     })
 
-    if (Platform.OS === 'android') {
-      this.writeNativeLog('Register push click listener for android', LogLevel.INFO)
-      MindboxSdkNative.onPushClickedIsRegistered(true)
-    }
+    this.writeNativeLog('Register push click listener', LogLevel.INFO)
+    MindboxSdkNative.onPushClickedIsRegistered(true)
   }
 
   /**
@@ -310,9 +233,7 @@ class MindboxSdkClass {
     if (this._pushSubscription) {
       this._pushSubscription.remove()
       this._pushSubscription = undefined
-      if (Platform.OS === 'android') {
-        MindboxSdkNative.onPushClickedIsRegistered(false)
-      }
+      MindboxSdkNative.onPushClickedIsRegistered(false)
     }
   }
 

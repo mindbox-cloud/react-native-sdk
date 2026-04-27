@@ -11,9 +11,7 @@ export interface Spec extends TurboModule {
   initialize(payloadString: string): Promise<boolean>
   registerCallbacks(callbacks: Array<string>): void
   getDeviceUUID(): Promise<string>
-  getFMSToken(): Promise<string>
   getTokens(): Promise<string>
-  updateFMSToken(token: string): Promise<boolean>
   executeAsyncOperation(operationSystemName: string, operationBody: string): Promise<boolean>
   executeSyncOperation(operationSystemName: string, operationBody: string): Promise<string>
   onPushClickedIsRegistered(isRegistered: boolean): void

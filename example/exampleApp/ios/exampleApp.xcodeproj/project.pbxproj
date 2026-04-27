@@ -13,7 +13,6 @@
 		3A027BAE2C3BFC4D005415BB /* NotificationModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A027BAD2C3BFC4D005415BB /* NotificationModule.m */; };
 		3A175C362C3D1B800027776A /* PushAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A175C322C3D16C70027776A /* PushAction.swift */; };
 		3A175C372C3D1B800027776A /* MindboxRemoteMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A175C342C3D16F50027776A /* MindboxRemoteMessage.swift */; };
-		3A88FC072B6BDD900046E687 /* Swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A88FC062B6BDD900046E687 /* Swift.swift */; };
 		3A88FC092B6BDF360046E687 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A88FC082B6BDF360046E687 /* AppDelegate.swift */; };
 		3ACCD5142B72826700C94F45 /* MindboxNotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3ACCD50D2B72826700C94F45 /* MindboxNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3ACCD51C2B728BD500C94F45 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACCD51B2B728BD500C94F45 /* NotificationService.swift */; };
@@ -69,7 +68,6 @@
 		3A027BAD2C3BFC4D005415BB /* NotificationModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationModule.m; sourceTree = "<group>"; };
 		3A175C322C3D16C70027776A /* PushAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushAction.swift; sourceTree = "<group>"; };
 		3A175C342C3D16F50027776A /* MindboxRemoteMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxRemoteMessage.swift; sourceTree = "<group>"; };
-		3A88FC062B6BDD900046E687 /* Swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Swift.swift; sourceTree = "<group>"; };
 		3A88FC082B6BDF360046E687 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3A88FC0A2B6BF2840046E687 /* exampleApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "exampleApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		3A88FC0B2B6CEE180046E687 /* exampleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = exampleApp.entitlements; path = exampleApp/exampleApp.entitlements; sourceTree = "<group>"; };
@@ -200,7 +198,6 @@
 				3A027BAD2C3BFC4D005415BB /* NotificationModule.m */,
 				3A027BAB2C3BF24F005415BB /* NotificationModule.swift */,
 				3A88FC0A2B6BF2840046E687 /* exampleApp-Bridging-Header.h */,
-				3A88FC062B6BDD900046E687 /* Swift.swift */,
 				13B07FAE1A68108700A75B9A /* exampleApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				3ACCD50E2B72826700C94F45 /* MindboxNotificationServiceExtension */,
@@ -532,7 +529,6 @@
 			files = (
 				3A027BAE2C3BFC4D005415BB /* NotificationModule.m in Sources */,
 				3A88FC092B6BDF360046E687 /* AppDelegate.swift in Sources */,
-				3A88FC072B6BDD900046E687 /* Swift.swift in Sources */,
 				3A027BAC2C3BF24F005415BB /* NotificationModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
