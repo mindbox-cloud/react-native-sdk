@@ -1,6 +1,16 @@
-#import "MindboxSdk.h"
 #import "MindboxSdk-Swift.h"
 #import <React/RCTBridgeModule.h>
+
+#if __has_include(<MindboxSdkSpec/MindboxSdkSpec.h>)
+#import <MindboxSdkSpec/MindboxSdkSpec.h>
+#elif __has_include("MindboxSdkSpec.h")
+#import "MindboxSdkSpec.h"
+#else
+#error "MindboxSdkSpec.h not found. Ensure the React Native codegen spec has been generated and the New Architecture/codegen integration is enabled"
+#endif
+
+@interface MindboxSdk : NativeMindboxSdkSpecBase <NativeMindboxSdkSpec>
+@end
 
 @implementation MindboxSdk {
     MindboxSdkImpl *_impl;

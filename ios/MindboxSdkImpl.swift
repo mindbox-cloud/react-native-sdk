@@ -28,16 +28,23 @@ public final class MindboxSdkImpl: NSObject {
     @objc static var pendingPushPayload: [String: String]?
     @objc public var eventEmitHandler: EventEmitHandler?
 
+    private static let stateQueue = DispatchQueue(label: "com.mindboxsdk.MindboxSdkImpl.state")
     private static weak var activeInstance: MindboxSdkImpl?
 
     @objc public override init() {
         super.init()
-        MindboxSdkImpl.activeInstance = self
+        MindboxSdkImpl.stateQueue.sync {
+            MindboxSdkImpl.activeInstance = self
+        }
     }
 
     @objc public func initialize(_ payloadString: String, resolve: @escaping ResolveBlock, reject: @escaping RejectBlock) {
         do {
-            let payload = try JSONDecoder().decode(PayloadData.self, from: payloadString.data(using: .utf8)!)
+            guard let payloadData = payloadString.data(using: .utf8) else {
+                reject("Error", "Initialization payload must be UTF-8 encoded", nil)
+                return
+            }
+            let payload = try JSONDecoder().decode(PayloadData.self, from: payloadData)
             let configuration = try MBConfiguration(
                 endpoint: payload.endpointId,
                 domain: payload.domain,
@@ -61,7 +68,17 @@ public final class MindboxSdkImpl: NSObject {
 
     @objc public func getTokens(_ resolve: @escaping ResolveBlock, reject: @escaping RejectBlock) {
         Mindbox.shared.getAPNSToken { apnsToken in
-            resolve("{\"APNS\":\"\(apnsToken)\"}")
+            do {
+                let tokens: [String: String] = ["APNS": apnsToken]
+                let data = try JSONSerialization.data(withJSONObject: tokens)
+                guard let json = String(data: data, encoding: .utf8) else {
+                    reject("Error", "Failed to encode APNS token payload", nil)
+                    return
+                }
+                resolve(json)
+            } catch {
+                reject("Error", error.localizedDescription, error as NSError)
+            }
         }
     }
 
@@ -113,10 +130,16 @@ public final class MindboxSdkImpl: NSObject {
     }
 
     @objc public func onPushClickedIsRegistered(_ isRegistered: Bool) {
-        isPushListenerRegistered = isRegistered
-        if isRegistered, let pendingPayload = MindboxSdkImpl.pendingPushPayload {
-            eventEmitHandler?("onPushNotificationClicked", pendingPayload)
+        let pendingPayload: [String: String]? = MindboxSdkImpl.stateQueue.sync {
+            isPushListenerRegistered = isRegistered
+            guard isRegistered, let pendingPayload = MindboxSdkImpl.pendingPushPayload else {
+                return nil
+            }
             MindboxSdkImpl.pendingPushPayload = nil
+            return pendingPayload
+        }
+        if let pendingPayload = pendingPayload {
+            eventEmitHandler?("onPushNotificationClicked", pendingPayload)
         }
     }
 
@@ -161,15 +184,20 @@ public final class MindboxSdkImpl: NSObject {
             "pushUrl": pushUrl,
             "pushPayload": pushPayload
         ]
-        guard let instance = MindboxSdkImpl.activeInstance, instance.isPushListenerRegistered else {
-            MindboxSdkImpl.pendingPushPayload = payload
-            return
+        let instance: MindboxSdkImpl? = MindboxSdkImpl.stateQueue.sync {
+            guard let activeInstance = MindboxSdkImpl.activeInstance, activeInstance.isPushListenerRegistered else {
+                MindboxSdkImpl.pendingPushPayload = payload
+                return nil
+            }
+            return activeInstance
         }
-        instance.eventEmitHandler?("onPushNotificationClicked", payload)
+        if let instance = instance {
+            instance.eventEmitHandler?("onPushNotificationClicked", payload)
+        }
     }
 
     @objc static func emitInAppClick(id: String, redirectUrl: String?, payload: String?) {
-        guard let instance = MindboxSdkImpl.activeInstance else { return }
+        guard let instance = MindboxSdkImpl.stateQueue.sync(execute: { MindboxSdkImpl.activeInstance }) else { return }
         var body: [String: String] = ["id": id]
         if let redirectUrl = redirectUrl {
             body["redirectUrl"] = redirectUrl
@@ -181,7 +209,7 @@ public final class MindboxSdkImpl: NSObject {
     }
 
     @objc static func emitInAppDismiss(id: String) {
-        guard let instance = MindboxSdkImpl.activeInstance else { return }
+        guard let instance = MindboxSdkImpl.stateQueue.sync(execute: { MindboxSdkImpl.activeInstance }) else { return }
         instance.eventEmitHandler?("onInAppDismiss", ["id": id])
     }
 }
