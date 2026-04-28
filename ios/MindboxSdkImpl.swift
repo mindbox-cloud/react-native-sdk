@@ -2,19 +2,6 @@ import Foundation
 import Mindbox
 import MindboxLogger
 
-enum CustomError: Error {
-    case tokenAPNSisNull
-}
-
-extension CustomError: LocalizedError {
-    var errorDescription: String? {
-        switch self {
-        case .tokenAPNSisNull:
-            return NSLocalizedString("APNS token cannot be nullable", comment: "APNS token is null")
-        }
-    }
-}
-
 struct PayloadData: Codable {
     var domain: String
     var endpointId: String

@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "15.1" }
   s.source       = { :git => "https://github.com/mindbox-moscow/react-native-sdk/.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{m,mm,swift}"
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   install_modules_dependencies(s)
 
