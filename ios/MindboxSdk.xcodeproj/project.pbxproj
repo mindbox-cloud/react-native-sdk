@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		61249CFA2719673B00FC4033 /* MindboxJsDelivery.m in Sources */ = {isa = PBXBuildFile; fileRef = 61249CF92719673B00FC4033 /* MindboxJsDelivery.m */; };
+		61249CFA2719673B00FC4033 /* MindboxJsDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61249CF92719673B00FC4033 /* MindboxJsDelivery.swift */; };
 		D0F7B0012B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F7B0002B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift */; };
-		F4FF95D7245B92E800C19C63 /* MindboxSdk.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* MindboxSdk.swift */; };
+		E0A1A1A12B2D2D2D00A1B2C3 /* MindboxSdk.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0A1A1A02B2D2D2D00A1B2C3 /* MindboxSdk.mm */; };
+		E0A1A1A32B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm in Sources */ = {isa = PBXBuildFile; fileRef = E0A1A1A22B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm */; };
+		F4FF95D7245B92E800C19C63 /* MindboxSdkImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* MindboxSdkImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,12 +28,11 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libMindboxSdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMindboxSdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		61249CF82719673B00FC4033 /* MindboxJsDelivery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MindboxJsDelivery.h; sourceTree = "<group>"; };
-		61249CF92719673B00FC4033 /* MindboxJsDelivery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MindboxJsDelivery.m; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* MindboxSdk.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MindboxSdk.m; sourceTree = "<group>"; };
+		61249CF92719673B00FC4033 /* MindboxJsDelivery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxJsDelivery.swift; sourceTree = "<group>"; };
 		D0F7B0002B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxJsDeliveryBridge.swift; sourceTree = "<group>"; };
-		F4FF95D5245B92E700C19C63 /* MindboxSdk-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MindboxSdk-Bridging-Header.h"; sourceTree = "<group>"; };
-		F4FF95D6245B92E800C19C63 /* MindboxSdk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxSdk.swift; sourceTree = "<group>"; };
+		E0A1A1A02B2D2D2D00A1B2C3 /* MindboxSdk.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MindboxSdk.mm; sourceTree = "<group>"; };
+		E0A1A1A22B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MindboxSdkNewArchGuard.mm; sourceTree = "<group>"; };
+		F4FF95D6245B92E800C19C63 /* MindboxSdkImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxSdkImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,12 +57,11 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				61249CF82719673B00FC4033 /* MindboxJsDelivery.h */,
-				61249CF92719673B00FC4033 /* MindboxJsDelivery.m */,
+				61249CF92719673B00FC4033 /* MindboxJsDelivery.swift */,
 				D0F7B0002B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift */,
-				F4FF95D6245B92E800C19C63 /* MindboxSdk.swift */,
-				B3E7B5891CC2AC0600A0062D /* MindboxSdk.m */,
-				F4FF95D5245B92E700C19C63 /* MindboxSdk-Bridging-Header.h */,
+				E0A1A1A22B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm */,
+				F4FF95D6245B92E800C19C63 /* MindboxSdkImpl.swift */,
+				E0A1A1A02B2D2D2D00A1B2C3 /* MindboxSdk.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -123,9 +123,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61249CFA2719673B00FC4033 /* MindboxJsDelivery.m in Sources */,
+				61249CFA2719673B00FC4033 /* MindboxJsDelivery.swift in Sources */,
 				D0F7B0012B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift in Sources */,
-				F4FF95D7245B92E800C19C63 /* MindboxSdk.swift in Sources */,
+				E0A1A1A12B2D2D2D00A1B2C3 /* MindboxSdk.mm in Sources */,
+				E0A1A1A32B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm in Sources */,
+				F4FF95D7245B92E800C19C63 /* MindboxSdkImpl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,7 +240,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MindboxSdk;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MindboxSdk-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -257,7 +258,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MindboxSdk;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MindboxSdk-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

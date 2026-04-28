@@ -57,7 +57,6 @@ class MindboxSdkModule(
     }
 
     private var deviceUuidSubscription: String? = null
-    private var fmsTokenSubscription: String? = null
     private var getTokensSubscription: String? = null
 
     private fun emitPushFromDelivery(bundle: Bundle) {
@@ -165,19 +164,6 @@ class MindboxSdkModule(
         }
     }
 
-    override fun getFMSToken(promise: Promise) {
-        try {
-            if (fmsTokenSubscription != null) {
-                Mindbox.disposePushTokenSubscription(fmsTokenSubscription!!)
-            }
-            fmsTokenSubscription = Mindbox.subscribePushToken { fmsToken ->
-                promise.resolve(fmsToken)
-            }
-        } catch (error: Throwable) {
-            promise.reject(error)
-        }
-    }
-
     override fun getTokens(promise: Promise) {
         try {
             if (getTokensSubscription != null) {
@@ -186,15 +172,6 @@ class MindboxSdkModule(
             getTokensSubscription = Mindbox.subscribePushTokens { tokens ->
                 promise.resolve(tokens)
             }
-        } catch (error: Throwable) {
-            promise.reject(error)
-        }
-    }
-
-    override fun updateFMSToken(token: String, promise: Promise) {
-        try {
-            Mindbox.updateNotificationPermissionStatus(reactApplicationContext.applicationContext)
-            promise.resolve(true)
         } catch (error: Throwable) {
             promise.reject(error)
         }

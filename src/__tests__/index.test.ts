@@ -31,42 +31,10 @@ jest.mock('react-native', () => {
           resolve('UUID')
         })
     ),
-    getAPNSToken: jest.fn(
-      () =>
-        new Promise((resolve) => {
-          resolve('APNS')
-        })
-    ),
-    getFMSToken: jest.fn(
-      () =>
-        new Promise((resolve) => {
-          resolve('FMS')
-        })
-    ),
     getTokens: jest.fn(
       () =>
         new Promise((resolve) => {
-          resolve('Tokens')
-        })
-    ),
-    updateAPNSToken: jest.fn(
-      (payloadString: string) =>
-        new Promise((resolve, reject) => {
-          if (payloadString && typeof payloadString === 'string') {
-            resolve(true)
-          } else {
-            reject(new Error('Error'))
-          }
-        })
-    ),
-    updateFMSToken: jest.fn(
-      (payloadString: string) =>
-        new Promise((resolve, reject) => {
-          if (payloadString && typeof payloadString === 'string') {
-            resolve(true)
-          } else {
-            reject(new Error('Error'))
-          }
+          resolve(JSON.stringify({ APNS: 'APNS', FCM: 'FMS' }))
         })
     ),
     executeAsyncOperation: jest.fn(
@@ -255,76 +223,6 @@ describe('Testing Mindbox RN SDK', () => {
       })
     })
 
-    describe('Testing getAPNSToken method', () => {
-      it('resolves successfully with string payload', async () => {
-        expect.assertions(1)
-
-        await expect(MindboxSdk.getAPNSToken()).resolves.toEqual('APNS')
-      })
-    })
-
-    describe('Testing getFMSToken method', () => {
-      it('resolves successfully with string payload', async () => {
-        expect.assertions(1)
-
-        await expect(MindboxSdk.getFMSToken()).resolves.toEqual('FMS')
-      })
-    })
-
-    describe('Testing updateAPNSToken method', () => {
-      it('throws error when no paylaod passed', async () => {
-        expect.assertions(1)
-
-        await expect(MindboxSdk.updateAPNSToken()).rejects.toThrow('Error')
-      })
-
-      it('throws error when non string payload passed', async () => {
-        expect.assertions(1)
-
-        const wrongPaylaod = {
-          one: 'one',
-          two: 'two',
-        }
-
-        await expect(MindboxSdk.updateAPNSToken(wrongPaylaod)).rejects.toThrow('Error')
-      })
-
-      it('resolves successfully with string payload passed', async () => {
-        expect.assertions(1)
-
-        const payloadString = 'NewFMSToken'
-
-        await expect(MindboxSdk.updateAPNSToken(payloadString)).resolves.toBeTruthy()
-      })
-    })
-
-    describe('Testing updateFMSToken method', () => {
-      it('throws error when no paylaod passed', async () => {
-        expect.assertions(1)
-
-        await expect(MindboxSdk.updateFMSToken()).rejects.toThrow('Error')
-      })
-
-      it('throws error when non string payload passed', async () => {
-        expect.assertions(1)
-
-        const wrongPaylaod = {
-          one: 'one',
-          two: 'two',
-        }
-
-        await expect(MindboxSdk.updateFMSToken(wrongPaylaod)).rejects.toThrow('Error')
-      })
-
-      it('resolves successfully with string payload passed', async () => {
-        expect.assertions(1)
-
-        const payloadString = 'NewFMSToken'
-
-        await expect(MindboxSdk.updateFMSToken(payloadString)).resolves.toBeTruthy()
-      })
-    })
-
     describe('Testing executeAsyncOperation method', () => {
       it('throws error when no payload passed', async () => {
         expect.assertions(2)
@@ -492,23 +390,6 @@ describe('Testing Mindbox RN SDK', () => {
       await MindboxSdk.initialize(initializationData)
     })
 
-    it('getToken method works correctly', async () => {
-      const MindboxSdk = require('../index').default
-      await MindboxSdk.initialize(initializationData)
-
-      expect.assertions(2)
-
-      MindboxSdk.getToken((token: string) => {
-        expect(token).toEqual('APNS')
-      })
-
-      Platform.OS = 'android'
-
-      MindboxSdk.getToken((token: string) => {
-        expect(token).toEqual('FMS')
-      })
-    })
-
     it('getTokens method works correctly', async () => {
       const MindboxSdk = require('../index').default
       await MindboxSdk.initialize(initializationData)
@@ -516,22 +397,15 @@ describe('Testing Mindbox RN SDK', () => {
       expect.assertions(2)
 
       MindboxSdk.getTokens((token: string) => {
-        expect(token).toEqual('Tokens')
+        expect(token).toEqual(JSON.stringify({ APNS: 'APNS', FCM: 'FMS' }))
       })
 
       Platform.OS = 'android'
 
       MindboxSdk.getTokens((token: string) => {
-        expect(token).toEqual('Tokens')
+        expect(token).toEqual(JSON.stringify({ APNS: 'APNS', FCM: 'FMS' }))
       })
-    })
-
-    it('updateToken method resolves successfully', async () => {
-      const MindboxSdk = require('../index').default
-
-      expect.assertions(1)
-
-      await expect(MindboxSdk.updateToken('newToken')).resolves.toBeUndefined()
+      Platform.OS = 'ios'
     })
 
     it('onPushClickReceived method works correctly', () => {
