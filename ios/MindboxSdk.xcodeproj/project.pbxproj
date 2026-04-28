@@ -32,7 +32,6 @@
 		D0F7B0002B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxJsDeliveryBridge.swift; sourceTree = "<group>"; };
 		E0A1A1A02B2D2D2D00A1B2C3 /* MindboxSdk.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MindboxSdk.mm; sourceTree = "<group>"; };
 		E0A1A1A22B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MindboxSdkNewArchGuard.mm; sourceTree = "<group>"; };
-		A0B1C2D32C3D4E5F00F1A2B3 /* MindboxSdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MindboxSdk.h; sourceTree = "<group>"; };
 		F4FF95D6245B92E800C19C63 /* MindboxSdkImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindboxSdkImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -62,7 +61,6 @@
 				D0F7B0002B1C4A1A00A1B2C3 /* MindboxJsDeliveryBridge.swift */,
 				E0A1A1A22B2D2D2D00A1B2C3 /* MindboxSdkNewArchGuard.mm */,
 				F4FF95D6245B92E800C19C63 /* MindboxSdkImpl.swift */,
-				A0B1C2D32C3D4E5F00F1A2B3 /* MindboxSdk.h */,
 				E0A1A1A02B2D2D2D00A1B2C3 /* MindboxSdk.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
