@@ -1,5 +1,12 @@
-#import "MindboxSdk-Swift.h"
 #import <React/RCTBridgeModule.h>
+
+#if __has_include("MindboxSdk-Swift.h")
+#import "MindboxSdk-Swift.h"
+#elif __has_include(<MindboxSdk/MindboxSdk-Swift.h>)
+#import <MindboxSdk/MindboxSdk-Swift.h>
+#else
+#error "MindboxSdk-Swift.h not found. Ensure Swift sources are included in the MindboxSdk pod target."
+#endif
 
 #if __has_include(<MindboxSdkSpec/MindboxSdkSpec.h>)
 #import <MindboxSdkSpec/MindboxSdkSpec.h>
