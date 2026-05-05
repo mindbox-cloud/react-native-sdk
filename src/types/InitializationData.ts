@@ -5,4 +5,5 @@ export type InitializationData = {
   shouldCreateCustomer?: boolean
   previousInstallId?: string
   previousUuid?: string
+  operationsDomain?: string
 }

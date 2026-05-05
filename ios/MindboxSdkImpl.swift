@@ -9,6 +9,7 @@ struct PayloadData: Codable {
     var shouldCreateCustomer: Bool?
     var previousInstallId: String?
     var previousUuid: String?
+    var operationsDomain: String?
 }
 
 public typealias ResolveBlock = (Any?) -> Void
@@ -51,7 +52,8 @@ public final class MindboxSdkImpl: NSObject {
                 previousInstallationId: payload.previousInstallId,
                 previousDeviceUUID: payload.previousUuid,
                 subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated ?? false,
-                shouldCreateCustomer: payload.shouldCreateCustomer ?? true
+                shouldCreateCustomer: payload.shouldCreateCustomer ?? true,
+                operationsDomain: payload.operationsDomain
             )
             Mindbox.shared.initialization(configuration: configuration)
             resolve(true)
