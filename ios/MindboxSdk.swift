@@ -21,6 +21,7 @@ struct PayloadData: Codable {
     var shouldCreateCustomer: Bool?
     var previousInstallId: String?
     var previousUuid: String?
+    var operationsDomain: String?
 }
 
 @objc(MindboxSdk)
@@ -48,7 +49,8 @@ class MindboxSdk: NSObject {
                 previousInstallationId: payload.previousInstallId,
                 previousDeviceUUID: payload.previousUuid,
                 subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated ?? false,
-                shouldCreateCustomer: payload.shouldCreateCustomer ?? true
+                shouldCreateCustomer: payload.shouldCreateCustomer ?? true,
+                operationsDomain: payload.operationsDomain
             )
 
             Mindbox.shared.initialization(configuration: configuration)
