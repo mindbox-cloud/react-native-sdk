@@ -55,6 +55,7 @@ internal class MindboxSdkLifecycleListener private constructor(
 
     private var activityEventListener: ActivityEventListener? = null
     private var reactInstanceEventListener: ReactInstanceEventListener? = null
+    private var reactInstanceEventListenerActivity: Activity? = null
 
     private fun onReactContextAvailable(reactContext: ReactContext, activity: Activity) {
         Mindbox.writeLog("[RN] ReactContext ready", Level.INFO)
@@ -62,7 +63,7 @@ internal class MindboxSdkLifecycleListener private constructor(
         subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityCreated(reactContext, activity))
     }
 
-    private fun registerReactContextListener(onReady: (ReactContext) -> Unit) {
+    private fun registerReactContextListener(activity: Activity, onReady: (ReactContext) -> Unit) {
         val host = getReactHost(application) ?: run {
             Mindbox.writeLog(
                 "[RN] registerReactContextListener: ReactHost is null, skip listener.",
@@ -70,14 +71,23 @@ internal class MindboxSdkLifecycleListener private constructor(
             )
             return
         }
-        reactInstanceEventListener?.let { host.removeReactInstanceEventListener(it) }
+        reactInstanceEventListener?.let { previousListener ->
+            host.removeReactInstanceEventListener(previousListener)
+        }
+        reactInstanceEventListenerActivity = null
         val listener = object : ReactInstanceEventListener {
             override fun onReactContextInitialized(context: ReactContext) {
                 Mindbox.writeLog("[RN] ReactContext initialized (listener)", Level.INFO)
+                host.removeReactInstanceEventListener(this)
+                if (reactInstanceEventListener === this) {
+                    reactInstanceEventListener = null
+                    reactInstanceEventListenerActivity = null
+                }
                 onReady(context)
             }
         }
         reactInstanceEventListener = listener
+        reactInstanceEventListenerActivity = activity
         host.addReactInstanceEventListener(listener)
     }
 
@@ -86,7 +96,7 @@ internal class MindboxSdkLifecycleListener private constructor(
 
         val hasConsumedReactContext = AtomicBoolean(false)
 
-        registerReactContextListener { reactContext ->
+        registerReactContextListener(activity) { reactContext ->
             if (hasConsumedReactContext.compareAndSet(false, true)) {
                 onReactContextAvailable(reactContext, activity)
             }
@@ -127,13 +137,14 @@ internal class MindboxSdkLifecycleListener private constructor(
 
     override fun onActivityDestroyed(activity: Activity) {
         if (!isMainActivity(activity)) return
-        subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityDestroyed(activity))
-        getReactContext()?.removeActivityEventListener(activityEventListener)
-        activityEventListener = null
-        reactInstanceEventListener?.let { listener ->
-            getReactHost(application)?.removeReactInstanceEventListener(listener)
+        if (reactInstanceEventListenerActivity === activity) {
+            reactInstanceEventListener?.let { listener ->
+                getReactHost(application)?.removeReactInstanceEventListener(listener)
+            }
+            reactInstanceEventListener = null
+            reactInstanceEventListenerActivity = null
         }
-        reactInstanceEventListener = null
+        subscriber.onEvent(MindboxSdkLifecycleEvent.ActivityDestroyed(activity))
     }
 
     override fun onActivityStarted(activity: Activity) {}
