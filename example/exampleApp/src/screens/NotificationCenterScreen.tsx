@@ -1,15 +1,12 @@
-import { NativeModules, NativeEventEmitter } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { View, Text, Button, FlatList, StyleSheet } from 'react-native'
+import { View, Button, FlatList } from 'react-native'
 import NotificationItem from '../components/NotificationItem'
 import { asyncOperationNCPushOpen } from '../utils/MindboxOperations'
 import initialNotifications from '../utils/NotificationStub'
 import styles from '../components/NotificationScreenStyles'
 import { Notification } from '../utils/Notification'
 import { useAppNavigation } from '../navigation/AppNavigationContext'
-
-const { NotificationModule } = NativeModules
-const notificationEmitter = new NativeEventEmitter(NotificationModule)
+import NotificationModule from '../native/NativeNotificationModule'
 
 const NotificationCenterScreen = () => {
   const navigation = useAppNavigation()
@@ -17,11 +14,9 @@ const NotificationCenterScreen = () => {
 
   useEffect(() => {
     loadNotifications()
-
-    const subscription = notificationEmitter.addListener('newNotification', () => {
+    const subscription = NotificationModule.onNotificationCenterUpdated(() => {
       loadNotifications()
     })
-
     return () => {
       subscription.remove()
     }
@@ -30,7 +25,7 @@ const NotificationCenterScreen = () => {
   const loadNotifications = async () => {
     try {
       const result = await NotificationModule.getNotifications()
-      const notificationStrings = JSON.parse(result)
+      const notificationStrings: string[] = JSON.parse(result)
       const notificationList = notificationStrings.map((notificationString: string) => {
         const notification = JSON.parse(notificationString)
         /*
@@ -40,9 +35,9 @@ const NotificationCenterScreen = () => {
             }
         */
         if (notification.payload) {
-          const payload = JSON.parse(notification.payload)
-          notification.pushName = payload.pushName
-          notification.pushDate = payload.pushDate
+          const payload: { pushName?: string; pushDate?: string } = JSON.parse(notification.payload)
+          notification.pushName = payload.pushName ?? ''
+          notification.pushDate = payload.pushDate ?? ''
         } else {
           notification.pushName = ''
           notification.pushDate = ''

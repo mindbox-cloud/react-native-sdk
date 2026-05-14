@@ -31,10 +31,8 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
-    func notifyReactNative() {
-        if let eventEmitter = bridge?.module(for: NotificationModule.self) as? NotificationModule {
-            eventEmitter.notifyReactNative()
-        }
+    func notifyReactNativeAboutNotificationCenterUpdate() {
+        NotificationCenter.default.post(name: NotificationCenterStorage.notificationCenterUpdatedName, object: nil)
     }
 
     // Handling remote notification fetch completion
@@ -42,7 +40,7 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
                               didReceiveRemoteNotification userInfo: [AnyHashable : Any],
                               fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         Mindbox.shared.application(application, performFetchWithCompletionHandler: completionHandler)
-        notifyReactNative()
+        notifyReactNativeAboutNotificationCenterUpdate()
     }
 
     // Updating APNS token in Mindbox
@@ -63,7 +61,7 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
 
     // Displaying notifications when the app is active
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        notifyReactNative()
+        notifyReactNativeAboutNotificationCenterUpdate()
         completionHandler([.alert, .sound, .badge])
     }
 
@@ -80,11 +78,6 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
     override func sourceURL(for bridge: RCTBridge!) -> URL! {
         bundleURL()
     }
-
-    override func extraModules(for bridge: RCTBridge!) -> [RCTBridgeModule] {
-        [NotificationModule()]
-    }
-
     override func bundleURL() -> URL? {
         #if DEBUG
             RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")

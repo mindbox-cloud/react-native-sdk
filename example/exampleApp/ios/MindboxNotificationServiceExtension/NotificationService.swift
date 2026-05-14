@@ -4,7 +4,7 @@ import MindboxNotifications
 // https://developers.mindbox.ru/docs/ios-send-rich-push-react-native
 class NotificationService: UNNotificationServiceExtension {
 
-    static let suiteName = "group.cloud.Mindbox.com.mindbox.exampleRN"
+    static let suiteName = "group.cloud.Mindbox.mindbox.RN.Example"
     // Lazy initialization of MindboxNotificationService
     lazy var mindboxService = MindboxNotificationService()
 
