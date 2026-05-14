@@ -1,49 +1,57 @@
 package com.exampleapp
 
-import android.content.Context
-import android.content.SharedPreferences
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.module.annotations.ReactModule
 
-class NotificationModule(reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext) {
+@ReactModule(name = NativeNotificationModuleSpec.NAME)
+class NotificationModule(
+    private val reactContext: ReactApplicationContext
+) : NativeNotificationModuleSpec(reactContext) {
 
-    private val sharedPreferences: SharedPreferences =
-        reactContext.getSharedPreferences("notifications", Context.MODE_PRIVATE)
+    companion object {
+        @Volatile
+        private var activeModule: NotificationModule? = null
 
-    override fun getName(): String {
-        return "NotificationModule"
+        fun emitNotificationCenterUpdatedFromExternal() {
+            activeModule?.emitNotificationCenterUpdated()
+        }
+    }
+
+    init {
+        activeModule = this
     }
 
     @ReactMethod
-    fun addListener(eventName: String?) {
-    }
-
-    @ReactMethod
-    fun removeListeners(count: Integer?) {
-    }
-
-    @ReactMethod
-    fun getNotifications(promise: Promise) {
+    override fun getNotifications(promise: Promise) {
         try {
-            val notificationsJson = sharedPreferences.getString("notifications", "[]")
+            val notificationsJson: String = NotificationStorage.getNotificationsJson(reactContext)
             promise.resolve(notificationsJson)
-        } catch (e: Exception) {
-            promise.reject("Error", e)
+        } catch (error: Throwable) {
+            promise.reject("Error", error)
         }
     }
 
     @ReactMethod
-    fun clearNotifications(promise: Promise) {
+    override fun clearNotifications(promise: Promise) {
         try {
-            val editor = sharedPreferences.edit()
-            editor.putString("notifications", "[]")
-            editor.apply()
+            NotificationStorage.clearNotifications(reactContext)
             promise.resolve(null)
-        } catch (e: Exception) {
-            promise.reject("Error", e)
+        } catch (error: Throwable) {
+            promise.reject("Error", error)
         }
+    }
+
+    override fun invalidate() {
+        if (activeModule === this) {
+            activeModule = null
+        }
+        super.invalidate()
+    }
+
+    private fun emitNotificationCenterUpdated() {
+        emitOnNotificationCenterUpdated(Arguments.createMap())
     }
 }
