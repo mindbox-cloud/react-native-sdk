@@ -46,11 +46,11 @@ class MindboxSdk: NSObject {
             let configuration = try MBConfiguration(
                 endpoint: payload.endpointId,
                 domain: payload.domain,
+                operationsDomain: payload.operationsDomain,
                 previousInstallationId: payload.previousInstallId,
                 previousDeviceUUID: payload.previousUuid,
                 subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated ?? false,
-                shouldCreateCustomer: payload.shouldCreateCustomer ?? true,
-                operationsDomain: payload.operationsDomain
+                shouldCreateCustomer: payload.shouldCreateCustomer ?? true
             )
 
             Mindbox.shared.initialization(configuration: configuration)
