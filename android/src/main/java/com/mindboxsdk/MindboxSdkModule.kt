@@ -98,6 +98,11 @@ class MindboxSdkModule(
                         payload.optString("previousUuid", "")
                     )
                 }
+                if (payload.has("operationsDomain")) {
+                    configurationBuilder.operationsDomain(
+                        payload.optString("operationsDomain", "")
+                    )
+                }
                 val configuration = configurationBuilder.build()
                 val handler = Handler(context.mainLooper)
                 handler.post {

@@ -89,6 +89,7 @@ class MindboxSdkClass {
    *   shouldCreateCustomer: true,
    *   previousInstallId: '',
    *   previousUuid: '',
+   *   operationsDomain: 'anonymizer.example.com',
    * });
    */
   public async initialize(initializationData: InitializationData) {
@@ -104,7 +105,7 @@ class MindboxSdkClass {
       throw new Error('Wrong initialization data!')
     }
 
-    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid } = initializationData
+    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain } = initializationData
 
     if (!domain || !endpointId) {
       this._initializing = false
@@ -130,6 +131,10 @@ class MindboxSdkClass {
 
     if (typeof previousUuid !== 'undefined' && previousUuid.length > 0) {
       payload.previousUuid = previousUuid
+    }
+
+    if (typeof operationsDomain !== 'undefined' && operationsDomain.length > 0) {
+      payload.operationsDomain = operationsDomain
     }
 
     try {
@@ -354,19 +359,6 @@ class MindboxSdkClass {
   public pushDelivered(uniqKey: string) {
     this.writeNativeLog('Used deprecated method pushDelivered. Use native methods', LogLevel.WARN)
     return MindboxSdkNative.pushDelivered(uniqKey)
-  }
-
-  /**
-   * This method is kept for backward compatibility. The `granted` argument is ignored.
-   * The SDK reads the current system authorization status and, if it differs
-   * from the last known value, sends an update to the backend.
-   *
-   * @param granted current permission status
-   * @deprecated Use `refreshNotificationPermissionStatus()` instead.
-   */
-  public updateNotificationPermissionStatus(granted: Boolean) {
-    console.warn(`updateNotificationPermissionStatus(granted=${String(granted)}) is deprecated. Use refreshNotificationPermissionStatus instead.`)
-    return MindboxSdkNative.refreshNotificationPermissionStatus()
   }
 
   /**

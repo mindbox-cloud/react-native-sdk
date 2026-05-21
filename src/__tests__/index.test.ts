@@ -378,6 +378,54 @@ describe('Testing Mindbox RN SDK', () => {
       expect(MindboxSdk.initialized).toBeTruthy()
     })
 
+    it('initialize passes operationsDomain to native when provided', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize({
+        ...initializationData,
+        operationsDomain: 'anonymizer.example.com',
+      })
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).toMatchObject({ operationsDomain: 'anonymizer.example.com' })
+    })
+
+    it('initialize does not include operationsDomain in payload when not provided', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize(initializationData)
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).not.toHaveProperty('operationsDomain')
+    })
+
+    it('initialize does not include operationsDomain in payload when passed as empty string', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize({
+        ...initializationData,
+        operationsDomain: '',
+      })
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).not.toHaveProperty('operationsDomain')
+    })
+
     it('getDeviceUUID method works correctly', async () => {
       const MindboxSdk = require('../index').default
 
