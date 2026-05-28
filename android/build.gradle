@@ -78,5 +78,5 @@ repositories {
 dependencies {
   implementation 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:${safeExtGet('kotlinVersion', '1.9.22')}"
-  api 'cloud.mindbox:mobile-sdk:2.15.0'
+  api 'cloud.mindbox:mobile-sdk:2.15.2'
 }
