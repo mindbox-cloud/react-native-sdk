@@ -59,6 +59,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         if (payload.has("previousUuid")) {
           configurationBuilder.setPreviousDeviceUuid(payload.optString("previousUuid", ""))
         }
+        if (payload.has("operationsDomain")) {
+          configurationBuilder.operationsDomain(payload.optString("operationsDomain", ""))
+        }
         val configuration = configurationBuilder.build()
 
         val handler = Handler(context.mainLooper)

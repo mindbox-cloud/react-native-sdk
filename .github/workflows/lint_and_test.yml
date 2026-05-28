@@ -19,9 +19,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup node JS
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 20
         registry-url: https://registry.npmjs.org
 
     - name: Setup local environment
@@ -37,9 +37,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup node JS
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 20
         registry-url: https://registry.npmjs.org
 
     - name: Setup local environment

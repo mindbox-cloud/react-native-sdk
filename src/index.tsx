@@ -82,6 +82,7 @@ class MindboxSdkClass {
    *   shouldCreateCustomer: true,
    *   previousInstallId: '',
    *   previousUuid: '',
+   *   operationsDomain: 'anonymizer.example.com',
    * });
    */
   public async initialize(initializationData: InitializationData) {
@@ -97,7 +98,7 @@ class MindboxSdkClass {
       throw new Error('Wrong initialization data!')
     }
 
-    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid } = initializationData
+    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain } = initializationData
 
     if (!domain || !endpointId) {
       this._initializing = false
@@ -123,6 +124,10 @@ class MindboxSdkClass {
 
     if (typeof previousUuid !== 'undefined' && previousUuid.length > 0) {
       payload.previousUuid = previousUuid
+    }
+
+    if (typeof operationsDomain !== 'undefined' && operationsDomain.length > 0) {
+      payload.operationsDomain = operationsDomain
     }
 
     try {
