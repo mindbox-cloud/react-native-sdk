@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.0.0-rc] - 2026-06-02
 
 ### Changes
 - Upgrade Android SDK dependency to v2.15.2

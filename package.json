@@ -1,6 +1,6 @@
 {
   "name": "mindbox-sdk",
-  "version": "2.15.0",
+  "version": "3.0.0-rc",
   "target-version": "3.0.0-rc",
   "description": "SDK for integration React Native mobile apps with Mindbox",
   "main": "lib/commonjs/index",
