@@ -13,21 +13,8 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
                               didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         moduleName = "exampleApp"
         initialProps = [:]
-        // Set the current instance of UNUserNotificationCenter's delegate to self.
-        // This enables the AppDelegate to respond to notification events
         UNUserNotificationCenter.current().delegate = self
-        // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
-        // Tracking app launch for analytics
-        let trackVisitData = TrackVisitData()
-        trackVisitData.launchOptions = launchOptions
-        Mindbox.shared.track(data: trackVisitData)
-
-        // Register background tasks for iOS 13 and later, or set background fetch interval for earlier versions
-        if #available(iOS 13.0, *) {
-            Mindbox.shared.registerBGTasks()
-        } else {
-            UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
-        }
+        MindboxApp.configure(launchOptions: launchOptions)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
@@ -35,49 +22,27 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
         NotificationCenter.default.post(name: NotificationCenterStorage.notificationCenterUpdatedName, object: nil)
     }
 
-    // Handling remote notification fetch completion
     override func application(_ application: UIApplication,
                               didReceiveRemoteNotification userInfo: [AnyHashable : Any],
                               fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        Mindbox.shared.application(application, performFetchWithCompletionHandler: completionHandler)
         notifyReactNativeAboutNotificationCenterUpdate()
+        Mindbox.shared.application(application, performFetchWithCompletionHandler: completionHandler)
     }
 
-    // Updating APNS token in Mindbox
-    override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Mindbox.shared.apnsTokenUpdate(deviceToken: deviceToken)
-    }
-
-    // Handling Universal Links
-    // https://developers.mindbox.ru/docs/ios-app-start-tracking-react-native
-    override func application(_ application: UIApplication,
-                              continue userActivity: NSUserActivity,
-                              restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        let trackVisitData = TrackVisitData()
-        trackVisitData.universalLink = userActivity
-        Mindbox.shared.track(data: trackVisitData)
-        return true
-    }
-
-    // Displaying notifications when the app is active
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         notifyReactNativeAboutNotificationCenterUpdate()
         completionHandler([.alert, .sound, .badge])
     }
 
-    // Handling push notification clicks
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        Mindbox.shared.pushClicked(response: response)
-        let trackVisitData = TrackVisitData()
-        trackVisitData.push = response
-        Mindbox.shared.track(data: trackVisitData)
-        MindboxJsDelivery.emitEvent(response)
+        notifyReactNativeAboutNotificationCenterUpdate()
         completionHandler()
     }
 
     override func sourceURL(for bridge: RCTBridge!) -> URL! {
         bundleURL()
     }
+
     override func bundleURL() -> URL? {
         #if DEBUG
             RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")

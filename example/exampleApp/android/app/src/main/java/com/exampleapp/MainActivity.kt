@@ -11,11 +11,6 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mindboxsdk.MindboxJsDelivery
 
 class MainActivity : ReactActivity() {
-    private fun handlePushIntent(intent: Intent) {
-        Mindbox.onNewIntent(intent)
-        Mindbox.onPushClicked(applicationContext, intent)
-        MindboxJsDelivery.sendPushClicked(intent)
-    }
 
     override fun getMainComponentName(): String = "exampleApp"
 
@@ -29,11 +24,5 @@ class MainActivity : ReactActivity() {
         } else {
             Mindbox.writeLog("[RN][exampleApp] Old architecture", Level.DEBUG)
         }
-        handlePushIntent(intent)
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handlePushIntent(intent)
     }
 }
