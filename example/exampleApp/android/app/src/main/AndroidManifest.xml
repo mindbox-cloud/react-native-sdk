@@ -48,6 +48,6 @@
 
     <meta-data
       android:name="com.mindbox.sdk.AUTO_INIT_ENABLED"
-      android:value="false" />
+      android:value="true" />
   </application>
 </manifest>

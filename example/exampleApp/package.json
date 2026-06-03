@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "mindbox-sdk": "^2.15.0",
+    "mindbox-sdk": "^3.0.0-rc",
     "react": "18.3.1",
     "react-native": "0.76.0",
     "react-native-permissions": "^5.4.0",
