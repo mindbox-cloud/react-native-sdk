@@ -22,17 +22,17 @@ jobs:
       newVersion: ${{ fromJson(steps.package.outputs.content).target-version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         ref: ${{ inputs.branch }}
     - name: Read package.json
       id: package
-      uses: juliangruber/read-file-action@b98920cbfcad4cedff29aedcd76aa964fc74e61a # v1.1.8
+      uses: juliangruber/read-file-action@271ff311a4947af354c6abcd696a306553b9ec18 # v1.1.8
       with:
         path: ./package.json
     - name: Version check
       if: ${{ fromJson(steps.package.outputs.content).version == fromJson(steps.package.outputs.content).target-version }}
-      uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         script: |
           core.setFailed('Package version and target version are equivalent!')
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         ref: ${{ inputs.branch }}
     - name: Setup node JS
@@ -66,7 +66,7 @@ jobs:
       id-token: write
     steps:
     - name: Checkout
-      uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         ref: ${{ inputs.branch }}
     - name: Setup node JS
@@ -109,10 +109,13 @@ jobs:
       github.base_ref == 'master'
     runs-on: ubuntu-latest
     env:
+      # gh uses this PAT, not the workflow GITHUB_TOKEN — needed so the merge PR
+      # re-triggers branch-protection checks. Job-level `permissions:` only scope
+      # the workflow token, so they don't apply to these gh calls.
       GITHUB_TOKEN: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
     steps:
     - name: Checkout develop branch
-      uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         ref: develop
     - name: Create Pull Request
