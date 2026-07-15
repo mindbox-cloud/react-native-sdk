@@ -76,7 +76,7 @@ class MindboxSdkClass {
    *
    * @example
    * await MindboxSdk.initialize({
-   *   domain: 'api.mindbox.ru',
+   *   domain: 'your-domain.example.com',
    *   endpointId: 'your-endpoint-id-here',
    *   subscribeCustomerIfCreated: true,
    *   shouldCreateCustomer: true,
