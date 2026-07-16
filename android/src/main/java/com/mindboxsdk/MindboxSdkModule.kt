@@ -75,8 +75,8 @@ class MindboxSdkModule(
             if (activity != null) {
                 val configurationBuilder = MindboxConfiguration.Builder(
                     context = context,
-                    domain = payload.optString("domain", "api.mindbox.ru"),
-                    endpointId = payload.optString("endpointId", "")
+                    domain = payload.getString("domain"),
+                    endpointId = payload.getString("endpointId")
                 )
                 if (payload.has("subscribeCustomerIfCreated")) {
                     configurationBuilder.subscribeCustomerIfCreated(
