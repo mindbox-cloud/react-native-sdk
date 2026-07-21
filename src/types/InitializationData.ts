@@ -6,4 +6,5 @@ export type InitializationData = {
   previousInstallId?: string
   previousUuid?: string
   operationsDomain?: string
+  shouldIncludeVersionCode?: boolean
 }
