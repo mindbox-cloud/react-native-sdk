@@ -62,6 +62,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         if (payload.has("operationsDomain")) {
           configurationBuilder.operationsDomain(payload.optString("operationsDomain", ""))
         }
+        if (payload.has("shouldIncludeVersionCode")) {
+          configurationBuilder.shouldIncludeVersionCode(payload.optBoolean("shouldIncludeVersionCode", true))
+        }
         val configuration = configurationBuilder.build()
 
         val handler = Handler(context.mainLooper)
