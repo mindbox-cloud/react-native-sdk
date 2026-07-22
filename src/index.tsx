@@ -83,7 +83,7 @@ class MindboxSdkClass {
    *   previousInstallId: '',
    *   previousUuid: '',
    *   operationsDomain: 'anonymizer.example.com',
-   *   shouldIncludeVersionCode: false, // Android only (ignored on iOS)
+   *   shouldIncludeVersionCode: false, // Android only (ignored on iOS). Default value is true
    * });
    */
   public async initialize(initializationData: InitializationData) {
