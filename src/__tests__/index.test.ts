@@ -514,6 +514,37 @@ describe('Testing Mindbox RN SDK', () => {
       expect(JSON.parse(calledWith)).not.toHaveProperty('operationsDomain')
     })
 
+    it('initialize passes shouldIncludeVersionCode to native when provided', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize({
+        ...initializationData,
+        shouldIncludeVersionCode: false,
+      })
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).toMatchObject({ shouldIncludeVersionCode: false })
+    })
+
+    it('initialize does not include shouldIncludeVersionCode in payload when not provided', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize(initializationData)
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).not.toHaveProperty('shouldIncludeVersionCode')
+    })
+
     it('getDeviceUUID method works correctly', async () => {
       const MindboxSdk = require('../index').default
 
