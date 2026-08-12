@@ -487,4 +487,5 @@ export default MindboxSdk
 
 export { LogLevel } from './LogLevel'
 
-export { InAppCallback, CopyPayloadInAppCallback, EmptyInAppCallback, UrlInAppCallback } from './InAppCallback'
+export type { InAppCallback } from './InAppCallback'
+export { CopyPayloadInAppCallback, EmptyInAppCallback, UrlInAppCallback } from './InAppCallback'
