@@ -1,4 +1,7 @@
 import Mindbox
+#if canImport(MindboxSdkObjC)
+import MindboxSdkObjC
+#endif
 
 class URLInappDelegate: URLInappMessageDelegate { }
 

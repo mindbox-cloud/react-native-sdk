@@ -1,5 +1,13 @@
 import Mindbox
 import MindboxLogger
+// Under SwiftPM the RCT types and the ObjC half of this module come from
+// modules; under CocoaPods the bridging header provides them instead.
+#if canImport(React)
+import React
+#endif
+#if canImport(MindboxSdkObjC)
+@_exported import MindboxSdkObjC
+#endif
 
 enum CustomError: Error {
     case tokenAPNSisNull
@@ -24,8 +32,10 @@ struct PayloadData: Codable {
     var operationsDomain: String?
 }
 
+// public so the ObjC target's RCT_EXTERN_MODULE category links against the
+// class symbol under SwiftPM release builds (WMO hides internal @objc classes).
 @objc(MindboxSdk)
-class MindboxSdk: NSObject {
+public class MindboxSdk: NSObject {
 
     private var urlInappDelegate: URLInappMessageDelegate?
     private var copyInappDelegate: CopyInappMessageDelegate?

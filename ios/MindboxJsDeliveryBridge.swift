@@ -1,5 +1,8 @@
 import Foundation
 import UserNotifications
+#if canImport(MindboxSdkObjC)
+import MindboxSdkObjC
+#endif
 
 @objc(MindboxJsDeliveryBridge)
 public final class MindboxJsDeliveryBridge: NSObject {
