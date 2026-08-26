@@ -76,13 +76,14 @@ class MindboxSdkClass {
    *
    * @example
    * await MindboxSdk.initialize({
-   *   domain: 'api.mindbox.ru',
+   *   domain: 'your-domain.example.com',
    *   endpointId: 'your-endpoint-id-here',
    *   subscribeCustomerIfCreated: true,
    *   shouldCreateCustomer: true,
    *   previousInstallId: '',
    *   previousUuid: '',
    *   operationsDomain: 'anonymizer.example.com',
+   *   shouldIncludeVersionCode: false, // Android only (ignored on iOS). Default value is true
    * });
    */
   public async initialize(initializationData: InitializationData) {
@@ -98,7 +99,7 @@ class MindboxSdkClass {
       throw new Error('Wrong initialization data!')
     }
 
-    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain } = initializationData
+    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain, shouldIncludeVersionCode } = initializationData
 
     if (!domain || !endpointId) {
       this._initializing = false
@@ -128,6 +129,10 @@ class MindboxSdkClass {
 
     if (typeof operationsDomain !== 'undefined' && operationsDomain.length > 0) {
       payload.operationsDomain = operationsDomain
+    }
+
+    if (typeof shouldIncludeVersionCode !== 'undefined') {
+      payload.shouldIncludeVersionCode = shouldIncludeVersionCode
     }
 
     try {

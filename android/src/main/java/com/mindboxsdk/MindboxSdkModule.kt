@@ -43,8 +43,8 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
       if (activity != null && context != null) {
         val configurationBuilder = MindboxConfiguration.Builder(
           context = context,
-          domain = payload.optString("domain", "api.mindbox.ru"),
-          endpointId = payload.optString("endpointId", "")
+          domain = payload.getString("domain"),
+          endpointId = payload.getString("endpointId")
         )
 
         if (payload.has("subscribeCustomerIfCreated")) {
@@ -61,6 +61,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         }
         if (payload.has("operationsDomain")) {
           configurationBuilder.operationsDomain(payload.optString("operationsDomain", ""))
+        }
+        if (payload.has("shouldIncludeVersionCode")) {
+          configurationBuilder.shouldIncludeVersionCode(payload.optBoolean("shouldIncludeVersionCode", true))
         }
         val configuration = configurationBuilder.build()
 
