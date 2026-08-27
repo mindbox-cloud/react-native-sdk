@@ -31,6 +31,53 @@ Initialize the Mindbox SDK in your React Native app. You can find the necessary 
 
 Learn how to send events to Mindbox. Different operations and their usage are detailed [here](https://developers.mindbox.ru/docs/integration-actions-react-native).
 
+### Embedded Blocks
+
+Mark a place in your layout with `MindboxEmbeddedBlock` and the SDK decides what goes into it from
+the admin panel — the app never learns what the content is, and it can change without a release.
+The host owns the size: pass the `height` the block should occupy. A place that ends up without
+content collapses to zero height and hands the space back.
+
+```tsx
+import { MindboxEmbeddedBlock } from 'mindbox-sdk';
+
+<MindboxEmbeddedBlock placeSystemName="main-screen-top" height={104} />
+```
+
+Both outcomes can be customized, the same way as in SwiftUI, Compose and Flutter: `placeholder`
+replaces the stock loading shimmer, and `error` opts into showing a failure instead of collapsing.
+An empty place always collapses — a host cannot fill the space of a block that was never meant to
+be there. `onLoad` and `onFail` report how the load ended.
+
+```tsx
+<MindboxEmbeddedBlock
+  placeSystemName="stories"
+  height={104}
+  placeholder={<StoriesSkeleton />}
+  error={<StoriesUnavailable />}
+  onFail={() => setShowStoriesSection(false)}
+/>
+```
+
+How long a block may wait for its content before it gives the place back is `timeoutMs`. Left out,
+it is the SDK's own budget of 30 seconds. The wait is the user's: it is counted only while the
+screen the block stands on is the one being looked at — and since every React Native screen lives
+in the same native window, the block cannot see that for itself. Pass `active` from the navigation
+(`useIsFocused()` in React Navigation), or a block behind a pushed screen will spend its budget on
+a screen nobody is looking at.
+
+```tsx
+<MindboxEmbeddedBlock
+  placeSystemName="stories"
+  height={104}
+  timeoutMs={5000}
+  active={useIsFocused()}
+/>
+```
+
+`timeoutMs` is fixed when the block is created — a new value given to a block already on screen is
+ignored with a warning. Give the component a new `key` to build a block on new terms.
+
 ### Push Notifications
 
 Mindbox SDK aids in handling push notifications. It offers configurations and usage instructions, found in the SDK documentation [Android(FCM)](https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native), [Android(HCM)](https://developers.mindbox.ru/docs/huawei-send-push-notifications-react-native), [IOS](https://developers.mindbox.ru/docs/ios-send-push-notifications-react-native) and [IOS(Rich)](https://developers.mindbox.ru/docs/ios-send-rich-push-react-native).
