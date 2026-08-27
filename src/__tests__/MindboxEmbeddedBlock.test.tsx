@@ -1,0 +1,167 @@
+import React from 'react'
+import { StyleSheet, Text, View } from 'react-native'
+import { act, create } from 'react-test-renderer'
+import type { ReactTestRenderer } from 'react-test-renderer'
+
+import { MindboxEmbeddedBlock } from '../MindboxEmbeddedBlock'
+
+// The native component is the boundary under test: the suite checks what crosses it — the props the
+// container reads and the two signals it sends back — not what the container does with them. Those
+// rules live in the native SDKs and are covered by their own suites.
+jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
+  const ReactActual = require('react')
+  const { View: RNView } = require('react-native')
+  return {
+    __esModule: true,
+    default: (props: unknown) => ReactActual.createElement(RNView, { ...(props as object), testID: 'native-block' }),
+  }
+})
+
+// The `any` casts below keep the suite indifferent to which @types/react the renderer's typings
+// resolve to: the SDK pins React 18, while a host app may typecheck this tree against React 19 or a
+// nested duplicate copy — and element and component types from two copies never match each other.
+const render = (element: React.ReactElement<any>): ReactTestRenderer => {
+  let renderer: ReactTestRenderer
+  act(() => {
+    renderer = create(element as any)
+  })
+  return renderer!
+}
+
+const update = (renderer: ReactTestRenderer, element: React.ReactElement<any>) => {
+  act(() => {
+    renderer.update(element as any)
+  })
+}
+
+const asType = (component: unknown) => component as any
+
+const nativeProps = (renderer: ReactTestRenderer) => renderer.root.findByProps({ testID: 'native-block' }).props
+
+const reportAppearance = (renderer: ReactTestRenderer, appearance: string) => {
+  act(() => {
+    nativeProps(renderer).onAppearanceChange({ nativeEvent: { appearance } })
+  })
+}
+
+/** The outermost view is the frame that owns the height the host sees. */
+const frameHeight = (renderer: ReactTestRenderer) => {
+  const frame = renderer.root.findAllByType(asType(View))[0]
+  return StyleSheet.flatten(frame.props.style).height
+}
+
+describe('MindboxEmbeddedBlock', () => {
+  it('takes its height while loading and hands it back when the block collapses', () => {
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
+
+    expect(frameHeight(renderer)).toBe(104)
+
+    reportAppearance(renderer, 'collapsed')
+
+    expect(frameHeight(renderer)).toBe(0)
+  })
+
+  it('tells the native block the place, the height and whether the place is taken', () => {
+    const renderer = render(
+      <MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>wait</Text>} active={false} />,
+    )
+
+    expect(nativeProps(renderer)).toMatchObject({
+      placeSystemName: 'stories',
+      blockHeight: 104,
+      hasPlaceholder: true,
+      hasErrorView: false,
+      hostVisible: false,
+    })
+  })
+
+  it('sends zero for a timeout the host did not set', () => {
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
+
+    expect(nativeProps(renderer).timeoutMs).toBe(0)
+  })
+
+  it('sends the timeout it was created with, in milliseconds', () => {
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} timeoutMs={5000} />)
+
+    expect(nativeProps(renderer).timeoutMs).toBe(5000)
+  })
+
+  it('keeps the timeout it was created with and warns once about a change', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} timeoutMs={5000} />)
+
+    update(renderer, <MindboxEmbeddedBlock placeSystemName="stories" height={104} timeoutMs={1000} />)
+    update(renderer, <MindboxEmbeddedBlock placeSystemName="stories" height={104} timeoutMs={2000} />)
+
+    expect(nativeProps(renderer).timeoutMs).toBe(5000)
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
+
+  it('draws the host placeholder over the loading block and the host error over the failed one', () => {
+    const renderer = render(
+      <MindboxEmbeddedBlock
+        placeSystemName="stories"
+        height={104}
+        placeholder={<Text>loading</Text>}
+        error={<Text>broken</Text>}
+      />,
+    )
+
+    expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
+
+    reportAppearance(renderer, 'content')
+
+    expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+
+    reportAppearance(renderer, 'error')
+
+    expect(renderer.root.findByType(asType(Text)).props.children).toBe('broken')
+  })
+
+  it('delivers each outcome once and a changed outcome again', () => {
+    const onLoad = jest.fn()
+    const onFail = jest.fn()
+    const renderer = render(
+      <MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onFail={onFail} />,
+    )
+
+    act(() => {
+      nativeProps(renderer).onBlockLoad()
+      nativeProps(renderer).onBlockLoad()
+    })
+
+    expect(onLoad).toHaveBeenCalledTimes(1)
+
+    act(() => {
+      nativeProps(renderer).onBlockFail()
+    })
+
+    expect(onFail).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores an appearance it does not know, keeping the last known one', () => {
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
+
+    reportAppearance(renderer, 'collapsed')
+    reportAppearance(renderer, 'sideways')
+
+    expect(frameHeight(renderer)).toBe(0)
+  })
+
+  it('builds a different place as a different block, with nothing remembered', () => {
+    const onLoad = jest.fn()
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} />)
+
+    act(() => {
+      nativeProps(renderer).onBlockLoad()
+    })
+    update(renderer, <MindboxEmbeddedBlock placeSystemName="banner" height={104} onLoad={onLoad} />)
+    act(() => {
+      nativeProps(renderer).onBlockLoad()
+    })
+
+    expect(onLoad).toHaveBeenCalledTimes(2)
+  })
+})

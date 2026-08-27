@@ -16,6 +16,9 @@ buildscript {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+// After `com.android.library`: the React plugin wires its codegen tasks from the Android library
+// extension, and applying it first leaves the library without them.
+apply plugin: "com.facebook.react"
 
 def getExtOrDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['MindboxSdk_' + name]
@@ -122,9 +125,18 @@ repositories {
 
 def kotlin_version = getExtOrDefault('kotlinVersion')
 
+// Held next to the SDK version develop already pins, so the two move together.
+def nativeSdkVersion = '2.15.4'
+
 dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  api 'cloud.mindbox:mobile-sdk:2.15.4'
+  api "cloud.mindbox:mobile-sdk:$nativeSdkVersion"
+  // The block reads its host screen's lifecycle off the view tree, and this wrapper has to put one
+  // there: React Native's own view lifetime, not the fragment's.
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
+  // The SDK keeps mindbox-common an `implementation` dependency, so `@InternalMindboxApi` — the
+  // annotation the embedded block hooks are marked with — is not on the compile classpath without this.
+  compileOnly "cloud.mindbox:mindbox-common:$nativeSdkVersion"
 }

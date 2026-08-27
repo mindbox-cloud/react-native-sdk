@@ -72,6 +72,19 @@
     "react": "*",
     "react-native": "*"
   },
+  "codegenConfig": {
+    "name": "MindboxSdkSpec",
+    "type": "all",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.mindboxsdk"
+    },
+    "ios": {
+      "componentProvider": {
+        "MindboxEmbeddedBlockView": "MindboxEmbeddedBlockViewComponentView"
+      }
+    }
+  },
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
