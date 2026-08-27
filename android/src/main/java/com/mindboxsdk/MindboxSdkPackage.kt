@@ -7,6 +7,7 @@ import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.turbomodule.core.interfaces.TurboModule
 import com.facebook.react.uimanager.ViewManager
+import com.mindboxsdk.embedded.MindboxEmbeddedBlockViewManager
 
 class MindboxSdkPackage : TurboReactPackage() {
     override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? =
@@ -29,5 +30,5 @@ class MindboxSdkPackage : TurboReactPackage() {
         emptyList()
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
-        emptyList()
+        listOf(MindboxEmbeddedBlockViewManager())
 }
