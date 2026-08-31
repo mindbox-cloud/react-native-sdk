@@ -29,12 +29,18 @@ export type MindboxEmbeddedBlockProps = {
   /**
    * The name of the place from the admin panel. A different name is a different block, built from
    * scratch in place of the old one.
+   *
+   * Taken exactly as given: nothing is trimmed, so spaces around the name are part of it and keep
+   * the block from matching the place. The component warns about such a name.
    */
   placeSystemName: string
 
   /**
    * The height the block occupies while it loads and while it is shown. A place that ends up without
    * content collapses to zero height and hands the space back.
+   *
+   * Live: a new value resizes a block already on screen in place — the same content, no reload —
+   * exactly as the SwiftUI, Compose and Flutter wrappers behave.
    */
   height: number
 
@@ -122,6 +128,28 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   // block occupies its height right away, not from the container's first report.
   const [appearance, setAppearance] = useState<Appearance>('placeholder')
 
+  // What of the height actually reaches the layout: live — a new value resizes the block in place —
+  // but never nonsense. A height that is not a positive finite number reserves no space.
+  const blockHeight = Number.isFinite(height) ? Math.max(0, height) : 0
+
+  // Said once, when the block is built: both are creation mistakes, not states to keep reporting.
+  const hasWarnedAboutCreation = useRef(false)
+  if (!hasWarnedAboutCreation.current) {
+    hasWarnedAboutCreation.current = true
+    if (placeSystemName.trim() !== placeSystemName) {
+      console.warn(
+        `[MindboxEmbeddedBlock] The block "${placeSystemName}" was given a place system name with ` +
+          'spaces around it. The name is used as it is, so it will not match the place from the admin panel.',
+      )
+    }
+    if (blockHeight <= 0) {
+      console.warn(
+        `[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: ` +
+          'it reserves no space and nothing loads.',
+      )
+    }
+  }
+
   // The budget is handed to the container once, when the block is built — a running wait cannot be
   // re-budgeted, and every wrapper of the SDK keeps the timeout it was built with. Freezing the value
   // here keeps the native side out of it; the one warning below is what says the new value went
@@ -169,11 +197,11 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   return (
     // The computed height goes last: a collapsed block gives its space back whatever the host's own
     // style says. `collapsable` keeps the wrapper — and its clipping — alive on Android.
-    <View style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : height }]} collapsable={false}>
+    <View style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : blockHeight }]} collapsable={false}>
       <MindboxEmbeddedBlockNativeView
         style={StyleSheet.absoluteFill}
         placeSystemName={placeSystemName}
-        blockHeight={height}
+        blockHeight={blockHeight}
         // Zero is the wire word for "the host said nothing": an absent prop crosses the boundary as
         // the default anyway, so the default is spelled out and given that meaning.
         timeoutMs={creationTimeoutMs ?? 0}

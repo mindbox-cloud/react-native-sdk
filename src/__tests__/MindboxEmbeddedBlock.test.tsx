@@ -61,6 +61,37 @@ describe('MindboxEmbeddedBlock', () => {
     expect(frameHeight(renderer)).toBe(0)
   })
 
+  it('resizes a live block in place when the height changes', () => {
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={160} />)
+
+    update(renderer, <MindboxEmbeddedBlock placeSystemName="stories" height={80} />)
+
+    expect(frameHeight(renderer)).toBe(80)
+    expect(nativeProps(renderer).blockHeight).toBe(80)
+  })
+
+  it('warns once about a place system name with spaces around it', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName=" stories " height={104} />)
+
+    update(renderer, <MindboxEmbeddedBlock placeSystemName=" stories " height={104} />)
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toContain('spaces around it')
+    warn.mockRestore()
+  })
+
+  it('warns about a height that reserves no space and hands the layout zero', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={Number.NaN} />)
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toContain('reserves no space')
+    expect(frameHeight(renderer)).toBe(0)
+    expect(nativeProps(renderer).blockHeight).toBe(0)
+    warn.mockRestore()
+  })
+
   it('tells the native block the place, the height and whether the place is taken', () => {
     const renderer = render(
       <MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>wait</Text>} active={false} />,
