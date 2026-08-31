@@ -8,10 +8,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.annotations.InternalMindboxApi
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockAppearance
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockListener
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockView
+import cloud.mindbox.mobile_sdk.logger.Level
 
 /**
  * The React Native side of one embedded block: a frame that holds the SDK's own container and turns
@@ -109,15 +111,17 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
     }
 
     fun setPlaceSystemName(name: String?) {
-        val next = name?.takeIf { it.isNotBlank() }
-        if (next == placeSystemName) {
+        // Taken exactly as given: the SDK compares names without trimming on every platform, so a
+        // padded name is a name like any other — one that simply never resolves. Filtering it here
+        // would turn that into a block that never settles, which is worse than one that collapses.
+        if (name == placeSystemName) {
             return
         }
 
         // A different place is a different block, and the old one has nothing to hand over. The
         // wrapper keys the whole component by the place, so this is a safety net and not the usual
         // path — but a place changed under a live block must not leave the old one running.
-        placeSystemName = next
+        placeSystemName = name
         dropBlock()
     }
 
@@ -198,6 +202,15 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         val place = placeSystemName ?: return
         if (blockView != null || !isBlockWanted || width == 0 || height == 0) {
             return
+        }
+
+        if (place.isEmpty()) {
+            // Built all the same: the SDK settles a nameless place as empty, so the host hears
+            // `collapsed` and `onFail` instead of watching a placeholder that never resolves.
+            Mindbox.writeLog(
+                message = "[EmbeddedBlock] A React Native block was created without a place system name and has nothing to resolve",
+                logLevel = Level.ERROR,
+            )
         }
 
         val block = MindboxEmbeddedBlockView(context, place, timeoutMs)
