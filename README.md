@@ -76,7 +76,8 @@ a screen nobody is looking at.
 ```
 
 `height` is live: a new value resizes a block already on screen in place — the same content, no
-reload. `timeoutMs` is fixed when the block is created — a new value is ignored with a warning;
+reload. It has to be positive, though: a block given no space to occupy is never loaded and reports
+no outcome. `timeoutMs` is fixed when the block is created — a new value is ignored with a warning;
 give the component a new `key` to load a block on a new budget.
 
 ### Push Notifications
