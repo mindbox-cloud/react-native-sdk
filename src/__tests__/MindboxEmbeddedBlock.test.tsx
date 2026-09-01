@@ -119,13 +119,21 @@ describe('MindboxEmbeddedBlock', () => {
     warn.mockRestore()
   })
 
-  it('warns about a height that reserves no space and hands the layout zero', () => {
+  // Zero, negative and not-a-number are one case to the block — no space is no space — and the suite
+  // says so for each of them, since each arrives from a different mistake: a height left unset, a
+  // height computed into the negative, and a height computed from something that was not there.
+  it.each([
+    ['zero', 0],
+    ['negative', -104],
+    ['not a number', Number.NaN],
+  ])('warns about a %s height that reserves no space and hands the layout zero', (_name, height) => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={Number.NaN} />)
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={height} />)
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0][0]).toContain('reserves no space')
     expect(frameHeight(renderer)).toBe(0)
+    // Never a negative number across the boundary: the native side is handed the space it can lay out.
     expect(nativeProps(renderer).blockHeight).toBe(0)
     warn.mockRestore()
   })
