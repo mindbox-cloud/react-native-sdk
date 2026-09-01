@@ -31,7 +31,8 @@ export type MindboxEmbeddedBlockProps = {
    * scratch in place of the old one.
    *
    * Taken exactly as given: nothing is trimmed, so spaces around the name are part of it and keep
-   * the block from matching the place. The component warns about such a name.
+   * the block from matching the place. A name that is empty — or nothing but spaces — resolves to
+   * nothing at all, so the place collapses and reports [onFail]. The component warns about both.
    */
   placeSystemName: string
 
@@ -41,6 +42,10 @@ export type MindboxEmbeddedBlockProps = {
    *
    * Live: a new value resizes a block already on screen in place — the same content, no reload —
    * exactly as the SwiftUI, Compose and Flutter wrappers behave.
+   *
+   * It has to be a positive number. A block given no space to occupy is never loaded at all — a page
+   * laid out in a zero viewport does not lay itself out again once the space arrives — and reports
+   * neither outcome. The component warns about such a height.
    */
   height: number
 
@@ -132,21 +137,19 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   // but never nonsense. A height that is not a positive finite number reserves no space.
   const blockHeight = Number.isFinite(height) ? Math.max(0, height) : 0
 
-  // Said once, when the block is built: both are creation mistakes, not states to keep reporting.
+  // Said once, when the block is built: these are creation mistakes, not states to keep reporting.
   const hasWarnedAboutCreation = useRef(false)
   if (!hasWarnedAboutCreation.current) {
     hasWarnedAboutCreation.current = true
-    if (placeSystemName.trim() !== placeSystemName) {
-      console.warn(
-        `[MindboxEmbeddedBlock] The block "${placeSystemName}" was given a place system name with ` +
-          'spaces around it. The name is used as it is, so it will not match the place from the admin panel.',
-      )
+    // A name of nothing but spaces is a missing name, not a padded one, so it is answered first —
+    // and answered without quoting it back, since `The block "   "` reads as a typo in the message.
+    if (placeSystemName.trim().length === 0) {
+      console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onFail.')
+    } else if (placeSystemName.trim() !== placeSystemName) {
+      console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was given a place system name with spaces around it. The name is used as it is, so it will not match the place from the admin panel.`)
     }
     if (blockHeight <= 0) {
-      console.warn(
-        `[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: ` +
-          'it reserves no space and nothing loads.',
-      )
+      console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: it reserves no space, so nothing loads and no outcome is reported.`)
     }
   }
 
@@ -158,10 +161,7 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   const hasWarnedAboutTimeout = useRef(false)
   if (timeoutMs !== creationTimeoutMs && !hasWarnedAboutTimeout.current) {
     hasWarnedAboutTimeout.current = true
-    console.warn(
-      `[MindboxEmbeddedBlock] The block "${placeSystemName}" keeps the timeout it was created with; ` +
-        'the new value is ignored. Remount the component — give it a new key — to change the timeout.',
-    )
+    console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" keeps the timeout it was created with; the new value is ignored. Remount the component — give it a new key — to change the timeout.`)
   }
 
   /** The native side reports where the block stands, so the same outcome can arrive more than once — the host must hear it exactly once. */
