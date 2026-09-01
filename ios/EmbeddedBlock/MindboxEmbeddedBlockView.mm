@@ -109,12 +109,22 @@ using namespace facebook::react;
  * appearance the moment the observer subscribes — a place with nothing behind it settles right there. A
  * block built while applying props would report its whole life to nobody. By `finalizeUpdates:` the
  * emitter and the layout metrics are both in.
+ *
+ * An empty place system name is a name like any other here: the container resolves a nameless place as
+ * an empty one and answers `collapsed` and a failure, which is the host's cue to give the space back.
+ * Refusing to build the block instead would leave the place taken for the life of the screen, with
+ * nothing ever reported — the one outcome a host cannot lay out around.
  */
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
 {
     [super finalizeUpdates:updateMask];
 
-    if (_host != nil || _placeSystemName.empty()) {
+    // A frame of no size is no time to start: a page laid out against a zero viewport does not lay
+    // itself out again when the space arrives, and the block would report content nobody can see. This
+    // is not a refusal for good — a change of layout metrics is a reason for another `finalizeUpdates:`
+    // on its own, and the metrics land before it, so the first frame with a size builds the block. The
+    // same guard Android keeps in `MindboxEmbeddedBlockHostView.buildBlockIfPossible`.
+    if (_host != nil || CGRectIsEmpty(self.bounds)) {
         return;
     }
 
@@ -158,13 +168,18 @@ using namespace facebook::react;
     }
 }
 
-- (void)prepareForRecycle
+/**
+ * The view has been unmounted, and it is not going to a recycle pool — `shouldBeRecycled` says so, and
+ * that is exactly why React Native calls this and not `prepareForRecycle`.
+ *
+ * The block's screen ends here, not whenever the last reference to the view is let go: waiting for
+ * `dealloc` would leave the page alive for an autorelease pool to decide about. Android tears the block
+ * down at the same moment, in `onDropViewInstance`.
+ */
+- (void)invalidate
 {
     [self dropHost];
     _placeSystemName = "";
-    _pendingAppearance = nil;
-    _pendingOutcome = nil;
-    [super prepareForRecycle];
 }
 
 - (void)emitAppearance:(NSString *)appearance
@@ -202,6 +217,10 @@ using namespace facebook::react;
     [_host tearDown];
     self.contentView = nil;
     _host = nil;
+    // Whatever the old block had left to say goes with it: held back, it would be replayed to the next
+    // event emitter as the outcome of the place that took its seat.
+    _pendingAppearance = nil;
+    _pendingOutcome = nil;
 }
 
 @end

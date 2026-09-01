@@ -81,6 +81,44 @@ describe('MindboxEmbeddedBlock', () => {
     warn.mockRestore()
   })
 
+  it('warns once about a place system name that is not there at all', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="" height={104} />)
+
+    update(renderer, <MindboxEmbeddedBlock placeSystemName="" height={104} />)
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toContain('without a place system name')
+    // Handed to the native side as it is: a nameless place has to collapse and report, not hang.
+    expect(nativeProps(renderer).placeSystemName).toBe('')
+    warn.mockRestore()
+  })
+
+  it('calls a name of nothing but spaces a missing name, not a padded one', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    render(<MindboxEmbeddedBlock placeSystemName="   " height={104} />)
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toContain('without a place system name')
+    expect(warn.mock.calls[0][0]).not.toContain('spaces around it')
+    warn.mockRestore()
+  })
+
+  it('hands the failure of a nameless place to the host and gives the space back', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const onFail = jest.fn()
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="" height={104} onFail={onFail} />)
+
+    reportAppearance(renderer, 'collapsed')
+    act(() => {
+      nativeProps(renderer).onBlockFail()
+    })
+
+    expect(onFail).toHaveBeenCalledTimes(1)
+    expect(frameHeight(renderer)).toBe(0)
+    warn.mockRestore()
+  })
+
   it('warns about a height that reserves no space and hands the layout zero', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={Number.NaN} />)
@@ -93,9 +131,7 @@ describe('MindboxEmbeddedBlock', () => {
   })
 
   it('tells the native block the place, the height and whether the place is taken', () => {
-    const renderer = render(
-      <MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>wait</Text>} active={false} />,
-    )
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>wait</Text>} active={false} />)
 
     expect(nativeProps(renderer)).toMatchObject({
       placeSystemName: 'stories',
@@ -131,14 +167,7 @@ describe('MindboxEmbeddedBlock', () => {
   })
 
   it('draws the host placeholder over the loading block and the host error over the failed one', () => {
-    const renderer = render(
-      <MindboxEmbeddedBlock
-        placeSystemName="stories"
-        height={104}
-        placeholder={<Text>loading</Text>}
-        error={<Text>broken</Text>}
-      />,
-    )
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>loading</Text>} error={<Text>broken</Text>} />)
 
     expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
 
@@ -154,9 +183,7 @@ describe('MindboxEmbeddedBlock', () => {
   it('delivers each outcome once and a changed outcome again', () => {
     const onLoad = jest.fn()
     const onFail = jest.fn()
-    const renderer = render(
-      <MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onFail={onFail} />,
-    )
+    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onFail={onFail} />)
 
     act(() => {
       nativeProps(renderer).onBlockLoad()
