@@ -1,8 +1,21 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 
 import MindboxEmbeddedBlockNativeView from './MindboxEmbeddedBlockNativeComponent'
+import type { NativeProps } from './MindboxEmbeddedBlockNativeComponent'
+
+/**
+ * The handler is typed by the prop it is handed to, not by a second spelling of the same event.
+ *
+ * Spelling it out again would mean naming `NativeSyntheticEvent` here as well, and the two names
+ * only agree while both resolve to the same React Native. They do not always: a checkout that sits
+ * under a folder carrying its own React Native resolves this file's import and the spec's to
+ * different copies, and `bob build` then refuses to write the definitions over a `currentTarget`
+ * that is a number on one side and a view on the other. Taking the type from the prop leaves
+ * nothing to disagree about.
+ */
+type AppearanceChangeHandler = NonNullable<NativeProps['onAppearanceChange']>
 
 type Appearance = 'placeholder' | 'content' | 'error' | 'collapsed'
 
@@ -141,7 +154,7 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
 
   const deliveredOutcome = useRef<'load' | 'fail' | null>(null)
 
-  const handleAppearanceChange = useCallback((event: NativeSyntheticEvent<{ appearance: string }>) => {
+  const handleAppearanceChange = useCallback<AppearanceChangeHandler>((event) => {
     const reported = event.nativeEvent.appearance
     if (APPEARANCES.includes(reported)) {
       setAppearance(reported as Appearance)
