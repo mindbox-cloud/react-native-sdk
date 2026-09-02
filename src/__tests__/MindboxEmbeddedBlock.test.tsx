@@ -5,9 +5,6 @@ import type { ReactTestRenderer } from 'react-test-renderer'
 
 import { MindboxEmbeddedBlock } from '../MindboxEmbeddedBlock'
 
-// The native component is the boundary under test: the suite checks what crosses it — the props the
-// container reads and the two signals it sends back — not what the container does with them. Those
-// rules live in the native SDKs and are covered by their own suites.
 jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
   const ReactActual = require('react')
   const { View: RNView } = require('react-native')
@@ -17,9 +14,6 @@ jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
   }
 })
 
-// The `any` casts below keep the suite indifferent to which @types/react the renderer's typings
-// resolve to: the SDK pins React 18, while a host app may typecheck this tree against React 19 or a
-// nested duplicate copy — and element and component types from two copies never match each other.
 const render = (element: React.ReactElement<any>): ReactTestRenderer => {
   let renderer: ReactTestRenderer
   act(() => {
@@ -44,7 +38,6 @@ const reportAppearance = (renderer: ReactTestRenderer, appearance: string) => {
   })
 }
 
-/** The outermost view is the frame that owns the height the host sees. */
 const frameHeight = (renderer: ReactTestRenderer) => {
   const frame = renderer.root.findAllByType(asType(View))[0]
   return StyleSheet.flatten(frame.props.style).height
@@ -89,7 +82,6 @@ describe('MindboxEmbeddedBlock', () => {
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0][0]).toContain('without a place system name')
-    // Handed to the native side as it is: a nameless place has to collapse and report, not hang.
     expect(nativeProps(renderer).placeSystemName).toBe('')
     warn.mockRestore()
   })
@@ -119,9 +111,6 @@ describe('MindboxEmbeddedBlock', () => {
     warn.mockRestore()
   })
 
-  // Zero, negative and not-a-number are one case to the block — no space is no space — and the suite
-  // says so for each of them, since each arrives from a different mistake: a height left unset, a
-  // height computed into the negative, and a height computed from something that was not there.
   it.each([
     ['zero', 0],
     ['negative', -104],
@@ -133,7 +122,6 @@ describe('MindboxEmbeddedBlock', () => {
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0][0]).toContain('reserves no space')
     expect(frameHeight(renderer)).toBe(0)
-    // Never a negative number across the boundary: the native side is handed the space it can lay out.
     expect(nativeProps(renderer).blockHeight).toBe(0)
     warn.mockRestore()
   })

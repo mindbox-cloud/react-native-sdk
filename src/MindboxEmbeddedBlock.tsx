@@ -4,14 +4,6 @@ import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native'
 
 import MindboxEmbeddedBlockNativeView from './MindboxEmbeddedBlockNativeComponent'
 
-/**
- * How the block occupies its place right now — what the wrapper draws, not what happened.
- *
- * The rules behind the decision stay in the native container: the content states, the rule that an
- * empty place shows no failure, the one that a place taken by loading is a place drawn. RN mirrors
- * the answer in its layout and nothing more, so every wrapper of the SDK shows the same thing at the
- * same moment by construction.
- */
 type Appearance = 'placeholder' | 'content' | 'error' | 'collapsed'
 
 const APPEARANCES: Array<string> = ['placeholder', 'content', 'error', 'collapsed']
@@ -120,29 +112,16 @@ export type MindboxEmbeddedBlockProps = {
  * — with its waiting budget and its web page — and this component only mirrors the container's
  * decisions in the RN layout.
  */
-export const MindboxEmbeddedBlock = (props: MindboxEmbeddedBlockProps) => (
-  // A different place is a different block, and everything remembered about the old one has to go
-  // with it — the outcome already delivered, the appearance last shown. Keying the whole component is
-  // what `key(placeSystemName)` does in Compose and `ValueKey` in Flutter; keying nothing would keep
-  // live state pointing at a block that is gone.
-  <Block key={props.placeSystemName} {...props} />
-)
+export const MindboxEmbeddedBlock = (props: MindboxEmbeddedBlockProps) => <Block key={props.placeSystemName} {...props} />
 
 const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad, onFail, active = true, style }: MindboxEmbeddedBlockProps) => {
-  // Starts where the native container starts: the space is taken and the loading screen is up. The
-  // block occupies its height right away, not from the container's first report.
   const [appearance, setAppearance] = useState<Appearance>('placeholder')
 
-  // What of the height actually reaches the layout: live — a new value resizes the block in place —
-  // but never nonsense. A height that is not a positive finite number reserves no space.
   const blockHeight = Number.isFinite(height) ? Math.max(0, height) : 0
 
-  // Said once, when the block is built: these are creation mistakes, not states to keep reporting.
   const hasWarnedAboutCreation = useRef(false)
   if (!hasWarnedAboutCreation.current) {
     hasWarnedAboutCreation.current = true
-    // A name of nothing but spaces is a missing name, not a padded one, so it is answered first —
-    // and answered without quoting it back, since `The block "   "` reads as a typo in the message.
     if (placeSystemName.trim().length === 0) {
       console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onFail.')
     } else if (placeSystemName.trim() !== placeSystemName) {
@@ -153,10 +132,6 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
     }
   }
 
-  // The budget is handed to the container once, when the block is built — a running wait cannot be
-  // re-budgeted, and every wrapper of the SDK keeps the timeout it was built with. Freezing the value
-  // here keeps the native side out of it; the one warning below is what says the new value went
-  // nowhere.
   const creationTimeoutMs = useRef(timeoutMs).current
   const hasWarnedAboutTimeout = useRef(false)
   if (timeoutMs !== creationTimeoutMs && !hasWarnedAboutTimeout.current) {
@@ -164,13 +139,10 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
     console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" keeps the timeout it was created with; the new value is ignored. Remount the component — give it a new key — to change the timeout.`)
   }
 
-  /** The native side reports where the block stands, so the same outcome can arrive more than once — the host must hear it exactly once. */
   const deliveredOutcome = useRef<'load' | 'fail' | null>(null)
 
   const handleAppearanceChange = useCallback((event: NativeSyntheticEvent<{ appearance: string }>) => {
     const reported = event.nativeEvent.appearance
-    // Tolerant on purpose: a native side newer than this one may report an appearance this version
-    // does not know, and that is no reason to break the block — the last known one stands.
     if (APPEARANCES.includes(reported)) {
       setAppearance(reported as Appearance)
     }
@@ -195,27 +167,8 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   const overlay = appearance === 'placeholder' ? placeholder : appearance === 'error' ? error : null
 
   return (
-    // The computed height goes last: a collapsed block gives its space back whatever the host's own
-    // style says. `collapsable` keeps the wrapper — and its clipping — alive on Android.
     <View style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : blockHeight }]} collapsable={false}>
-      <MindboxEmbeddedBlockNativeView
-        style={StyleSheet.absoluteFill}
-        placeSystemName={placeSystemName}
-        blockHeight={blockHeight}
-        // Zero is the wire word for "the host said nothing": an absent prop crosses the boundary as
-        // the default anyway, so the default is spelled out and given that meaning.
-        timeoutMs={creationTimeoutMs ?? 0}
-        // The container is told that the place is taken, not what goes into it: it holds back its
-        // shimmer and keeps a failed block standing, and RN draws the screen itself.
-        hasPlaceholder={placeholder != null}
-        hasErrorView={error != null}
-        hostVisible={active}
-        onAppearanceChange={handleAppearanceChange}
-        onBlockLoad={handleLoad}
-        onBlockFail={handleFail}
-      />
-      {/* Nothing to draw is no overlay at all. `box-none` keeps the empty parts of it transparent to
-          touches, so the native block underneath still hears the swipes on its own content. */}
+      <MindboxEmbeddedBlockNativeView style={StyleSheet.absoluteFill} placeSystemName={placeSystemName} blockHeight={blockHeight} timeoutMs={creationTimeoutMs ?? 0} hasPlaceholder={placeholder != null} hasErrorView={error != null} hostVisible={active} onAppearanceChange={handleAppearanceChange} onBlockLoad={handleLoad} onBlockFail={handleFail} />
       {overlay != null ? (
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           {overlay}
