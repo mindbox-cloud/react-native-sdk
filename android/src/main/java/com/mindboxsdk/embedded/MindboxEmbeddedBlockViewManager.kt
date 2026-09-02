@@ -10,12 +10,10 @@ import com.facebook.react.uimanager.events.Event
 import com.facebook.react.viewmanagers.MindboxEmbeddedBlockViewManagerDelegate
 import com.facebook.react.viewmanagers.MindboxEmbeddedBlockViewManagerInterface
 
-/** The manager of the embedded block component: props in, the block's two signals out. */
 @ReactModule(name = MindboxEmbeddedBlockViewManager.NAME)
 internal class MindboxEmbeddedBlockViewManager :
     SimpleViewManager<MindboxEmbeddedBlockHostView>(),
     MindboxEmbeddedBlockViewManagerInterface<MindboxEmbeddedBlockHostView> {
-
     private val managerDelegate = MindboxEmbeddedBlockViewManagerDelegate(this)
 
     override fun getDelegate(): ViewManagerDelegate<MindboxEmbeddedBlockHostView> = managerDelegate
@@ -37,10 +35,6 @@ internal class MindboxEmbeddedBlockViewManager :
         }
     }
 
-    /**
-     * The block is built here and not in a prop setter: this is the first moment every prop of the
-     * transaction is in, and the container needs the place system name and the stand-in flags together.
-     */
     override fun onAfterUpdateTransaction(view: MindboxEmbeddedBlockHostView) {
         super.onAfterUpdateTransaction(view)
         view.commitProps()
@@ -51,11 +45,6 @@ internal class MindboxEmbeddedBlockViewManager :
         super.onDropViewInstance(view)
     }
 
-    /**
-     * Never recycled. Fabric would hand this frame to another place, and the SDK block inside it cannot
-     * be revived — `release()` is one way. Creating the block with the view and killing it with the view
-     * is what keeps the lifecycle here simple.
-     */
     override fun prepareToRecycleView(
         reactContext: ThemedReactContext,
         view: MindboxEmbeddedBlockHostView,
@@ -65,10 +54,6 @@ internal class MindboxEmbeddedBlockViewManager :
         view.setPlaceSystemName(value)
     }
 
-    /**
-     * Read and ignored: on Android the block is a frame sized by its parent, and here that parent is
-     * RN — the view is laid out to the height the style gives it. The prop exists because iOS needs it.
-     */
     override fun setBlockHeight(view: MindboxEmbeddedBlockHostView, value: Double) = Unit
 
     override fun setTimeoutMs(view: MindboxEmbeddedBlockHostView, value: Double) {
