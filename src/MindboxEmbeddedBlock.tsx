@@ -167,7 +167,13 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   const overlay = appearance === 'placeholder' ? placeholder : appearance === 'error' ? error : null
 
   return (
-    <View style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : blockHeight }]} collapsable={false}>
+    <View
+      // The height is the one thing here that cannot live in a StyleSheet: it is the host's number
+      // until the block gives its place back, and then it is zero.
+      // eslint-disable-next-line react-native/no-inline-styles
+      style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : blockHeight }]}
+      collapsable={false}
+    >
       <MindboxEmbeddedBlockNativeView style={StyleSheet.absoluteFill} placeSystemName={placeSystemName} blockHeight={blockHeight} timeoutMs={creationTimeoutMs ?? 0} hasPlaceholder={placeholder != null} hasErrorView={error != null} hostVisible={active} onAppearanceChange={handleAppearanceChange} onBlockLoad={handleLoad} onBlockFail={handleFail} />
       {overlay != null ? (
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
