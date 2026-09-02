@@ -63,14 +63,14 @@ describe('MindboxEmbeddedBlock', () => {
     expect(nativeProps(renderer).blockHeight).toBe(80)
   })
 
-  it('warns once about a place system name with spaces around it', () => {
+  it('says nothing about space around a name the SDK trims anyway', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const renderer = render(<MindboxEmbeddedBlock placeSystemName=" stories " height={104} />)
 
     update(renderer, <MindboxEmbeddedBlock placeSystemName=" stories " height={104} />)
 
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0][0]).toContain('spaces around it')
+    expect(warn).not.toHaveBeenCalled()
+    expect(nativeProps(renderer).placeSystemName).toBe(' stories ')
     warn.mockRestore()
   })
 
@@ -92,7 +92,6 @@ describe('MindboxEmbeddedBlock', () => {
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0][0]).toContain('without a place system name')
-    expect(warn.mock.calls[0][0]).not.toContain('spaces around it')
     warn.mockRestore()
   })
 

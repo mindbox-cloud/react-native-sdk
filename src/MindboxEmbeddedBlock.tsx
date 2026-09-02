@@ -22,9 +22,9 @@ export type MindboxEmbeddedBlockProps = {
    * The name of the place from the admin panel. A different name is a different block, built from
    * scratch in place of the old one.
    *
-   * Taken exactly as given: nothing is trimmed, so spaces around the name are part of it and keep
-   * the block from matching the place. A name that is empty — or nothing but spaces — resolves to
-   * nothing at all, so the place collapses and reports [onFail]. The component warns about both.
+   * Space around the name is not part of it: the SDK trims the name before resolving by it, on both
+   * platforms. A name that is empty — or nothing but spaces — is then no name at all, so the place
+   * resolves to nothing, collapses and reports [onFail]. The component warns about that.
    */
   placeSystemName: string
 
@@ -122,10 +122,10 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
   const hasWarnedAboutCreation = useRef(false)
   if (!hasWarnedAboutCreation.current) {
     hasWarnedAboutCreation.current = true
+    // Only the empty name is worth a word. Space around a real name is not a mistake to report: the
+    // SDK trims the name before it resolves by it, so a padded name finds its place either way.
     if (placeSystemName.trim().length === 0) {
       console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onFail.')
-    } else if (placeSystemName.trim() !== placeSystemName) {
-      console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was given a place system name with spaces around it. The name is used as it is, so it will not match the place from the admin panel.`)
     }
     if (blockHeight <= 0) {
       console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: it reserves no space, so nothing loads and no outcome is reported.`)
