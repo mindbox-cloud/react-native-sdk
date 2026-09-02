@@ -123,20 +123,11 @@ repositories {
 
 def kotlin_version = getExtOrDefault('kotlinVersion')
 
-// Which native SDK the wrapper is built against. The embedded block hooks are not in a released one
-// yet, so a host app has to be able to point this at a local build: `ext.nativeSdkVersion` in its
-// root project, or `-PMindboxSdk_nativeSdkVersion=...` on the command line. Default is the release.
-def nativeSdkVersion = getExtOrDefault('nativeSdkVersion')
-
 dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  api "cloud.mindbox:mobile-sdk:$nativeSdkVersion"
-  // The block reads its host screen's lifecycle off the view tree, and this wrapper has to put one
-  // there: React Native's own view lifetime, not the fragment's.
+  api 'cloud.mindbox:mobile-sdk:2.15.4'
   implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
-  // The SDK keeps mindbox-common an `implementation` dependency, so `@InternalMindboxApi` — the
-  // annotation the embedded block hooks are marked with — is not on the compile classpath without this.
-  compileOnly "cloud.mindbox:mindbox-common:$nativeSdkVersion"
+  compileOnly 'cloud.mindbox:mindbox-common:2.15.4'
 }
