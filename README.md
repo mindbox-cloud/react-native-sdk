@@ -83,6 +83,114 @@ reload. It has to be positive, though: a block given no space to occupy is never
 no outcome. `timeoutMs` is fixed when the block is created — a new value is ignored with a warning;
 give the component a new `key` to load a block on a new budget.
 
+#### Where a block may stand
+
+A block lives exactly as long as its native view. Scrolling it off screen, re-rendering the screen,
+changing its `height`, opening another screen on top of it, sending the app to the background — none
+of that touches the view. The block is paused at most, and it continues where it was: the same page,
+the same carousel position, the rest of its waiting budget. What does end it is an unmount. React
+drops the component, the native view goes with it, and the SDK honestly builds the place anew — a new
+resolve, the shimmer again, a second `onLoad`, a carousel back on its first page.
+
+So the rule is: put the block in a slot the host does not destroy while the user scrolls.
+
+| | Where | Why |
+| --- | --- | --- |
+| Do | A plain `ScrollView` | The block scrolls away with the content and stays mounted. |
+| Do | `ListHeaderComponent` and `ListFooterComponent` of a `FlatList` | The only slots of a list that are never virtualized. The items are still reused as usual. |
+| Do | Any node that lives as long as the screen | A header, a card between sections. |
+| Don't | An item of `renderItem` | Past the render window (`windowSize`, 21 by default — about ten screens) the item is unmounted, and the block with it. For longer feeds raise `windowSize`, or move the block to the header. |
+| Don't | FlashList, RecyclerListView | They recycle components for real: the block is rebuilt together with the cell. |
+| Don't | An inactive page of a pager | Unless the pager keeps the neighbouring pages rendered. |
+
+```tsx
+<FlatList
+  data={feed}
+  renderItem={renderItem}
+  ListHeaderComponent={<MindboxEmbeddedBlock placeSystemName="main-screen-top" height={104} active={isFocused} />}
+/>
+```
+
+`removeClippedSubviews`, on by default for `FlatList` on Android, is not a problem: a view taken off
+the window pauses the block, and it continues where it was rather than being rebuilt.
+
+#### Four ways to remount a block by accident
+
+All four look harmless, and all four turn up in real code more often than virtualization does.
+
+```tsx
+// A function in ListHeaderComponent is a new component type on every render of the screen,
+// so React mounts the header — and the block in it — from scratch. One setState is enough.
+<FlatList ListHeaderComponent={() => <Header />} />        // remounts
+<FlatList ListHeaderComponent={<Header />} />              // keeps the block
+
+// A key that changes is a legitimate request to build the block again, and React obliges.
+<MindboxEmbeddedBlock key={renderCount} … />               // remounts on every render
+<MindboxEmbeddedBlock placeSystemName="main-top" … />      // no key needed at all
+
+// While a condition flickers, the block appears and disappears with its native view.
+// Keep it in the tree from the first frame: it manages the place itself.
+{isReady && <MindboxEmbeddedBlock … />}                    // remounts
+<MindboxEmbeddedBlock … />                                 // stays
+
+// A React Native <Modal> mounts its children on every opening, and a tab with unmountOnBlur
+// on every return. A block in a sheet belongs in a screen of the stack instead.
+<Modal visible={open}><MindboxEmbeddedBlock … /></Modal>  // a new block per opening
+navigation.navigate('Sheet')  // presentation: 'formSheet'   // one block per sheet
+```
+
+#### Screens on top of the screen
+
+Every screen of a React Native stack lives in the same native window, and the block's native view
+watches that window: it cannot see that another screen lies over it. `active` is how it learns.
+
+| What is opened | The block underneath | What the host does |
+| --- | --- | --- |
+| A pushed screen (`card`) | The screen stays in the stack, the block stays alive. | `active={useIsFocused()}` — the same answer on both platforms. |
+| A sheet (`formSheet`) | The screen under it stays visible and in the window. A block inside the sheet is a regular block of its own screen. | The same `active`. Do not tie the block to the sheet's open state: a `key` or a condition there turns every movement into a new load. |
+| A banner over the screen (`transparentModal`) | The screen is still visible and in the window, so the SDK does not consider it covered. Without `active` the waiting budget burns under the banner. | Pass `active`. This is the one case where its absence is visible to the naked eye. |
+| Tabs | The neighbouring tab usually stays mounted. | No `unmountOnBlur` on a tab with a block; `active` from `useIsFocused()`. |
+| Background | Pause, state kept. | Nothing. |
+
+#### What a remount costs, and what it does not
+
+Lost: the carousel position and the stories progress; the time of a new resolve, page load and
+render (resolver answers are not cached); the shimmer once more and a second `onLoad`; and an empty
+place that first expands to `height` and only then collapses, so the layout jumps. Kept: the
+impression accounting (`Inapp.Show` is deduplicated per session by place and in-app), the in-app
+frequency (it is not inflated), and a `delayTime` that has already elapsed in this session (it does
+not run again).
+
+#### How to check an integration
+
+A remount is not visible in the content — the shimmer flashes, and it passes for a re-render. Count
+the events instead: `onLoad` has to arrive exactly once for the life of the screen.
+
+```tsx
+const loads = useRef(0)
+
+<MindboxEmbeddedBlock
+  placeSystemName="main-top"
+  height={104}
+  active={useIsFocused()}
+  onLoad={() => console.log('onLoad', ++loads.current)}
+/>
+// "onLoad 2" on one screen = the host rebuilt the block
+```
+
+1. Open the screen and wait for the content. Expect one `onLoad` and the shimmer shown once.
+2. Scroll to the end of the feed and back. Expect the content in place, the carousel on the same page, no second `onLoad`.
+3. Press everything that re-renders the screen: cart, filters, likes. Expect no flicker and no growth of the counter.
+4. Open a product screen and come back. Expect the same block, no shimmer.
+5. Open a sheet and a banner over the screen, hold each longer than `timeoutMs`, close them. Expect the block still waiting where it was, not collapsed by the timeout.
+6. Background the app and return. Expect a pause and a resume, not a new load.
+7. Look for `[MindboxEmbeddedBlock]` warnings in the logs. Expect none: each one is an integration error — an empty name, a zero height, a timeout changed on a live block.
+
+The [example app](example/exampleApp) has both sides of this. The **Embedded blocks** screen is two
+blocks integrated by these rules; **Embedded blocks: how not to** is the same two blocks rebuilt on
+every re-render and scrolled out of a virtualized list. A counter under each block shows the
+difference.
+
 ### Push Notifications
 
 Mindbox SDK aids in handling push notifications. It offers configurations and usage instructions, found in the SDK documentation [Android(FCM)](https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native), [Android(HCM)](https://developers.mindbox.ru/docs/huawei-send-push-notifications-react-native), [IOS](https://developers.mindbox.ru/docs/ios-send-push-notifications-react-native) and [IOS(Rich)](https://developers.mindbox.ru/docs/ios-send-rich-push-react-native).
