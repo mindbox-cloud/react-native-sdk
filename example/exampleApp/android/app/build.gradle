@@ -24,6 +24,11 @@ android {
     targetSdkVersion rootProject.ext.targetSdkVersion
     versionCode 1
     versionName "1.0"
+    ndk {
+      // The ABIs to build, from gradle.properties or -PreactNativeArchitectures=arm64-v8a on the command line.
+      def architectures = rootProject.hasProperty('reactNativeArchitectures') ? rootProject.getProperty('reactNativeArchitectures') : 'armeabi-v7a,arm64-v8a,x86,x86_64'
+      abiFilters architectures.split(',')
+    }
   }
   signingConfigs {
     debug {

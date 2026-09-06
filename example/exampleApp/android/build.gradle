@@ -23,6 +23,19 @@ buildscript {
   }
 }
 allprojects {
+  // A local build of the native Android SDK: MINDBOX_ANDROID_SDK_VERSION=2.15.4-rn-local ./gradlew …
+  // Without the variable the SDK comes from mavenCentral, as in an ordinary integration.
+  def mindboxLocalVersion = System.getenv('MINDBOX_ANDROID_SDK_VERSION')
+  if (mindboxLocalVersion) {
+    configurations.all {
+      resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'cloud.mindbox') {
+          details.useVersion mindboxLocalVersion
+        }
+      }
+    }
+  }
+
   repositories {
     mavenCentral()
     mavenLocal()

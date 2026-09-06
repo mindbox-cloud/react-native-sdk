@@ -5,6 +5,8 @@ import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOpera
 import { requestNotificationPermission } from '../utils/RequestPermission'
 import PushNotificationScreen from './screens/PushNotificationScreen'
 import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { RootStackParamList } from '../navigation'
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks'
 
 const configuration = {
@@ -16,7 +18,7 @@ const configuration = {
 }
 
 const HomeScreen = () => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const [deviceUUID, setDeviceUUID] = useState('Empty')
   const [token, setToken] = useState('Empty')
   const [pushData, setPushData] = useState({
@@ -89,6 +91,10 @@ const HomeScreen = () => {
     navigation.navigate('NotificationCenter')
   }
 
+  const handleOpenEmbeddedBlocksPress = () => {
+    navigation.navigate('EmbeddedBlocks')
+  }
+
   const navigateToPushNotificationIfRequired = useCallback(
     (pushUrl) => {
       if (pushUrl && pushUrl.includes('gotoanotherscreen')) {
@@ -112,6 +118,8 @@ const HomeScreen = () => {
         <Button title="Send Sync" onPress={handleSendSyncPress} />
         <View style={styles.buttonSpacing} />
         <Button title="Go to notification center" onPress={handleOpenNotificationCenterPress} />
+        <View style={styles.buttonSpacing} />
+        <Button title="Embedded blocks" onPress={handleOpenEmbeddedBlocksPress} />
       </View>
     </SafeAreaView>
   )
