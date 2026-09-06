@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 
@@ -132,25 +132,32 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
 
   const blockHeight = Number.isFinite(height) ? Math.max(0, height) : 0
 
-  const hasWarnedAboutCreation = useRef(false)
-  if (!hasWarnedAboutCreation.current) {
-    hasWarnedAboutCreation.current = true
-    // Only the empty name is worth a word. Space around a real name is not a mistake to report: the
-    // SDK trims the name before it resolves by it, so a padded name finds its place either way.
+  // The warnings live in effects, not in the render body: React may run a render more than once
+  // for a single commit (StrictMode, a suspended tree), and a ref flipped during render would not
+  // keep the word from being said twice. An effect runs once per commit.
+  //
+  // Only the empty name is worth a word. Space around a real name is not a mistake to report: the
+  // SDK trims the name before it resolves by it, so a padded name finds its place either way.
+  useEffect(() => {
     if (placeSystemName.trim().length === 0) {
       console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onFail.')
     }
     if (blockHeight <= 0) {
       console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: it reserves no space, so nothing loads and no outcome is reported.`)
     }
-  }
+    // Creation only: the name remounts the component through its key, and the height is live.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const creationTimeoutMs = useRef(timeoutMs).current
   const hasWarnedAboutTimeout = useRef(false)
-  if (timeoutMs !== creationTimeoutMs && !hasWarnedAboutTimeout.current) {
+  useEffect(() => {
+    if (timeoutMs === creationTimeoutMs || hasWarnedAboutTimeout.current) {
+      return
+    }
     hasWarnedAboutTimeout.current = true
     console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" keeps the timeout it was created with; the new value is ignored. Remount the component — give it a new key — to change the timeout.`)
-  }
+  }, [timeoutMs, creationTimeoutMs, placeSystemName])
 
   const deliveredOutcome = useRef<'load' | 'fail' | null>(null)
 
