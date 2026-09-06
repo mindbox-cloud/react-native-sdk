@@ -5,11 +5,17 @@
 // know is not a breakage: the place resolves to nothing, the block collapses to zero height and
 // reports onFail — the counters on the demo screens show exactly that.
 export const embeddedBlockPlaces = {
-  /** The block at the top of the screen, in the header slot of the list. */
-  top: 'main-screen-top',
-  /** The block at the bottom of the screen, in the footer slot of the list. */
-  bottom: 'main-screen-bottom',
+  /** The block inside the feed. */
+  feed: 'placeSystemName',
 }
 
 /** The height the host gives each block. The SDK never picks a size on its own. */
-export const embeddedBlockHeight = 120
+export const embeddedBlockHeight = 140
+
+/**
+ * TEMPORARY — test mode. While true, the demo screens draw a local HTML banner in the block's place
+ * instead of the SDK block, so the layout, the remount counters and the navigation can be tried
+ * without a configured place. Set to false — or delete together with LocalTestBanner.tsx — to use
+ * the real MindboxEmbeddedBlock.
+ */
+export const useLocalTestBanner = true

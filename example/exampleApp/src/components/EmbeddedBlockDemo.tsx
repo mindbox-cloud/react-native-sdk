@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { MindboxEmbeddedBlock } from 'mindbox-sdk'
 import type { MindboxEmbeddedBlockProps } from 'mindbox-sdk'
 import { blockStats, useBlockStats } from '../utils/EmbeddedBlockStats'
+import { useLocalTestBanner } from '../utils/EmbeddedBlockPlaces'
+import { LocalTestBanner } from './LocalTestBanner'
 
 type TrackedEmbeddedBlockProps = Pick<MindboxEmbeddedBlockProps, 'placeSystemName' | 'height' | 'timeoutMs' | 'active'> & {
   /** The counter row this block reports to. Keep it the same for the life of the screen. */
@@ -26,6 +28,11 @@ export const TrackedEmbeddedBlock = ({ statsId, ...block }: TrackedEmbeddedBlock
     // not recreate the block.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // TEMPORARY: the local banner stands where the block would, see EmbeddedBlockPlaces.ts.
+  if (useLocalTestBanner) {
+    return <LocalTestBanner height={block.height} onLoad={() => blockStats.loaded(statsId)} />
+  }
 
   return <MindboxEmbeddedBlock {...block} style={styles.block} placeholder={<BlockSkeleton />} error={<BlockUnavailable />} onLoad={() => blockStats.loaded(statsId)} onFail={() => blockStats.failed(statsId)} />
 }
@@ -55,29 +62,52 @@ const BlockUnavailable = () => (
   </View>
 )
 
-/** A row of the demo feed — the content the blocks stand among. */
-export const FeedRow = ({ index }: { index: number }) => (
-  <View style={styles.feedRow}>
-    <View style={styles.feedThumb} />
-    <View style={styles.feedLines}>
-      <Text style={styles.feedTitle}>Product {index + 1}</Text>
-      <Text style={styles.feedSubtitle}>A list item: scrolls away, gets reused, re-renders</Text>
+/** A faceless cell of the host's own content: a thumbnail and two lines, no words to read. */
+export const MockCell = () => (
+  <View style={styles.cell}>
+    <View style={styles.cellThumb} />
+    <View style={styles.cellLines}>
+      <View style={styles.cellLine} />
+      <View style={[styles.cellLine, styles.cellLineShort]} />
     </View>
   </View>
 )
 
-/** Enough rows to scroll the blocks well out of view. */
+/** Several cells in a row. */
+export const MockCells = ({ count }: { count: number }) => (
+  <>
+    {Array.from({ length: count }, (_, index) => (
+      <MockCell key={index} />
+    ))}
+  </>
+)
+
+/** Enough rows to scroll a block well out of view. */
 export const FEED = Array.from({ length: 30 }, (_, index) => index)
+
+type Action = { title: string; onPress: () => void }
+
+/** A compact row of the demo's controls. */
+export const ActionBar = ({ actions }: { actions: Array<Action> }) => (
+  <View style={styles.actions}>
+    {actions.map((action) => (
+      <Pressable key={action.title} onPress={action.onPress} style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}>
+        <Text style={styles.actionText}>{action.title}</Text>
+      </Pressable>
+    ))}
+  </View>
+)
 
 const styles = StyleSheet.create({
   block: {
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: '#f2f2f7',
   },
   stats: {
     marginTop: 6,
+    marginBottom: 4,
     fontSize: 12,
-    color: '#6e6e73',
+    color: '#8e8e93',
   },
   statsRecreated: {
     color: '#c0392b',
@@ -103,30 +133,49 @@ const styles = StyleSheet.create({
   },
   unavailableText: {
     fontSize: 13,
-    color: '#6e6e73',
+    color: '#8e8e93',
   },
-  feedRow: {
+  cell: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     gap: 12,
   },
-  feedThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 8,
-    backgroundColor: '#e0e0e6',
+  cellThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: '#e5e5ea',
   },
-  feedLines: {
+  cellLines: {
     flex: 1,
+    gap: 8,
   },
-  feedTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+  cellLine: {
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#e5e5ea',
   },
-  feedSubtitle: {
-    fontSize: 12,
-    color: '#6e6e73',
-    marginTop: 2,
+  cellLineShort: {
+    width: '55%',
+  },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  action: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: '#e9e9ee',
+  },
+  actionPressed: {
+    opacity: 0.6,
+  },
+  actionText: {
+    fontSize: 13,
+    color: '#1c1c1e',
   },
 })
