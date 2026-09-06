@@ -85,18 +85,21 @@ export const MockCells = ({ count }: { count: number }) => (
 /** Enough rows to scroll a block well out of view. */
 export const FEED = Array.from({ length: 30 }, (_, index) => index)
 
-type Action = { title: string; onPress: () => void }
+type Action = { title: string; onPress: () => void; primary?: boolean }
 
-/** A compact row of the demo's controls. */
+/** The demo's controls: filled buttons in one row, the primary one in colour. */
 export const ActionBar = ({ actions }: { actions: Array<Action> }) => (
   <View style={styles.actions}>
     {actions.map((action) => (
-      <Pressable key={action.title} onPress={action.onPress} style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}>
-        <Text style={styles.actionText}>{action.title}</Text>
+      <Pressable key={action.title} onPress={action.onPress} style={({ pressed }) => [styles.action, action.primary && styles.actionPrimary, pressed && styles.actionPressed]}>
+        <Text style={[styles.actionText, action.primary && styles.actionTextPrimary]}>{action.title}</Text>
       </Pressable>
     ))}
   </View>
 )
+
+/** One short line over a block: what makes this one rebuild. */
+export const Caption = ({ children }: { children: string }) => <Text style={styles.caption}>{children}</Text>
 
 const styles = StyleSheet.create({
   block: {
@@ -161,21 +164,34 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
+    gap: 10,
+    marginBottom: 12,
   },
   action: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: '#e9e9ee',
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#d1d1d6',
+  },
+  actionPrimary: {
+    backgroundColor: '#007aff',
   },
   actionPressed: {
     opacity: 0.6,
   },
   actionText: {
-    fontSize: 13,
+    fontSize: 15,
+    fontWeight: '600',
     color: '#1c1c1e',
+  },
+  actionTextPrimary: {
+    color: '#ffffff',
+  },
+  caption: {
+    fontSize: 13,
+    color: '#8e8e93',
+    marginTop: 8,
+    marginBottom: 8,
   },
 })

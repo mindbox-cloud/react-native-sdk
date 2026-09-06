@@ -15,8 +15,8 @@ import type { RootStackParamList } from '../navigation'
  * screen lives in the same native window, and this is how the block learns that another screen is
  * on top of it and stops spending its waiting budget there.
  *
- * What to check by hand: scroll to the bottom and back, press "Re-render" a few times, open a screen
- * on top and come back. The row under the block has to stay at "mounted 1 · onLoad 1".
+ * What to check by hand: scroll to the bottom and back, press "Re-render" a few times, go to the
+ * anti-pattern screen and come back. The row under the block has to stay at "mounted 1 · onLoad 1".
  */
 type Props = NativeStackScreenProps<RootStackParamList, 'EmbeddedBlocks'>
 
@@ -34,8 +34,7 @@ const EmbeddedBlocksScreen = ({ navigation }: Props) => {
       <ActionBar
         actions={[
           { title: 'Re-render', onPress: () => setRenders((count) => count + 1) },
-          { title: 'Screen on top', onPress: () => navigation.navigate('PushNotification') },
-          { title: 'How not to', onPress: () => navigation.navigate('EmbeddedBlocksAntiPattern') },
+          { title: 'How not to do it', primary: true, onPress: () => navigation.navigate('EmbeddedBlocksAntiPattern') },
         ]}
       />
       <MockCells count={2} />

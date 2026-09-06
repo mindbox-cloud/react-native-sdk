@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
-import { ActionBar, BlockStatsRow, FEED, MockCell, MockCells, TrackedEmbeddedBlock } from '../components/EmbeddedBlockDemo'
+import { ActionBar, BlockStatsRow, Caption, FEED, MockCell, MockCells, TrackedEmbeddedBlock } from '../components/EmbeddedBlockDemo'
 import { blockStats } from '../utils/EmbeddedBlockStats'
 import { embeddedBlockHeight, embeddedBlockPlaces } from '../utils/EmbeddedBlockPlaces'
 
@@ -33,6 +33,7 @@ const EmbeddedBlocksAntiPatternScreen = () => {
         <View>
           <ActionBar actions={[{ title: 'Re-render', onPress: () => setRenders((count) => count + 1) }]} />
           <MockCells count={2} />
+          <Caption>Header given as a function: rebuilt on every re-render of the screen, untouched by scrolling.</Caption>
           {/* Mistake 2, the quiet one: no `active`. The block believes it is looked at even with another screen on top, and spends its waiting budget there. */}
           <TrackedEmbeddedBlock statsId={STATS.header} placeSystemName={embeddedBlockPlaces.feed} height={embeddedBlockHeight} />
           <BlockStatsRow statsId={STATS.header} />
@@ -47,6 +48,7 @@ const EmbeddedBlocksAntiPatternScreen = () => {
       renderItem={({ item }) =>
         item === 3 ? (
           <View>
+            <Caption>Block as a list item: rebuilt every time it scrolls out of the render window and back, untouched by re-renders.</Caption>
             <TrackedEmbeddedBlock statsId={STATS.item} placeSystemName={embeddedBlockPlaces.feed} height={embeddedBlockHeight} />
             <BlockStatsRow statsId={STATS.item} />
           </View>
