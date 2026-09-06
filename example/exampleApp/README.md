@@ -26,3 +26,31 @@ To run the example application with functioning mobile push notifications (compl
 7) After 5 minutes check your user in your Mindbox admin site
 
 8) Run in-app and send mobile push
+
+## Embedded blocks
+
+The app renders two embedded blocks on the **Embedded blocks** screen (a button on the home screen),
+and the same two done wrong on **Embedded blocks: how not to**.
+
+- `src/screens/EmbeddedBlocksScreen.tsx` — a `FlatList` with one block in `ListHeaderComponent` and
+  another in `ListFooterComponent`, `active` taken from `useIsFocused()`, a host placeholder and a host
+  error view. This is the code to copy.
+- `src/screens/EmbeddedBlocksAntiPatternScreen.tsx` — the header handed over as an arrow function, a
+  block inside `renderItem` of a virtualized list, no `active`. This is the code to recognize.
+- Under every block there is a counter row, `mounted N · onLoad N · onFail N`. It turns red once the
+  block has been built more than once — that is what a bad integration looks like. On the good screen
+  it stays at `mounted 1 · onLoad 1` through scrolling, re-renders and screens opened on top.
+
+Set the system names of your places in `src/utils/EmbeddedBlockPlaces.ts`; they come from the Mindbox
+admin panel, the same way the endpoints do. A place the panel does not know simply collapses and
+reports `onFail`.
+
+The app takes the SDK from this repository (`"mindbox-sdk": "file:../.."`), not from npm, so the
+embedded block is available before it is published. Run `yarn` in the repository root once — its
+`prepare` step builds `lib/`, where TypeScript reads the package's types from — then `npm install`
+here as usual. `metro.config.js` makes sure only one copy of React and React Native gets into the
+bundle; an app that installs the package from npm needs none of that.
+
+The rules behind the two screens — where a block may stand, what remounts it by accident, why
+`active` matters — are in the [Embedded Blocks section](../../README.md#embedded-blocks) of the
+package README.
