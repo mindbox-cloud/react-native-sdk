@@ -70,3 +70,9 @@ MINDBOX_ANDROID_SDK_VERSION=2.15.4-rn-local ./gradlew :app:installDebug
 ```
 
 Without the variables nothing changes, as in an ordinary integration.
+
+The debug APK carries every ABI and weighs about 140 MB; an emulator short on space takes a single one:
+
+```bash
+./gradlew :app:installDebug -PreactNativeArchitectures=arm64-v8a
+```
