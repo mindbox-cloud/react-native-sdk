@@ -10,10 +10,23 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, min_ios_version_supported
+# react-native-permissions 5.6 needs iOS 15.1; React Native's own minimum is lower.
+platform :ios, '15.1'
 prepare_react_native_project!
 
 setup_permissions(['Notifications'])
+
+# A local build of the native iOS SDK: MINDBOX_IOS_SDK_PATH=/path/to/ios-sdk pod install.
+# Without the variable the pods come from trunk, as in an ordinary integration.
+MINDBOX_IOS_SDK_PATH = ENV['MINDBOX_IOS_SDK_PATH']
+
+def mindbox_pod(name)
+  if MINDBOX_IOS_SDK_PATH
+    pod name, :path => MINDBOX_IOS_SDK_PATH
+  else
+    pod name
+  end
+end
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -30,14 +43,15 @@ target 'exampleApp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  pod 'Mindbox'
+  mindbox_pod 'Mindbox'
+  mindbox_pod 'MindboxLogger' if MINDBOX_IOS_SDK_PATH
 
 target 'MindboxNotificationServiceExtension' do
-     pod 'MindboxNotifications'
+     mindbox_pod 'MindboxNotifications'
   end
 
 target 'MindboxNotificationContentExtension' do
-   pod 'MindboxNotifications'
+   mindbox_pod 'MindboxNotifications'
   end
 
   post_install do |installer|

@@ -54,3 +54,19 @@ bundle; an app that installs the package from npm needs none of that.
 The rules behind the two screens — where a block may stand, what remounts it by accident, why
 `active` matters — are in the [Embedded Blocks section](../../README.md#embedded-blocks) of the
 package README.
+
+### Local builds of the native SDKs
+
+Both platforms take the native Mindbox SDK from the public repositories by default. To build against a
+local checkout instead — the embedded block needs hooks that have not shipped yet — set an environment
+variable:
+
+```bash
+MINDBOX_IOS_SDK_PATH=~/Documents/ios-sdk pod install
+```
+
+```bash
+MINDBOX_ANDROID_SDK_VERSION=2.15.4-rn-local ./gradlew :app:installDebug
+```
+
+Without the variables nothing changes, as in an ordinary integration.
