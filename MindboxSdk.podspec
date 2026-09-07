@@ -15,8 +15,20 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  s.dependency "React-Core"
-
   s.dependency "Mindbox", "2.15.3"
   s.dependency "MindboxNotifications", "2.15.3"
+
+  # The embedded block is a native component, and on the new renderer that means a Fabric component:
+  # this brings in the renderer's own pods and, the part that decides everything, defines
+  # `RCT_NEW_ARCH_ENABLED` for our sources — what `MindboxEmbeddedBlockView.mm` splits on. React
+  # Native defines it for a library's own pod only through this call and nowhere else, so without it
+  # the file compiles its old-renderer half even on a React Native that no longer has one.
+  #
+  # On the old renderer the same call settles for React-Core and leaves the flag undefined, which is
+  # how the other half of that file gets compiled instead.
+  if respond_to?(:install_modules_dependencies, true)
+    install_modules_dependencies(s)
+  else
+    s.dependency "React-Core"
+  end
 end

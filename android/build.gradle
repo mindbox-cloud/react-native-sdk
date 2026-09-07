@@ -16,6 +16,7 @@ buildscript {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: "com.facebook.react"
 
 def getExtOrDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['MindboxSdk_' + name]
@@ -127,4 +128,6 @@ dependencies {
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   api 'cloud.mindbox:mobile-sdk:2.15.4'
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
+  compileOnly 'cloud.mindbox:mindbox-common:2.15.4'
 }
