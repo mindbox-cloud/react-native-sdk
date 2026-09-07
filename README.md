@@ -152,6 +152,14 @@ watches that window: it cannot see that another screen lies over it. `active` is
 | Tabs | The neighbouring tab usually stays mounted. | No `unmountOnBlur` on a tab with a block; `active` from `useIsFocused()`. |
 | Background | Pause, state kept. | Nothing. |
 
+On Android the native stack is a Fragment back stack under the hood, and a plain Android app with
+Navigation Component or Compose loses its views on the way forward — `onDestroyView`, a dropped
+composition — so a block there is rebuilt on every return. React Native does not have that problem:
+`react-native-screens` keeps the screen's view tree when it removes the fragment and puts the same
+views back on return, so the block is detached from the window for a while and then reattached — a
+pause, not a rebuild. Checked on the API 36 emulator: after a screen pushed on top and a return, one
+mount, one `onLoad`, and the page's own clock still counting.
+
 #### What a remount costs, and what it does not
 
 Lost: the carousel position and the stories progress; the time of a new resolve, page load and

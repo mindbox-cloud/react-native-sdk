@@ -6,8 +6,9 @@ import { WebView } from 'react-native-webview'
  * TEMPORARY — a local stand-in for the SDK block, drawn while `useLocalTestBanner` is on.
  *
  * A WebView with inline HTML: a colourful banner of the same height the real block would take,
- * reporting `onLoad` the way the block does. Nothing here talks to the SDK. Delete this file and the
- * flag once the real place is configured.
+ * reporting `onLoad` the way the block does, with a clock counting the seconds since the page loaded —
+ * a page that survives a navigation keeps counting, a page loaded again starts over. Nothing here
+ * talks to the SDK. Delete this file and the flag once the real place is configured.
  */
 type Props = {
   height: number
@@ -33,17 +34,26 @@ const html = `<!doctype html>
   .cta { background: rgba(255,255,255,.92); color: #333; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; }
   .dots span { display: inline-block; width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.6); margin-right: 5px; }
   .dots span:first-child { background: #fff; }
+  .clock { position: absolute; top: 14px; right: 18px; font-size: 12px; font-variant-numeric: tabular-nums; opacity: .85; }
+  .banner { position: relative; }
 </style>
 </head>
 <body>
   <div class="banner">
     <div class="tag">Embedded block · local test</div>
+    <div class="clock"><span id="clock">0</span> s alive</div>
     <div class="title">A colourful banner<br>standing in for the SDK</div>
     <div class="row">
       <div class="dots"><span></span><span></span><span></span></div>
       <div class="cta">Open</div>
     </div>
   </div>
+<script>
+  // The page's own clock: it counts from the moment the page was loaded. Back at zero after a
+  // navigation means the page was loaded again — the block was rebuilt, not paused.
+  var started = Date.now();
+  setInterval(function () { document.getElementById('clock').textContent = Math.round((Date.now() - started) / 1000); }, 1000);
+</script>
 </body>
 </html>`
 
