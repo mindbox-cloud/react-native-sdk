@@ -44,6 +44,7 @@ if ! [[ $android_sdk_version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc)?$ ]]; then
 fi
 
 sed -i '' "s/  api 'cloud.mindbox:mobile-sdk:.*/  api 'cloud.mindbox:mobile-sdk:${android_sdk_version}'/" "$android_gradle"
+sed -i '' "s/  compileOnly 'cloud.mindbox:mindbox-common:.*/  compileOnly 'cloud.mindbox:mindbox-common:${android_sdk_version}'/" "$android_gradle"
 echo "Bump $android_gradle to $android_sdk_version"
 
 read -r -p "iOS SDK version: " ios_sdk_version
