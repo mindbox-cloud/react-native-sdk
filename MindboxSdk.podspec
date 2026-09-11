@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  s.dependency "Mindbox", "2.15.3"
-  s.dependency "MindboxNotifications", "2.15.3"
+  s.dependency "Mindbox", "2.16.0-rc"
+  s.dependency "MindboxNotifications", "2.16.0-rc"
 
   # The embedded block is a native component, and on the new renderer that means a Fabric component:
   # this brings in the renderer's own pods and, the part that decides everything, defines
