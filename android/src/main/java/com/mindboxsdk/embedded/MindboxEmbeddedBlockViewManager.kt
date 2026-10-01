@@ -28,10 +28,8 @@ internal class MindboxEmbeddedBlockViewManager :
         view.onAppearance = { appearance ->
             dispatch(view) { surfaceId, tag -> AppearanceChangeEvent(surfaceId, tag, appearance) }
         }
-        view.onOutcome = { outcome ->
-            dispatch(view) { surfaceId, tag ->
-                if (outcome == OUTCOME_LOAD) BlockLoadEvent(surfaceId, tag) else BlockFailEvent(surfaceId, tag)
-            }
+        view.onOutcome = { outcome, reason ->
+            dispatch(view) { surfaceId, tag -> BlockOutcomeEvent(surfaceId, tag, outcome, reason) }
         }
     }
 
@@ -74,8 +72,7 @@ internal class MindboxEmbeddedBlockViewManager :
 
     override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> = mutableMapOf(
         AppearanceChangeEvent.EVENT_NAME to mutableMapOf("registrationName" to "onAppearanceChange"),
-        BlockLoadEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockLoad"),
-        BlockFailEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockFail"),
+        BlockOutcomeEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockOutcome"),
     )
 
     private inline fun dispatch(
@@ -89,6 +86,5 @@ internal class MindboxEmbeddedBlockViewManager :
 
     internal companion object {
         const val NAME = "MindboxEmbeddedBlockView"
-        const val OUTCOME_LOAD = "load"
     }
 }

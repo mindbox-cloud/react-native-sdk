@@ -6,7 +6,8 @@ import MindboxLogger
 public final class MindboxEmbeddedBlockHost: NSObject {
     @objc public var onAppearance: ((NSString) -> Void)?
 
-    @objc public var onOutcome: ((NSString) -> Void)?
+    /// The outcome word and, for a failure, the reason's raw value.
+    @objc public var onOutcome: ((NSString, NSString?) -> Void)?
 
     @objc public var view: UIView { blockView }
 
@@ -80,12 +81,19 @@ public final class MindboxEmbeddedBlockHost: NSObject {
     }
 }
 
+// All three methods are implemented on purpose: the protocol gives each an empty default, so a
+// host that still spelled the old `DidFail(_:)` would compile and silently hear no failure.
 extension MindboxEmbeddedBlockHost: MindboxEmbeddedBlockViewDelegate {
     public func mindboxEmbeddedBlockViewDidLoad(_ blockView: MindboxEmbeddedBlockView) {
-        onOutcome?("load")
+        onOutcome?("load", nil)
     }
 
-    public func mindboxEmbeddedBlockViewDidFail(_ blockView: MindboxEmbeddedBlockView) {
-        onOutcome?("fail")
+    public func mindboxEmbeddedBlockViewDidBecomeEmpty(_ blockView: MindboxEmbeddedBlockView) {
+        onOutcome?("empty", nil)
+    }
+
+    public func mindboxEmbeddedBlockViewDidFail(_ blockView: MindboxEmbeddedBlockView,
+                                         reason: MindboxEmbeddedBlockFailReason) {
+        onOutcome?("fail", reason.rawValue as NSString)
     }
 }

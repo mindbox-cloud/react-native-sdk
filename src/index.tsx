@@ -496,4 +496,6 @@ export { InAppCallback, CopyPayloadInAppCallback, EmptyInAppCallback, UrlInAppCa
 
 export { MindboxEmbeddedBlock } from './MindboxEmbeddedBlock'
 
-export type { MindboxEmbeddedBlockProps, MindboxEmbeddedBlockFailure } from './MindboxEmbeddedBlock'
+export type { MindboxEmbeddedBlockProps } from './MindboxEmbeddedBlock'
+
+export { MindboxEmbeddedBlockFailReason } from './MindboxEmbeddedBlockFailReason'

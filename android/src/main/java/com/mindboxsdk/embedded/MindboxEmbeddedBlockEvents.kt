@@ -20,22 +20,24 @@ internal class AppearanceChangeEvent(
     }
 }
 
-internal class BlockLoadEvent(surfaceId: Int, viewTag: Int) : Event<BlockLoadEvent>(surfaceId, viewTag) {
+/**
+ * How the load ended: `load`, `empty` or `fail`, the reason going with a failure. An event payload
+ * has every field, so a missing reason is spelled as an empty string.
+ */
+internal class BlockOutcomeEvent(
+    surfaceId: Int,
+    viewTag: Int,
+    private val outcome: String,
+    private val reason: String?,
+) : Event<BlockOutcomeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
 
-    override fun getEventData(): WritableMap = Arguments.createMap()
-
-    companion object {
-        const val EVENT_NAME = "topBlockLoad"
+    override fun getEventData(): WritableMap = Arguments.createMap().apply {
+        putString("outcome", outcome)
+        putString("reason", reason.orEmpty())
     }
-}
-
-internal class BlockFailEvent(surfaceId: Int, viewTag: Int) : Event<BlockFailEvent>(surfaceId, viewTag) {
-    override fun getEventName(): String = EVENT_NAME
-
-    override fun getEventData(): WritableMap = Arguments.createMap()
 
     companion object {
-        const val EVENT_NAME = "topBlockFail"
+        const val EVENT_NAME = "topBlockOutcome"
     }
 }

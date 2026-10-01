@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- Add `MindboxEmbeddedBlock` — an embedded block for a place from the admin panel, a native component for both the old and the new architecture.
+- `MindboxEmbeddedBlock` reports three outcomes, as the native SwiftUI and Compose blocks do: `onLoad`, `onEmpty` and `onFail` with a `MindboxEmbeddedBlockFailReason` (`networkError` or `internalError`).
+
 ## [2.15.3] - 2026-08-26
 
 ### Changes

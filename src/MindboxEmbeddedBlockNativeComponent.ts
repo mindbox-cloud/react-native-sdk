@@ -6,6 +6,15 @@ type AppearanceChangeEvent = Readonly<{
   appearance: string
 }>
 
+/**
+ * How the load ended: `load`, `empty` or `fail`. The reason goes with a failure and is empty
+ * otherwise — an event payload has every field, so the absence is spelled as an empty string.
+ */
+type BlockOutcomeEvent = Readonly<{
+  outcome: string
+  reason: string
+}>
+
 export interface NativeProps extends ViewProps {
   placeSystemName?: string
 
@@ -21,9 +30,7 @@ export interface NativeProps extends ViewProps {
 
   onAppearanceChange?: DirectEventHandler<AppearanceChangeEvent>
 
-  onBlockLoad?: DirectEventHandler<null>
-
-  onBlockFail?: DirectEventHandler<null>
+  onBlockOutcome?: DirectEventHandler<BlockOutcomeEvent>
 }
 
 export default codegenNativeComponent<NativeProps>('MindboxEmbeddedBlockView')

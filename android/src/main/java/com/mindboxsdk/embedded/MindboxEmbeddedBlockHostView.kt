@@ -11,6 +11,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.annotations.InternalMindboxApi
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockAppearance
+import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockFailReason
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockListener
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockView
 import cloud.mindbox.mobile_sdk.logger.Level
@@ -19,7 +20,8 @@ import cloud.mindbox.mobile_sdk.logger.Level
 internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(context) {
     var onAppearance: ((String) -> Unit)? = null
 
-    var onOutcome: ((String) -> Unit)? = null
+    /** The outcome word and, for a failure, the reason's raw value. */
+    var onOutcome: ((outcome: String, reason: String?) -> Unit)? = null
 
     private var blockView: MindboxEmbeddedBlockView? = null
     private var placeSystemName: String? = null
@@ -141,11 +143,15 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         block.setListener(
             object : MindboxEmbeddedBlockListener {
                 override fun onLoad(view: MindboxEmbeddedBlockView) {
-                    onOutcome?.invoke(OUTCOME_LOAD)
+                    onOutcome?.invoke(OUTCOME_LOAD, null)
                 }
 
-                override fun onFail(view: MindboxEmbeddedBlockView) {
-                    onOutcome?.invoke(OUTCOME_FAIL)
+                override fun onEmpty(view: MindboxEmbeddedBlockView) {
+                    onOutcome?.invoke(OUTCOME_EMPTY, null)
+                }
+
+                override fun onFail(view: MindboxEmbeddedBlockView, reason: MindboxEmbeddedBlockFailReason) {
+                    onOutcome?.invoke(OUTCOME_FAIL, reason.value)
                 }
             },
         )
@@ -205,6 +211,7 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
 
     private companion object {
         const val OUTCOME_LOAD = "load"
+        const val OUTCOME_EMPTY = "empty"
         const val OUTCOME_FAIL = "fail"
 
         fun nameOf(appearance: MindboxEmbeddedBlockAppearance): String = when (appearance) {

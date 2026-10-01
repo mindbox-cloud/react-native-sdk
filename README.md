@@ -47,10 +47,18 @@ import { MindboxEmbeddedBlock } from 'mindbox-sdk';
 <MindboxEmbeddedBlock placeSystemName="main-screen-top" height={104} />
 ```
 
-Both outcomes can be customized, the same way as in SwiftUI, Compose and Flutter: `placeholder`
+The outcome arrives through three callbacks, the same three as in SwiftUI, Compose and Flutter:
+`onLoad` when the content is shown, `onEmpty` when there is nothing to show at the place, and
+`onFail` with a `MindboxEmbeddedBlockFailReason` when the block could not be shown. An empty place
+is a normal outcome, not a breakage, and comes with no reason. A failure's reason — `networkError`
+or `internalError` — is for logs and analytics, not for branching: by the time it arrives the block
+has already collapsed or switched to `error`. A later SDK may add reasons, so keep a fallback when
+matching.
+
+Both looks can be customized, the same way as in SwiftUI, Compose and Flutter: `placeholder`
 replaces the stock loading shimmer, and `error` opts into showing a failure instead of collapsing.
 An empty place always collapses — a host cannot fill the space of a block that was never meant to
-be there. `onLoad` and `onFail` report how the load ended.
+be there.
 
 ```tsx
 <MindboxEmbeddedBlock
@@ -58,7 +66,8 @@ be there. `onLoad` and `onFail` report how the load ended.
   height={104}
   placeholder={<StoriesSkeleton />}
   error={<StoriesUnavailable />}
-  onFail={() => setShowStoriesSection(false)}
+  onEmpty={() => setShowStoriesSection(false)}
+  onFail={(reason) => console.log(`stories failed: ${reason}`)}
 />
 ```
 
@@ -82,6 +91,10 @@ a screen nobody is looking at.
 reload. It has to be positive, though: a block given no space to occupy is never loaded and reports
 no outcome. `timeoutMs` is fixed when the block is created — a new value is ignored with a warning;
 give the component a new `key` to load a block on a new budget.
+
+Available on iOS and Android. On any other platform the block collapses right away and reports
+`onFail` with `internalError`, so a layout that hides its section on failure behaves the same
+everywhere.
 
 ### Push Notifications
 

@@ -1,7 +1,7 @@
 // The embedded block on iOS, in both renderers.
 //
 // The block itself lives in `MindboxEmbeddedBlockHost` — plain UIKit, no React in it — and each
-// renderer only carries props to it and its two signals back. Fabric does that through a component
+// renderer only carries props to it and its two signals back — the look and the outcome. Fabric does that through a component
 // view and a C++ event emitter; the old renderer through a view manager and direct event blocks.
 // The order of the calls into the host is kept the same in both, so a block behaves the same way
 // whichever renderer the host app runs.
@@ -13,9 +13,6 @@
 #else
 #error "MindboxSdk-Swift.h not found. Ensure Swift sources are included in the MindboxSdk pod target."
 #endif
-
-// The outcome words the Swift host reports. A contract with the host, not derived from anything.
-static NSString *const MindboxEmbeddedBlockOutcomeLoad = @"load";
 
 #ifdef RCT_NEW_ARCH_ENABLED
 
@@ -43,6 +40,7 @@ using namespace facebook::react;
 
     NSString *_pendingAppearance;
     NSString *_pendingOutcome;
+    NSString *_pendingOutcomeReason;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -112,8 +110,8 @@ using namespace facebook::react;
     _host.onAppearance = ^(NSString *appearance) {
         [weakSelf emitAppearance:appearance];
     };
-    _host.onOutcome = ^(NSString *outcome) {
-        [weakSelf emitOutcome:outcome];
+    _host.onOutcome = ^(NSString *outcome, NSString *_Nullable reason) {
+        [weakSelf emitOutcome:outcome reason:reason];
     };
 
     self.contentView = _host.view;
@@ -131,8 +129,10 @@ using namespace facebook::react;
 
     if (_pendingOutcome != nil) {
         NSString *outcome = _pendingOutcome;
+        NSString *reason = _pendingOutcomeReason;
         _pendingOutcome = nil;
-        [self emitOutcome:outcome];
+        _pendingOutcomeReason = nil;
+        [self emitOutcome:outcome reason:reason];
     }
 }
 
@@ -153,19 +153,18 @@ using namespace facebook::react;
         ->onAppearanceChange({.appearance = std::string([appearance UTF8String])});
 }
 
-- (void)emitOutcome:(NSString *)outcome
+- (void)emitOutcome:(NSString *)outcome reason:(NSString *_Nullable)reason
 {
     if (!_eventEmitter) {
         _pendingOutcome = outcome;
+        _pendingOutcomeReason = reason;
         return;
     }
 
-    const auto emitter = std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter);
-    if ([outcome isEqualToString:MindboxEmbeddedBlockOutcomeLoad]) {
-        emitter->onBlockLoad({});
-    } else {
-        emitter->onBlockFail({});
-    }
+    // The payload has every field: a reason that is not there is an empty string.
+    std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter)
+        ->onBlockOutcome({.outcome = std::string([outcome UTF8String]),
+                          .reason = std::string([(reason ?: @"") UTF8String])});
 }
 
 - (void)dropHost
@@ -179,6 +178,7 @@ using namespace facebook::react;
     _host = nil;
     _pendingAppearance = nil;
     _pendingOutcome = nil;
+    _pendingOutcomeReason = nil;
 }
 
 @end
@@ -215,8 +215,7 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 @property (nonatomic, assign) BOOL hostVisible;
 
 @property (nonatomic, copy) RCTDirectEventBlock onAppearanceChange;
-@property (nonatomic, copy) RCTDirectEventBlock onBlockLoad;
-@property (nonatomic, copy) RCTDirectEventBlock onBlockFail;
+@property (nonatomic, copy) RCTDirectEventBlock onBlockOutcome;
 
 @end
 
@@ -291,14 +290,11 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
             strongSelf.onAppearanceChange(@{@"appearance" : appearance});
         }
     };
-    _host.onOutcome = ^(NSString *outcome) {
+    _host.onOutcome = ^(NSString *outcome, NSString *_Nullable reason) {
         MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
-        if ([outcome isEqualToString:MindboxEmbeddedBlockOutcomeLoad]) {
-            if (strongSelf.onBlockLoad != nil) {
-                strongSelf.onBlockLoad(@{});
-            }
-        } else if (strongSelf.onBlockFail != nil) {
-            strongSelf.onBlockFail(@{});
+        if (strongSelf.onBlockOutcome != nil) {
+            // The same shape as under Fabric: every field present, a missing reason is empty.
+            strongSelf.onBlockOutcome(@{@"outcome" : outcome, @"reason" : reason ?: @""});
         }
     };
 
@@ -346,8 +342,7 @@ RCT_EXPORT_VIEW_PROPERTY(hasErrorView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hostVisible, BOOL)
 
 RCT_EXPORT_VIEW_PROPERTY(onAppearanceChange, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlockLoad, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlockFail, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onBlockOutcome, RCTDirectEventBlock)
 
 @end
 

@@ -4,6 +4,7 @@ import { act, create } from 'react-test-renderer'
 import type { ReactTestRenderer } from 'react-test-renderer'
 
 import { MindboxEmbeddedBlock } from '../MindboxEmbeddedBlock'
+import { MindboxEmbeddedBlockFailReason } from '../MindboxEmbeddedBlockFailReason'
 
 jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
   const ReactActual = require('react')
@@ -35,6 +36,13 @@ const nativeProps = (renderer: ReactTestRenderer) => renderer.root.findByProps({
 const reportAppearance = (renderer: ReactTestRenderer, appearance: string) => {
   act(() => {
     nativeProps(renderer).onAppearanceChange({ nativeEvent: { appearance } })
+  })
+}
+
+/** The native block's report of how the load ended; an empty reason is what the event carries when there is none. */
+const reportOutcome = (renderer: ReactTestRenderer, outcome: string, reason = '') => {
+  act(() => {
+    nativeProps(renderer).onBlockOutcome({ nativeEvent: { outcome, reason } })
   })
 }
 
@@ -101,11 +109,10 @@ describe('MindboxEmbeddedBlock', () => {
     const renderer = render(<MindboxEmbeddedBlock placeSystemName="" height={104} onFail={onFail} />)
 
     reportAppearance(renderer, 'collapsed')
-    act(() => {
-      nativeProps(renderer).onBlockFail()
-    })
+    reportOutcome(renderer, 'fail', 'internalError')
 
     expect(onFail).toHaveBeenCalledTimes(1)
+    expect(onFail).toHaveBeenCalledWith('internalError')
     expect(frameHeight(renderer)).toBe(0)
     warn.mockRestore()
   })
@@ -175,23 +182,110 @@ describe('MindboxEmbeddedBlock', () => {
     expect(renderer.root.findByType(asType(Text)).props.children).toBe('broken')
   })
 
-  it('delivers each outcome once and a changed outcome again', () => {
-    const onLoad = jest.fn()
-    const onFail = jest.fn()
-    const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onFail={onFail} />)
+  describe('the outcome', () => {
+    it('delivers each outcome once and a changed outcome again', () => {
+      const onLoad = jest.fn()
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onFail={onFail} />)
 
-    act(() => {
-      nativeProps(renderer).onBlockLoad()
-      nativeProps(renderer).onBlockLoad()
+      reportOutcome(renderer, 'load')
+      reportOutcome(renderer, 'load')
+
+      expect(onLoad).toHaveBeenCalledTimes(1)
+
+      reportOutcome(renderer, 'fail', 'networkError')
+
+      expect(onFail).toHaveBeenCalledTimes(1)
     })
 
-    expect(onLoad).toHaveBeenCalledTimes(1)
+    it('reports an empty place through onEmpty, with the space given back and no reason', () => {
+      const onEmpty = jest.fn()
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onEmpty={onEmpty} onFail={onFail} />)
 
-    act(() => {
-      nativeProps(renderer).onBlockFail()
+      reportAppearance(renderer, 'collapsed')
+      reportOutcome(renderer, 'empty')
+
+      expect(onEmpty).toHaveBeenCalledTimes(1)
+      expect(onEmpty).toHaveBeenCalledWith()
+      expect(onFail).not.toHaveBeenCalled()
+      expect(frameHeight(renderer)).toBe(0)
     })
 
-    expect(onFail).toHaveBeenCalledTimes(1)
+    it('hands the failure reason to onFail as the native block spelled it', () => {
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onFail={onFail} />)
+
+      reportOutcome(renderer, 'fail', 'networkError')
+
+      expect(onFail).toHaveBeenCalledWith(MindboxEmbeddedBlockFailReason.networkError)
+    })
+
+    it('passes a reason it does not know through as it is', () => {
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onFail={onFail} />)
+
+      reportOutcome(renderer, 'fail', 'sideways')
+
+      expect(onFail).toHaveBeenCalledWith('sideways')
+    })
+
+    it('calls a failure without a reason an internal error', () => {
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onFail={onFail} />)
+
+      reportOutcome(renderer, 'fail')
+
+      expect(onFail).toHaveBeenCalledWith(MindboxEmbeddedBlockFailReason.internalError)
+    })
+
+    it('delivers a failure that repeats with another reason once', () => {
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onFail={onFail} />)
+
+      reportOutcome(renderer, 'fail', 'networkError')
+      reportOutcome(renderer, 'fail', 'internalError')
+
+      expect(onFail).toHaveBeenCalledTimes(1)
+      expect(onFail).toHaveBeenCalledWith('networkError')
+    })
+
+    it('delivers a sequence of outcomes in order, repeats dropped', () => {
+      const delivered: Array<string> = []
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={() => delivered.push('load')} onEmpty={() => delivered.push('empty')} onFail={(reason) => delivered.push(`fail:${reason}`)} />)
+
+      reportOutcome(renderer, 'empty')
+      reportOutcome(renderer, 'empty')
+      reportOutcome(renderer, 'load')
+      reportOutcome(renderer, 'fail', 'networkError')
+
+      expect(delivered).toEqual(['empty', 'load', 'fail:networkError'])
+    })
+
+    it('ignores an outcome it does not know', () => {
+      const onLoad = jest.fn()
+      const onEmpty = jest.fn()
+      const onFail = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} onEmpty={onEmpty} onFail={onFail} />)
+
+      reportOutcome(renderer, 'sideways')
+
+      expect(onLoad).not.toHaveBeenCalled()
+      expect(onEmpty).not.toHaveBeenCalled()
+      expect(onFail).not.toHaveBeenCalled()
+    })
+
+    it('calls the handler the host passed last, not the one it passed first', () => {
+      const first = jest.fn()
+      const second = jest.fn()
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={first} />)
+
+      update(renderer, <MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={second} />)
+      reportOutcome(renderer, 'load')
+
+      expect(first).not.toHaveBeenCalled()
+      expect(second).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('ignores an appearance it does not know, keeping the last known one', () => {
@@ -207,14 +301,23 @@ describe('MindboxEmbeddedBlock', () => {
     const onLoad = jest.fn()
     const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} onLoad={onLoad} />)
 
-    act(() => {
-      nativeProps(renderer).onBlockLoad()
-    })
+    reportOutcome(renderer, 'load')
     update(renderer, <MindboxEmbeddedBlock placeSystemName="banner" height={104} onLoad={onLoad} />)
-    act(() => {
-      nativeProps(renderer).onBlockLoad()
-    })
+    reportOutcome(renderer, 'load')
 
     expect(onLoad).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('MindboxEmbeddedBlockFailReason', () => {
+  it('names the reasons by the raw values the native blocks report', () => {
+    expect(MindboxEmbeddedBlockFailReason.networkError).toBe('networkError')
+    expect(MindboxEmbeddedBlockFailReason.internalError).toBe('internalError')
+  })
+
+  it('is a string, so a word a later SDK adds is still a reason', () => {
+    const reason: MindboxEmbeddedBlockFailReason = 'quotaExceeded'
+
+    expect(reason).toBe('quotaExceeded')
   })
 })
