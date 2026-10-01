@@ -4,7 +4,8 @@ import MindboxLogger
 
 @objc(MindboxEmbeddedBlockHost)
 public final class MindboxEmbeddedBlockHost: NSObject {
-    @objc public var onAppearance: ((NSString) -> Void)?
+    /// The appearance word, whether this change is the SDK's animated reveal, and how long it takes.
+    @objc public var onAppearance: ((NSString, Bool, Int) -> Void)?
 
     /// The outcome word and, for a failure, the reason's raw value.
     @objc public var onOutcome: ((NSString, NSString?) -> Void)?
@@ -14,9 +15,21 @@ public final class MindboxEmbeddedBlockHost: NSObject {
     private let blockView: MindboxEmbeddedBlockView
     private var isTornDown = false
 
-    @objc public init(placeSystemName: String, height: CGFloat, timeoutMs: Double) {
+    /// `loadingStrategy` is a word — `automatic`, `placeholder` or `hidden`; a word this SDK does not
+    /// know is logged and read as `automatic`. Both it and `animatesReveal` are fixed here, as the
+    /// native block takes them only through its initializer.
+    @objc public init(placeSystemName: String,
+                      height: CGFloat,
+                      timeoutMs: Double,
+                      loadingStrategy: String,
+                      animatesReveal: Bool) {
         let timeout: TimeInterval? = timeoutMs == 0 ? nil : timeoutMs / 1000
-        blockView = MindboxEmbeddedBlockView(placeSystemName: placeSystemName, height: height, timeout: timeout)
+        let strategy = EmbeddedBlockWire.loadingStrategy(of: loadingStrategy)
+        blockView = MindboxEmbeddedBlockView(placeSystemName: placeSystemName,
+                                             height: height,
+                                             loadingStrategy: strategy ?? .automatic,
+                                             timeout: timeout,
+                                             animatesReveal: animatesReveal)
         super.init()
 
         if placeSystemName.isEmpty {
@@ -24,10 +37,22 @@ public final class MindboxEmbeddedBlockHost: NSObject {
                           level: .error,
                           category: .embeddedBlocks)
         }
+        if strategy == nil {
+            Logger.common(message: "[EmbeddedBlock] A React Native block for place '\(placeSystemName)' was given a loading strategy this SDK does not know ('\(loadingStrategy)') and starts as automatic",
+                          level: .error,
+                          category: .embeddedBlocks)
+        }
 
         blockView.delegate = self
+        // `isRevealAnimated` is read while the observer runs: the block sets it right before it
+        // calls, for that one call. The block owns the gates — `animatesReveal`, a window to animate
+        // in, Reduce Motion off, "only the arrival of content" — and this host only passes its word
+        // on; the growth of a block that waited hidden is then the JS side's.
         blockView.setAppearanceObserver { [weak self] appearance in
-            self?.onAppearance?(Self.name(of: appearance) as NSString)
+            guard let self else { return }
+            self.onAppearance?(EmbeddedBlockWire.name(of: appearance) as NSString,
+                               self.blockView.isRevealAnimated,
+                               EmbeddedBlockWire.revealDurationMs)
         }
     }
 
@@ -70,30 +95,21 @@ public final class MindboxEmbeddedBlockHost: NSObject {
         standIn.isUserInteractionEnabled = false
         return standIn
     }
-
-    private static func name(of appearance: MindboxEmbeddedBlockAppearance) -> String {
-        switch appearance {
-        case .placeholder: return "placeholder"
-        case .content: return "content"
-        case .error: return "error"
-        case .collapsed: return "collapsed"
-        }
-    }
 }
 
 // All three methods are implemented on purpose: the protocol gives each an empty default, so a
 // host that still spelled the old `DidFail(_:)` would compile and silently hear no failure.
 extension MindboxEmbeddedBlockHost: MindboxEmbeddedBlockViewDelegate {
     public func mindboxEmbeddedBlockViewDidLoad(_ blockView: MindboxEmbeddedBlockView) {
-        onOutcome?("load", nil)
+        onOutcome?(EmbeddedBlockWire.outcomeLoad as NSString, nil)
     }
 
     public func mindboxEmbeddedBlockViewDidBecomeEmpty(_ blockView: MindboxEmbeddedBlockView) {
-        onOutcome?("empty", nil)
+        onOutcome?(EmbeddedBlockWire.outcomeEmpty as NSString, nil)
     }
 
     public func mindboxEmbeddedBlockViewDidFail(_ blockView: MindboxEmbeddedBlockView,
-                                         reason: MindboxEmbeddedBlockFailReason) {
-        onOutcome?("fail", reason.rawValue as NSString)
+                                                reason: MindboxEmbeddedBlockFailReason) {
+        onOutcome?(EmbeddedBlockWire.outcomeFail as NSString, reason.rawValue as NSString)
     }
 }

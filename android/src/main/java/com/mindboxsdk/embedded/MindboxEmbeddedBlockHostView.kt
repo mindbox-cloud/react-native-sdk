@@ -10,15 +10,16 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import cloud.mindbox.mobile_sdk.Mindbox
 import cloud.mindbox.mobile_sdk.annotations.InternalMindboxApi
-import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockAppearance
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockFailReason
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockListener
+import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockLoadingStrategy
 import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockView
 import cloud.mindbox.mobile_sdk.logger.Level
 
 @OptIn(InternalMindboxApi::class)
 internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(context) {
-    var onAppearance: ((String) -> Unit)? = null
+    /** The appearance word, whether this change is the SDK's animated reveal, and how long it takes. */
+    var onAppearance: ((appearance: String, isRevealAnimated: Boolean, revealDurationMs: Int) -> Unit)? = null
 
     /** The outcome word and, for a failure, the reason's raw value. */
     var onOutcome: ((outcome: String, reason: String?) -> Unit)? = null
@@ -26,6 +27,8 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
     private var blockView: MindboxEmbeddedBlockView? = null
     private var placeSystemName: String? = null
     private var timeoutMs: Long? = null
+    private var loadingStrategy: MindboxEmbeddedBlockLoadingStrategy = MindboxEmbeddedBlockLoadingStrategy.AUTOMATIC
+    private var animatesReveal: Boolean = true
     private var hostVisible: Boolean = true
     private var hasPlaceholder: Boolean = false
     private var hasErrorView: Boolean = false
@@ -85,6 +88,29 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         }
     }
 
+    // Fixed at creation, as the timeout is: the JS side warns the host about a later value rather
+    // than applying it, and the native block takes both only through its constructor.
+    fun setLoadingStrategy(word: String?) {
+        if (blockView != null) {
+            return
+        }
+
+        val strategy = EmbeddedBlockWire.loadingStrategyOf(word)
+        if (strategy == null) {
+            Mindbox.writeLog(
+                message = "[EmbeddedBlock] A React Native block for place '$placeSystemName' was given a loading strategy this SDK does not know ('$word') and starts as automatic",
+                logLevel = Level.ERROR,
+            )
+        }
+        loadingStrategy = strategy ?: MindboxEmbeddedBlockLoadingStrategy.AUTOMATIC
+    }
+
+    fun setAnimatesReveal(animatesReveal: Boolean) {
+        if (blockView == null) {
+            this.animatesReveal = animatesReveal
+        }
+    }
+
     fun setHostVisible(isHostVisible: Boolean) {
         if (hostVisible == isHostVisible) {
             return
@@ -135,7 +161,13 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
             )
         }
 
-        val block = MindboxEmbeddedBlockView(context, place, timeoutMs)
+        val block = MindboxEmbeddedBlockView(
+            context = context,
+            placeSystemName = place,
+            timeoutMs = timeoutMs,
+            loadingStrategy = loadingStrategy,
+            animatesReveal = animatesReveal,
+        )
         blockView = block
 
         syncStandIns()
@@ -143,19 +175,29 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         block.setListener(
             object : MindboxEmbeddedBlockListener {
                 override fun onLoad(view: MindboxEmbeddedBlockView) {
-                    onOutcome?.invoke(OUTCOME_LOAD, null)
+                    onOutcome?.invoke(EmbeddedBlockWire.OUTCOME_LOAD, null)
                 }
 
                 override fun onEmpty(view: MindboxEmbeddedBlockView) {
-                    onOutcome?.invoke(OUTCOME_EMPTY, null)
+                    onOutcome?.invoke(EmbeddedBlockWire.OUTCOME_EMPTY, null)
                 }
 
                 override fun onFail(view: MindboxEmbeddedBlockView, reason: MindboxEmbeddedBlockFailReason) {
-                    onOutcome?.invoke(OUTCOME_FAIL, reason.value)
+                    onOutcome?.invoke(EmbeddedBlockWire.OUTCOME_FAIL, reason.value)
                 }
             },
         )
-        block.setAppearanceObserver { appearance -> onAppearance?.invoke(nameOf(appearance)) }
+        // `isRevealAnimated` is read while the observer runs: the block sets it right before it
+        // calls, for that one call. The block owns the gates — `animatesReveal`, a window to animate
+        // in, animations enabled on the device, "only the arrival of content" — and this host only
+        // passes its word on; the growth of a block that waited hidden is then the JS side's.
+        block.setAppearanceObserver { appearance ->
+            onAppearance?.invoke(
+                EmbeddedBlockWire.nameOf(appearance),
+                block.isRevealAnimated,
+                MindboxEmbeddedBlockView.REVEAL_ANIMATION_DURATION_MS.toInt(),
+            )
+        }
 
         addView(block, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
@@ -207,18 +249,5 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         setBackgroundColor(Color.TRANSPARENT)
         isClickable = false
         isFocusable = false
-    }
-
-    private companion object {
-        const val OUTCOME_LOAD = "load"
-        const val OUTCOME_EMPTY = "empty"
-        const val OUTCOME_FAIL = "fail"
-
-        fun nameOf(appearance: MindboxEmbeddedBlockAppearance): String = when (appearance) {
-            MindboxEmbeddedBlockAppearance.PLACEHOLDER -> "placeholder"
-            MindboxEmbeddedBlockAppearance.CONTENT -> "content"
-            MindboxEmbeddedBlockAppearance.ERROR -> "error"
-            MindboxEmbeddedBlockAppearance.COLLAPSED -> "collapsed"
-        }
     }
 }

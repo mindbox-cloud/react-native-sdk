@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Platform, StyleSheet, View } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Animated, Easing, Platform, StyleSheet, View } from 'react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import MindboxEmbeddedBlockNativeView from './MindboxEmbeddedBlockNativeComponent'
 import type { NativeProps } from './MindboxEmbeddedBlockNativeComponent'
 import { MindboxEmbeddedBlockFailReason } from './MindboxEmbeddedBlockFailReason'
+import { MindboxEmbeddedBlockLoadingStrategy } from './MindboxEmbeddedBlockLoadingStrategy'
+import { askInitialAppearance } from './MindboxEmbeddedBlockNativeModule'
 
 /**
  * The handlers are typed by the props they are handed to, not by a second spelling of the same
@@ -69,6 +71,29 @@ export type MindboxEmbeddedBlockProps = {
    * warning. Remount the component (give it a new `key`) to change it.
    */
   timeoutMs?: number
+
+  /**
+   * What the block shows until the SDK answers — see [MindboxEmbeddedBlockLoadingStrategy].
+   *
+   * `automatic` — the default — keeps the block hidden until the place has shown content once on
+   * this device and puts a placeholder there from then on. A block that takes its space up front
+   * keeps the layout still at the price of flashing where there is nothing to show; a block that
+   * waits hidden never flashes at the price of the layout growing when content arrives. A place
+   * that always has a campaign behind it is worth an explicit `placeholder`.
+   *
+   * Fixed when the block is created, as [timeoutMs] is: a new value on a live block is ignored with
+   * a warning. Remount the component (give it a new `key`) to build a block anew.
+   */
+  loadingStrategy?: MindboxEmbeddedBlockLoadingStrategy
+
+  /**
+   * Whether the SDK animates the reveal of the content — a fade, and the growth of a block that
+   * waited hidden. `true` by default; the system's reduced-motion setting turns the animation off
+   * as well. Turn it off to animate the block's container yourself in [onLoad].
+   *
+   * Fixed when the block is created, as [timeoutMs] is.
+   */
+  animatesReveal?: boolean
 
   /**
    * Drawn instead of the SDK shimmer while the block is loading. Fills the whole place, as the native
@@ -148,6 +173,11 @@ export type MindboxEmbeddedBlockProps = {
  * and the handlers of the tree the block itself stands in. The wait for an answer is bounded by
  * [timeoutMs] — 30 seconds unless the host says otherwise.
  *
+ * What the block shows until the SDK has decided what goes into it is the [loadingStrategy]: a
+ * placeholder, nothing, or — by default — nothing until the place has shown content once on this
+ * device and a placeholder from then on. The content is revealed with the SDK's own animation — it
+ * fades in, and a block that started hidden grows to its height — unless [animatesReveal] is off.
+ *
  * The outcome arrives through three callbacks, the same three as in SwiftUI, Compose and Flutter:
  * [onLoad] when the content is shown, [onEmpty] when there is nothing to show at the place, and
  * [onFail] with a reason when the block could not be shown.
@@ -161,8 +191,12 @@ export type MindboxEmbeddedBlockProps = {
  */
 export const MindboxEmbeddedBlock = (props: MindboxEmbeddedBlockProps) => <Block key={props.placeSystemName} {...props} />
 
-const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad, onEmpty, onFail, active = true, style }: MindboxEmbeddedBlockProps) => {
-  const [appearance, setAppearance] = useState<Appearance>(IS_SUPPORTED ? 'placeholder' : 'collapsed')
+const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEmbeddedBlockLoadingStrategy.automatic, animatesReveal = true, placeholder, error, onLoad, onEmpty, onFail, active = true, style }: MindboxEmbeddedBlockProps) => {
+  const creationTimeoutMs = useRef(timeoutMs).current
+  const creationLoadingStrategy = useRef(loadingStrategy).current
+  const creationAnimatesReveal = useRef(animatesReveal).current
+
+  const [appearance, setAppearance] = useState<Appearance>(() => (IS_SUPPORTED ? firstLook(creationLoadingStrategy) : 'collapsed'))
 
   const blockHeight = Number.isFinite(height) ? Math.max(0, height) : 0
 
@@ -183,15 +217,20 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const creationTimeoutMs = useRef(timeoutMs).current
-  const hasWarnedAboutTimeout = useRef(false)
+  // The values fixed at creation: a new one is ignored and said once, per value.
+  const warnedCreationValues = useRef(new Set<string>())
   useEffect(() => {
-    if (timeoutMs === creationTimeoutMs || hasWarnedAboutTimeout.current) {
-      return
+    const warnIfIgnored = (name: string, given: unknown, kept: unknown) => {
+      if (given === kept || warnedCreationValues.current.has(name)) {
+        return
+      }
+      warnedCreationValues.current.add(name)
+      console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was given ${name} ${String(given)} after creation and keeps ${String(kept)}: ${name} is fixed when the block is created. Remount the component — give it a new key — to build a block anew.`)
     }
-    hasWarnedAboutTimeout.current = true
-    console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" keeps the timeout it was created with; the new value is ignored. Remount the component — give it a new key — to change the timeout.`)
-  }, [timeoutMs, creationTimeoutMs, placeSystemName])
+    warnIfIgnored('timeoutMs', timeoutMs, creationTimeoutMs)
+    warnIfIgnored('loadingStrategy', loadingStrategy, creationLoadingStrategy)
+    warnIfIgnored('animatesReveal', animatesReveal, creationAnimatesReveal)
+  }, [timeoutMs, creationTimeoutMs, loadingStrategy, creationLoadingStrategy, animatesReveal, creationAnimatesReveal, placeSystemName])
 
   // The callbacks are read through a ref at delivery time, so a host that passes a fresh closure
   // on every render neither re-subscribes anything nor misses the one delivery of an outcome.
@@ -231,12 +270,73 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
     }
   }, [deliver])
 
-  const handleAppearanceChange = useCallback<AppearanceChangeHandler>((event) => {
-    const reported = event.nativeEvent.appearance
-    if (APPEARANCES.includes(reported)) {
-      setAppearance(reported as Appearance)
+  /** The growth of a block that waited hidden: 0 to 1 over the SDK's reveal, 1 at rest. */
+  const reveal = useRef(new Animated.Value(1)).current
+  const shownAppearance = useRef(appearance)
+
+  /**
+   * Takes the block to [next]. The reveal of content into a slot that was closed is the one change
+   * that is animated, and only when the native block says so — it owns that decision, gates
+   * included — for as long as it says; everything else lands at once.
+   */
+  const show = useCallback(
+    (next: Appearance, revealDurationMs?: number) => {
+      const opens = shownAppearance.current === 'collapsed' && next === 'content'
+      shownAppearance.current = next
+      setAppearance(next)
+      if (opens && revealDurationMs != null && revealDurationMs > 0) {
+        reveal.setValue(0)
+        Animated.timing(reveal, { toValue: 1, duration: revealDurationMs, easing: Easing.inOut(Easing.ease), useNativeDriver: false }).start()
+      } else {
+        reveal.stopAnimation()
+        reveal.setValue(1)
+      }
+    },
+    [reveal]
+  )
+
+  /**
+   * The native block has reported at least once. From then on the first look asked of the native
+   * module is stale, whenever it arrives.
+   */
+  const hasHeardFromNative = useRef(false)
+
+  // The first look of an `automatic` block is the SDK's memory of the place, which only the native
+  // side has and JS reaches asynchronously. Asked of the module — not the block, which does not
+  // exist yet — once, on mount; until it answers the block takes no space. The native block's own
+  // report, once the native view is built, settles the same question and wins.
+  useEffect(() => {
+    if (!IS_SUPPORTED || creationLoadingStrategy !== MindboxEmbeddedBlockLoadingStrategy.automatic) {
+      return
     }
+    let isMounted = true
+    askInitialAppearance(placeSystemName, creationLoadingStrategy)
+      .then((word) => {
+        if (!isMounted || hasHeardFromNative.current || !APPEARANCES.includes(word) || word === shownAppearance.current) {
+          return
+        }
+        show(word as Appearance)
+      })
+      .catch((reason: unknown) => {
+        console.warn(`[MindboxEmbeddedBlock] initialAppearance for block "${placeSystemName}" was not answered: ${String(reason)}`)
+      })
+    return () => {
+      isMounted = false
+    }
+    // Once, on mount: the strategy is fixed at creation and the name remounts the component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const handleAppearanceChange = useCallback<AppearanceChangeHandler>(
+    (event) => {
+      hasHeardFromNative.current = true
+      const { appearance: reported, animated, revealDurationMs } = event.nativeEvent
+      if (APPEARANCES.includes(reported) && reported !== shownAppearance.current) {
+        show(reported as Appearance, animated ? revealDurationMs : undefined)
+      }
+    },
+    [show]
+  )
 
   const handleOutcome = useCallback<BlockOutcomeHandler>(
     (event) => {
@@ -250,28 +350,57 @@ const Block = ({ placeSystemName, height, timeoutMs, placeholder, error, onLoad,
 
   const overlay = appearance === 'placeholder' ? placeholder : appearance === 'error' ? error : null
 
+  // The height the layout is given: nothing for a collapsed block, the block's height otherwise —
+  // and, while a block that waited hidden is revealed, the part of it the growth has reached.
+  const slotHeight = useMemo(() => reveal.interpolate({ inputRange: [0, 1], outputRange: [0, blockHeight] }), [reveal, blockHeight])
+
   return (
-    <View
+    <Animated.View
       // The height is the one thing here that cannot live in a StyleSheet: it is the host's number
       // until the block gives its place back, and then it is zero.
       // eslint-disable-next-line react-native/no-inline-styles
-      style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : blockHeight }]}
+      style={[styles.block, style, { height: appearance === 'collapsed' ? 0 : slotHeight }]}
       collapsable={false}
     >
-      {IS_SUPPORTED ? <MindboxEmbeddedBlockNativeView style={StyleSheet.absoluteFill} placeSystemName={placeSystemName} blockHeight={blockHeight} timeoutMs={creationTimeoutMs ?? 0} hasPlaceholder={placeholder != null} hasErrorView={error != null} hostVisible={active} onAppearanceChange={handleAppearanceChange} onBlockOutcome={handleOutcome} /> : null}
-      {overlay != null ? (
-        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-          {overlay}
-        </View>
-      ) : null}
-    </View>
+      {/*
+        The slot is what the layout sees; the block inside keeps its full height whatever the slot
+        is. A native view sized to nothing is never built — both native halves wait for a frame —
+        so a block that waits hidden would never load and never grow. With its own height under a
+        clipped slot of zero it runs its whole cycle unseen, as the native blocks do, and the slot
+        opens when the content arrives.
+      */}
+      <View style={[styles.inside, { height: blockHeight }]} collapsable={false}>
+        {IS_SUPPORTED ? <MindboxEmbeddedBlockNativeView style={StyleSheet.absoluteFill} placeSystemName={placeSystemName} blockHeight={blockHeight} timeoutMs={creationTimeoutMs ?? 0} loadingStrategy={creationLoadingStrategy} animatesReveal={creationAnimatesReveal} hasPlaceholder={placeholder != null} hasErrorView={error != null} hostVisible={active} onAppearanceChange={handleAppearanceChange} onBlockOutcome={handleOutcome} /> : null}
+        {overlay != null ? (
+          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+            {overlay}
+          </View>
+        ) : null}
+      </View>
+    </Animated.View>
   )
 }
+
+/**
+ * The look a block starts with, before the native block exists to say.
+ *
+ * `placeholder` and `hidden` are decided by the strategy alone. `automatic` is decided by the SDK's
+ * memory of the place, which only the native side has and JS reaches asynchronously, so until it
+ * answers an `automatic` block takes no space: a place that has never shown content must not flash
+ * reserved space, and one that has shows its placeholder a frame late rather than a frame early.
+ */
+const firstLook = (strategy: MindboxEmbeddedBlockLoadingStrategy): Appearance => (strategy === MindboxEmbeddedBlockLoadingStrategy.placeholder ? 'placeholder' : 'collapsed')
 
 const styles = StyleSheet.create({
   block: {
     width: '100%',
     overflow: 'hidden',
+  },
+  inside: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
 })
 

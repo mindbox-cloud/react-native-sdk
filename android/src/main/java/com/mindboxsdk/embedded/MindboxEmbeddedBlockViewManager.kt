@@ -25,8 +25,8 @@ internal class MindboxEmbeddedBlockViewManager :
 
     override fun addEventEmitters(reactContext: ThemedReactContext, view: MindboxEmbeddedBlockHostView) {
         super.addEventEmitters(reactContext, view)
-        view.onAppearance = { appearance ->
-            dispatch(view) { surfaceId, tag -> AppearanceChangeEvent(surfaceId, tag, appearance) }
+        view.onAppearance = { appearance, isRevealAnimated, revealDurationMs ->
+            dispatch(view) { surfaceId, tag -> AppearanceChangeEvent(surfaceId, tag, appearance, isRevealAnimated, revealDurationMs) }
         }
         view.onOutcome = { outcome, reason ->
             dispatch(view) { surfaceId, tag -> BlockOutcomeEvent(surfaceId, tag, outcome, reason) }
@@ -56,6 +56,14 @@ internal class MindboxEmbeddedBlockViewManager :
 
     override fun setTimeoutMs(view: MindboxEmbeddedBlockHostView, value: Double) {
         view.setTimeoutMs(value)
+    }
+
+    override fun setLoadingStrategy(view: MindboxEmbeddedBlockHostView, value: String?) {
+        view.setLoadingStrategy(value)
+    }
+
+    override fun setAnimatesReveal(view: MindboxEmbeddedBlockHostView, value: Boolean) {
+        view.setAnimatesReveal(value)
     }
 
     override fun setHasPlaceholder(view: MindboxEmbeddedBlockHostView, value: Boolean) {

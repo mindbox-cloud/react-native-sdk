@@ -34,11 +34,15 @@ using namespace facebook::react;
     std::string _placeSystemName;
     CGFloat _blockHeight;
     double _timeoutMs;
+    std::string _loadingStrategy;
+    BOOL _animatesReveal;
     BOOL _hasPlaceholder;
     BOOL _hasErrorView;
     BOOL _isHostVisible;
 
     NSString *_pendingAppearance;
+    BOOL _pendingAppearanceAnimated;
+    NSInteger _pendingAppearanceRevealDurationMs;
     NSString *_pendingOutcome;
     NSString *_pendingOutcomeReason;
 }
@@ -59,6 +63,7 @@ using namespace facebook::react;
         static const auto defaultProps = std::make_shared<const MindboxEmbeddedBlockViewProps>();
         _props = defaultProps;
         _isHostVisible = YES;
+        _animatesReveal = YES;
     }
 
     return self;
@@ -80,6 +85,8 @@ using namespace facebook::react;
 
     _blockHeight = next.blockHeight;
     _timeoutMs = next.timeoutMs;
+    _loadingStrategy = next.loadingStrategy;
+    _animatesReveal = next.animatesReveal;
     _hasPlaceholder = next.hasPlaceholder;
     _hasErrorView = next.hasErrorView;
     _isHostVisible = next.hostVisible;
@@ -102,13 +109,15 @@ using namespace facebook::react;
 
     _host = [[MindboxEmbeddedBlockHost alloc] initWithPlaceSystemName:@(_placeSystemName.c_str())
                                                               height:_blockHeight
-                                                           timeoutMs:_timeoutMs];
+                                                           timeoutMs:_timeoutMs
+                                                     loadingStrategy:@(_loadingStrategy.c_str())
+                                                      animatesReveal:_animatesReveal];
     [_host setStandInsWithHasPlaceholder:_hasPlaceholder hasErrorView:_hasErrorView];
     [_host setHostVisible:_isHostVisible];
 
     __weak MindboxEmbeddedBlockViewComponentView *weakSelf = self;
-    _host.onAppearance = ^(NSString *appearance) {
-        [weakSelf emitAppearance:appearance];
+    _host.onAppearance = ^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
+        [weakSelf emitAppearance:appearance animated:animated revealDurationMs:revealDurationMs];
     };
     _host.onOutcome = ^(NSString *outcome, NSString *_Nullable reason) {
         [weakSelf emitOutcome:outcome reason:reason];
@@ -124,7 +133,7 @@ using namespace facebook::react;
     if (_pendingAppearance != nil) {
         NSString *appearance = _pendingAppearance;
         _pendingAppearance = nil;
-        [self emitAppearance:appearance];
+        [self emitAppearance:appearance animated:_pendingAppearanceAnimated revealDurationMs:_pendingAppearanceRevealDurationMs];
     }
 
     if (_pendingOutcome != nil) {
@@ -142,15 +151,19 @@ using namespace facebook::react;
     _placeSystemName = "";
 }
 
-- (void)emitAppearance:(NSString *)appearance
+- (void)emitAppearance:(NSString *)appearance animated:(BOOL)animated revealDurationMs:(NSInteger)revealDurationMs
 {
     if (!_eventEmitter) {
         _pendingAppearance = appearance;
+        _pendingAppearanceAnimated = animated;
+        _pendingAppearanceRevealDurationMs = revealDurationMs;
         return;
     }
 
     std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter)
-        ->onAppearanceChange({.appearance = std::string([appearance UTF8String])});
+        ->onAppearanceChange({.appearance = std::string([appearance UTF8String]),
+                              .animated = static_cast<bool>(animated),
+                              .revealDurationMs = static_cast<int>(animated ? revealDurationMs : 0)});
 }
 
 - (void)emitOutcome:(NSString *)outcome reason:(NSString *_Nullable)reason
@@ -210,6 +223,8 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 @property (nonatomic, copy) NSString *placeSystemName;
 @property (nonatomic, assign) CGFloat blockHeight;
 @property (nonatomic, assign) double timeoutMs;
+@property (nonatomic, copy) NSString *loadingStrategy;
+@property (nonatomic, assign) BOOL animatesReveal;
 @property (nonatomic, assign) BOOL hasPlaceholder;
 @property (nonatomic, assign) BOOL hasErrorView;
 @property (nonatomic, assign) BOOL hostVisible;
@@ -229,6 +244,7 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 {
     if (self = [super initWithFrame:frame]) {
         _hostVisible = YES;
+        _animatesReveal = YES;
     }
 
     return self;
@@ -277,17 +293,25 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
     // JS side warns the host about a new value rather than applying it.
     _builtTimeoutMs = _timeoutMs;
 
+    // The strategy and the animation flag are taken once as well: the native block takes them only
+    // through its initializer.
     _host = [[MindboxEmbeddedBlockHost alloc] initWithPlaceSystemName:_builtPlaceSystemName
                                                               height:_blockHeight
-                                                           timeoutMs:_builtTimeoutMs];
+                                                           timeoutMs:_builtTimeoutMs
+                                                     loadingStrategy:_loadingStrategy ?: @""
+                                                      animatesReveal:_animatesReveal];
     [_host setStandInsWithHasPlaceholder:_hasPlaceholder hasErrorView:_hasErrorView];
     [_host setHostVisible:_hostVisible];
 
     __weak MindboxEmbeddedBlockPaperView *weakSelf = self;
-    _host.onAppearance = ^(NSString *appearance) {
+    _host.onAppearance = ^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
         MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
         if (strongSelf.onAppearanceChange != nil) {
-            strongSelf.onAppearanceChange(@{@"appearance" : appearance});
+            strongSelf.onAppearanceChange(@{
+                @"appearance" : appearance,
+                @"animated" : @(animated),
+                @"revealDurationMs" : @(animated ? revealDurationMs : 0),
+            });
         }
     };
     _host.onOutcome = ^(NSString *outcome, NSString *_Nullable reason) {
@@ -337,6 +361,8 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(placeSystemName, NSString)
 RCT_EXPORT_VIEW_PROPERTY(blockHeight, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(timeoutMs, double)
+RCT_EXPORT_VIEW_PROPERTY(loadingStrategy, NSString)
+RCT_EXPORT_VIEW_PROPERTY(animatesReveal, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hasPlaceholder, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hasErrorView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hostVisible, BOOL)

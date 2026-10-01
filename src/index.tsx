@@ -499,3 +499,5 @@ export { MindboxEmbeddedBlock } from './MindboxEmbeddedBlock'
 export type { MindboxEmbeddedBlockProps } from './MindboxEmbeddedBlock'
 
 export { MindboxEmbeddedBlockFailReason } from './MindboxEmbeddedBlockFailReason'
+
+export { MindboxEmbeddedBlockLoadingStrategy } from './MindboxEmbeddedBlockLoadingStrategy'

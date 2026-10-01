@@ -1,4 +1,4 @@
-import Mindbox
+@_spi(Internal) import Mindbox
 import MindboxLogger
 
 enum CustomError: Error {
@@ -185,6 +185,29 @@ class MindboxSdk: NSObject {
             resolve(Mindbox.shared.sdkVersion)
         } catch {
             reject("Error", error.localizedDescription, error)
+        }
+    }
+
+    /// What an embedded block of this place starts with — the look the native block decides before it
+    /// exists, from the SDK's memory of the place. Asked by `MindboxEmbeddedBlock` for an `automatic`
+    /// block, since JS reaches the memory only asynchronously; answered with an appearance word.
+    ///
+    /// Internal to the package: not exported by the JS side.
+    @objc(embeddedBlockInitialAppearance:loadingStrategy:resolver:rejecter:)
+    func embeddedBlockInitialAppearance(_ placeSystemName: String,
+                                        loadingStrategy: String,
+                                        resolver resolve: @escaping RCTPromiseResolveBlock,
+                                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let strategy = EmbeddedBlockWire.loadingStrategy(of: loadingStrategy) else {
+            reject("bad_arguments", "embeddedBlockInitialAppearance expects a loading strategy word: automatic, placeholder or hidden", nil)
+            return
+        }
+
+        // On the main thread, as the native wrappers ask it: the memory is read where the blocks run.
+        DispatchQueue.main.async {
+            let appearance = MindboxEmbeddedBlockView.initialAppearance(placeSystemName: placeSystemName,
+                                                                         loadingStrategy: strategy)
+            resolve(EmbeddedBlockWire.name(of: appearance))
         }
     }
 

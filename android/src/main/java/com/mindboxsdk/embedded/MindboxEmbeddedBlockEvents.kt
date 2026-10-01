@@ -4,15 +4,24 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
+/**
+ * The look the native block shows. `animated` is `true` for the one change that is the SDK's
+ * reveal of content — the block owns that decision, gates included — and `revealDurationMs` is
+ * how long it takes; `false` and `0` for every other change.
+ */
 internal class AppearanceChangeEvent(
     surfaceId: Int,
     viewTag: Int,
     private val appearance: String,
+    private val isRevealAnimated: Boolean,
+    private val revealDurationMs: Int,
 ) : Event<AppearanceChangeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
 
     override fun getEventData(): WritableMap = Arguments.createMap().apply {
         putString("appearance", appearance)
+        putBoolean("animated", isRevealAnimated)
+        putInt("revealDurationMs", if (isRevealAnimated) revealDurationMs else 0)
     }
 
     companion object {

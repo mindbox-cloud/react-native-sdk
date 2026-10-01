@@ -13,6 +13,8 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
   select: (specifics: Record<string, unknown>) => specifics.default,
 }))
 
+jest.mock('../MindboxEmbeddedBlockNativeModule', () => ({ askInitialAppearance: jest.fn(() => new Promise(() => undefined)) }))
+
 jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
   const ReactActual = require('react')
   const { View: RNView } = require('react-native')
