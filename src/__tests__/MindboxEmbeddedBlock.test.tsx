@@ -108,7 +108,7 @@ describe('MindboxEmbeddedBlock', () => {
     expect(nativeProps(renderer).blockHeight).toBe(80)
   })
 
-  it('says nothing about space around a name the SDK trims anyway', () => {
+  it('passes a name with spaces around it to the native block as given, and says nothing about it', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const renderer = render(placeholderBlock({ placeSystemName: ' stories ' }))
 

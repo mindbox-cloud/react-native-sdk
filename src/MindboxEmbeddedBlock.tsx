@@ -39,9 +39,11 @@ export type MindboxEmbeddedBlockProps = {
    * The name of the place from the admin panel. A different name is a different block, built from
    * scratch in place of the old one.
    *
-   * Space around the name is not part of it: the SDK trims the name before resolving by it, on both
-   * platforms. A name that is empty — or nothing but spaces — is then no name at all, so the place
-   * resolves to nothing, collapses and reports [onFail]. The component warns about that.
+   * Passed down as given. Whitespace around the name is not part of it: the native blocks ignore
+   * it, so a name pasted from the admin panel with a stray space still finds its place. The name
+   * itself is matched the way the native SDK matches it. A name that is empty — or nothing but
+   * spaces — is no name at all, so the place resolves to nothing, collapses and reports [onFail];
+   * the component warns about that.
    */
   placeSystemName: string
 
