@@ -114,16 +114,20 @@ describe('MindboxEmbeddedBlock', () => {
     warn.mockRestore()
   })
 
-  it('hands the failure of a nameless place to the host and gives the space back', () => {
+  it('hands a nameless place to the host as an empty one and gives the space back', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const onEmpty = jest.fn()
     const onFail = jest.fn()
-    const renderer = render(placeholderBlock({ placeSystemName: '', onFail }))
+    const renderer = render(placeholderBlock({ placeSystemName: '', onEmpty, onFail }))
 
+    expect(warn.mock.calls[0][0]).toContain('reports onEmpty')
+
+    // What the native blocks report for a name of nothing: a place with nothing behind it.
     reportAppearance(renderer, 'collapsed')
-    reportOutcome(renderer, 'fail', 'internalError')
+    reportOutcome(renderer, 'empty')
 
-    expect(onFail).toHaveBeenCalledTimes(1)
-    expect(onFail).toHaveBeenCalledWith('internalError')
+    expect(onEmpty).toHaveBeenCalledTimes(1)
+    expect(onFail).not.toHaveBeenCalled()
     expect(frameHeight(renderer)).toBe(0)
     warn.mockRestore()
   })
@@ -465,6 +469,99 @@ describe('MindboxEmbeddedBlock', () => {
       tick(250)
 
       expect(frameHeight(renderer)).toBe(0)
+    })
+
+    it.each(['error', 'placeholder'])('takes the full height at once when %s arrives in the middle of a reveal', (appearance) => {
+      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} loadingStrategy="hidden" placeholder={<Text>loading</Text>} error={<Text>broken</Text>} />)
+
+      reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
+      tick(125)
+      const midway = frameHeight(renderer)
+      expect(midway).toBeGreaterThan(0)
+      expect(midway).toBeLessThan(104)
+
+      reportAppearance(renderer, appearance)
+
+      expect(frameHeight(renderer)).toBe(104)
+
+      // The old growth is stopped, not left to finish on its own schedule.
+      tick(60)
+
+      expect(frameHeight(renderer)).toBe(104)
+    })
+
+    describe('the host overlay under the reveal', () => {
+      /** The host's overlay layer: the view that holds the placeholder or the error screen. */
+      const overlayHost = (renderer: ReactTestRenderer) => renderer.root.findAll((node) => node.type === View && (node.props.pointerEvents === 'box-none' || node.props.pointerEvents === 'none'))[0]
+
+      const overlayOpacity = (renderer: ReactTestRenderer) => StyleSheet.flatten(overlayHost(renderer).props.style).opacity
+
+      it('keeps the host placeholder above the arriving content and fades it out over the reveal', () => {
+        const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
+
+        reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
+
+        expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
+        expect(overlayHost(renderer).props.pointerEvents).toBe('none')
+        expect(overlayOpacity(renderer)).toBe(1)
+
+        tick(125)
+
+        expect(overlayOpacity(renderer)).toBeGreaterThan(0.2)
+        expect(overlayOpacity(renderer)).toBeLessThan(0.8)
+
+        tick(125)
+
+        expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+      })
+
+      it('fades the host error screen out the same way when content replaces it', () => {
+        const renderer = render(placeholderBlock({ error: <Text>broken</Text> }))
+
+        reportAppearance(renderer, 'error')
+        reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
+
+        expect(renderer.root.findByType(asType(Text)).props.children).toBe('broken')
+        expect(overlayHost(renderer).props.pointerEvents).toBe('none')
+
+        tick(250)
+
+        expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+      })
+
+      it('takes the placeholder away at once when the content is not a reveal', () => {
+        const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
+
+        reportAppearance(renderer, 'content')
+
+        expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+      })
+
+      it('takes a fading overlay away at once when the look changes again', () => {
+        const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
+
+        reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
+        tick(125)
+        reportAppearance(renderer, 'collapsed')
+
+        expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+
+        tick(250)
+
+        expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
+      })
+
+      it('shows the placeholder again, opaque and touchable, when a reload follows the reveal', () => {
+        const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
+
+        reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
+        tick(250)
+        reportAppearance(renderer, 'placeholder')
+
+        expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
+        expect(overlayHost(renderer).props.pointerEvents).toBe('box-none')
+        expect(overlayOpacity(renderer)).toBeUndefined()
+      })
     })
   })
 })

@@ -33,6 +33,15 @@ const OUTCOMES: Array<string> = ['load', 'empty', 'fail']
 /** iOS and Android have the native block; nothing else does. */
 const IS_SUPPORTED = Platform.OS === 'ios' || Platform.OS === 'android'
 
+/** A host overlay drawn above the native block: the host's placeholder or its error screen. */
+type Overlay = 'placeholder' | 'error'
+
+/**
+ * The curve of the SDK's reveal on each platform, so the slot and the overlay move with the native
+ * fade: Material's standard curve on Android, ease-in-out on iOS.
+ */
+const REVEAL_EASING = Platform.OS === 'android' ? Easing.bezier(0.4, 0, 0.2, 1) : Easing.inOut(Easing.ease)
+
 export type MindboxEmbeddedBlockProps = {
   /**
    * The name of the place from the admin panel. A different name is a different block, built from
@@ -41,8 +50,8 @@ export type MindboxEmbeddedBlockProps = {
    * Passed down as given. Whitespace around the name is not part of it: the native blocks ignore
    * it, so a name pasted from the admin panel with a stray space still finds its place. The name
    * itself is matched the way the native SDK matches it. A name that is empty — or nothing but
-   * spaces — is no name at all, so the place resolves to nothing, collapses and reports [onFail];
-   * the component warns about that.
+   * spaces — is no name at all, so the place resolves to nothing: the block collapses and reports
+   * [onEmpty], as for any place with nothing behind it. The component warns about that.
    */
   placeSystemName: string
 
@@ -82,6 +91,10 @@ export type MindboxEmbeddedBlockProps = {
    * waits hidden never flashes at the price of the layout growing when content arrives. A place
    * that always has a campaign behind it is worth an explicit `placeholder`.
    *
+   * A block that waits hidden — `hidden`, and `automatic` at a place that has not shown content
+   * yet — draws neither [placeholder] nor [error] until its content has been shown once: a failure
+   * keeps it collapsed, and only [onFail] tells.
+   *
    * Fixed when the block is created, as [timeoutMs] is: a new value on a live block is ignored with
    * a warning. Remount the component (give it a new `key`) to build a block anew.
    */
@@ -98,7 +111,11 @@ export type MindboxEmbeddedBlockProps = {
 
   /**
    * Drawn instead of the SDK shimmer while the block is loading. Fills the whole place, as the native
-   * placeholder does.
+   * placeholder does. Not drawn by a block that waits hidden — see [loadingStrategy] — until its
+   * content has been shown once.
+   *
+   * When the content arrives with the SDK's reveal, the placeholder fades out over it rather than
+   * vanishing a frame before the content is opaque.
    */
   placeholder?: React.ReactNode
 
@@ -106,12 +123,17 @@ export type MindboxEmbeddedBlockProps = {
    * Drawn instead of collapsing when the block cannot be shown.
    *
    * Applies only to failures: an empty place — one with nothing behind its place system name — always
-   * collapses, so a host cannot fill the space of a block that was never meant to be there.
+   * collapses, so a host cannot fill the space of a block that was never meant to be there. Nor is it
+   * drawn by a block that waits hidden — see [loadingStrategy] — which never took the space: with the
+   * default strategy, a place that has not shown content on this device yet simply stays collapsed
+   * on a failure, and only [onFail] tells.
    */
   error?: React.ReactNode
 
   /**
-   * The content is shown: the block has taken its height and is visible.
+   * The content is shown: the block has taken its height and is visible. A block that waited hidden
+   * is only starting to grow from zero at this moment — a host that measures the block here, or
+   * scrolls to it, sees it still at almost no height until the reveal is over.
    *
    * Delivered once per outcome, not once per lifetime: the same outcome is never repeated, and an
    * outcome that actually changed — a place that filled up after a failure — is delivered again.
@@ -132,8 +154,9 @@ export type MindboxEmbeddedBlockProps = {
   /**
    * The block could not be shown: the SDK had no config or never answered, the page could not be
    * loaded, the content is malformed or the SDK hit an internal error. The block collapses, or keeps
-   * its height and draws [error] when one is given. An empty place is not a failure and arrives in
-   * [onEmpty] instead.
+   * its height and draws [error] when one is given — unless it was waiting hidden, see
+   * [loadingStrategy]: a block that never took its space stays collapsed whatever [error] says. An
+   * empty place is not a failure and arrives in [onEmpty] instead.
    *
    * The reason is for logs and analytics, not for branching: whatever it is, the block has already
    * collapsed or switched to [error]. Compare it with the constants of
@@ -209,7 +232,7 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
   // SDK trims the name before it resolves by it, so a padded name finds its place either way.
   useEffect(() => {
     if (placeSystemName.trim().length === 0) {
-      console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onFail.')
+      console.warn('[MindboxEmbeddedBlock] A block was created without a place system name: there is nothing to resolve by it, so the place collapses and reports onEmpty.')
     }
     if (blockHeight <= 0) {
       console.warn(`[MindboxEmbeddedBlock] The block "${placeSystemName}" was created with height ${height}: it reserves no space, so nothing loads and no outcome is reported.`)
@@ -273,27 +296,58 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
 
   /** The growth of a block that waited hidden: 0 to 1 over the SDK's reveal, 1 at rest. */
   const reveal = useRef(new Animated.Value(1)).current
+  /** The opacity of a host overlay the content is replacing: 1 to 0 over the SDK's reveal. */
+  const overlayFade = useRef(new Animated.Value(1)).current
+  /** The overlay still fading out above the content, if any. */
+  const [fadingOverlay, setFadingOverlay] = useState<Overlay | null>(null)
+  /** Tells a fade that ran its course from one that was interrupted and restarted. */
+  const fadeGeneration = useRef(0)
   const shownAppearance = useRef(appearance)
 
   /**
-   * Takes the block to [next]. The reveal of content into a slot that was closed is the one change
-   * that is animated, and only when the native block says so — it owns that decision, gates
-   * included — for as long as it says; everything else lands at once.
+   * Takes the block to [next]. The arrival of content is the one change that is animated, and only
+   * when the native block says so — it owns that decision, gates included — for as long as it
+   * says: a slot that was closed grows, and a host overlay the content replaces fades out above
+   * it. Everything else lands at once.
    */
   const show = useCallback(
     (next: Appearance, revealDurationMs?: number) => {
-      const opens = shownAppearance.current === 'collapsed' && next === 'content'
+      const previous = shownAppearance.current
+      const duration = revealDurationMs ?? 0
+      const reveals = next === 'content' && duration > 0
       shownAppearance.current = next
       setAppearance(next)
-      if (opens && revealDurationMs != null && revealDurationMs > 0) {
+
+      if (reveals && previous === 'collapsed') {
         reveal.setValue(0)
-        Animated.timing(reveal, { toValue: 1, duration: revealDurationMs, easing: Easing.inOut(Easing.ease), useNativeDriver: false }).start()
+        Animated.timing(reveal, { toValue: 1, duration, easing: REVEAL_EASING, useNativeDriver: false }).start()
       } else {
         reveal.stopAnimation()
         reveal.setValue(1)
       }
+
+      // The native block fades its content in from transparent, and the host's stand-in under it
+      // is clear — so a placeholder or an error screen taken away in the same frame would leave the
+      // screen's background showing through the fade. SwiftUI and Compose fade their stand-ins out
+      // under the content for the same reason; here the overlay lies above the native view, so it
+      // fades out over the same duration instead. Any other change takes it away at once.
+      fadeGeneration.current += 1
+      const generation = fadeGeneration.current
+      overlayFade.stopAnimation()
+      if (reveals && (previous === 'placeholder' || previous === 'error')) {
+        setFadingOverlay(previous)
+        overlayFade.setValue(1)
+        Animated.timing(overlayFade, { toValue: 0, duration, easing: REVEAL_EASING, useNativeDriver: false }).start(({ finished }) => {
+          if (finished && fadeGeneration.current === generation) {
+            setFadingOverlay(null)
+          }
+        })
+      } else {
+        setFadingOverlay(null)
+        overlayFade.setValue(1)
+      }
     },
-    [reveal]
+    [reveal, overlayFade]
   )
 
   const handleAppearanceChange = useCallback<AppearanceChangeHandler>(
@@ -316,7 +370,10 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
     [deliver]
   )
 
-  const overlay = appearance === 'placeholder' ? placeholder : appearance === 'error' ? error : null
+  // The overlay of the current look, or the one still fading out above the content.
+  const shownOverlay: Overlay | null = appearance === 'placeholder' || appearance === 'error' ? appearance : fadingOverlay
+  const overlay = shownOverlay === 'placeholder' ? placeholder : shownOverlay === 'error' ? error : null
+  const isOverlayFading = shownOverlay != null && shownOverlay !== appearance
 
   // The height the layout is given: nothing for a collapsed block, the block's height otherwise —
   // and, while a block that waited hidden is revealed, the part of it the growth has reached.
@@ -340,9 +397,10 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
       <View style={[styles.inside, { height: blockHeight }]} collapsable={false}>
         {IS_SUPPORTED ? <MindboxEmbeddedBlockNativeView style={StyleSheet.absoluteFill} placeSystemName={placeSystemName} blockHeight={blockHeight} timeoutMs={creationTimeoutMs ?? 0} loadingStrategy={creationLoadingStrategy} animatesReveal={creationAnimatesReveal} hasPlaceholder={placeholder != null} hasErrorView={error != null} hostVisible={active} onAppearanceChange={handleAppearanceChange} onBlockOutcome={handleOutcome} /> : null}
         {overlay != null ? (
-          <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+          // An overlay on its way out is a picture, not a surface: touches go through to the content.
+          <Animated.View style={[StyleSheet.absoluteFill, isOverlayFading ? { opacity: overlayFade } : null]} pointerEvents={isOverlayFading ? 'none' : 'box-none'}>
             {overlay}
-          </View>
+          </Animated.View>
         ) : null}
       </View>
     </Animated.View>
