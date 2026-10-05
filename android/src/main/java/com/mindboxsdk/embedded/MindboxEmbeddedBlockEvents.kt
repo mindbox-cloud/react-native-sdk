@@ -18,6 +18,11 @@ internal class AppearanceChangeEvent(
 ) : Event<AppearanceChangeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
 
+    // React Native coalesces same-named events of one view that are still queued when a frame is
+    // dispatched, keeping the last. The JS side reads every change — a reveal is content arriving
+    // where a placeholder or nothing stood — so none may be folded into the next.
+    override fun canCoalesce(): Boolean = false
+
     override fun getEventData(): WritableMap = Arguments.createMap().apply {
         putString("appearance", appearance)
         putBoolean("animated", isRevealAnimated)
@@ -40,6 +45,9 @@ internal class BlockOutcomeEvent(
     private val reason: String?,
 ) : Event<BlockOutcomeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
+
+    // Every outcome is promised to the host once it changes; two in one frame must both arrive.
+    override fun canCoalesce(): Boolean = false
 
     override fun getEventData(): WritableMap = Arguments.createMap().apply {
         putString("outcome", outcome)
