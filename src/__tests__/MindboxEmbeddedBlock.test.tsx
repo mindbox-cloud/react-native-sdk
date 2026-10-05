@@ -6,7 +6,6 @@ import type { ReactTestRenderer } from 'react-test-renderer'
 import { MindboxEmbeddedBlock } from '../MindboxEmbeddedBlock'
 import { MindboxEmbeddedBlockFailReason } from '../MindboxEmbeddedBlockFailReason'
 import { MindboxEmbeddedBlockLoadingStrategy } from '../MindboxEmbeddedBlockLoadingStrategy'
-import { askInitialAppearance } from '../MindboxEmbeddedBlockNativeModule'
 
 jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
   const ReactActual = require('react')
@@ -16,26 +15,6 @@ jest.mock('../MindboxEmbeddedBlockNativeComponent', () => {
     default: (props: unknown) => ReactActual.createElement(RNView, { ...(props as object), testID: 'native-block' }),
   }
 })
-
-jest.mock('../MindboxEmbeddedBlockNativeModule', () => ({
-  askInitialAppearance: jest.fn(),
-}))
-
-const firstLook = askInitialAppearance as jest.MockedFunction<typeof askInitialAppearance>
-
-/** The module never answers: an `automatic` block stays as it started until the native block reports. */
-const holdFirstLook = () => firstLook.mockImplementation(() => new Promise(() => undefined))
-
-const answerFirstLookWith = (word: string) => firstLook.mockResolvedValue(word)
-
-const forgetFirstLook = () => firstLook.mockRejectedValue(new Error('no module'))
-
-/** Lets the module's answer, a promise, reach the component. */
-const settle = async () => {
-  await act(async () => {
-    await Promise.resolve()
-  })
-}
 
 const render = (element: React.ReactElement<any>): ReactTestRenderer => {
   let renderer: ReactTestRenderer
@@ -81,11 +60,6 @@ const insideHeight = (renderer: ReactTestRenderer) => {
 }
 
 const placeholderBlock = (props: Partial<React.ComponentProps<typeof MindboxEmbeddedBlock>> = {}) => <MindboxEmbeddedBlock placeSystemName="stories" height={104} loadingStrategy="placeholder" {...props} />
-
-beforeEach(() => {
-  firstLook.mockReset()
-  holdFirstLook()
-})
 
 describe('MindboxEmbeddedBlock', () => {
   it('takes its height while loading and hands it back when the block collapses', () => {
@@ -379,12 +353,11 @@ describe('MindboxEmbeddedBlock', () => {
   })
 
   describe('the first look', () => {
-    it('gives a placeholder block its height from the first frame and never asks', () => {
+    it('gives a placeholder block its height from the first frame', () => {
       const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
 
       expect(frameHeight(renderer)).toBe(104)
       expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
-      expect(firstLook).not.toHaveBeenCalled()
     })
 
     it('gives a hidden block no slot while the native view inside keeps the full height', () => {
@@ -394,67 +367,27 @@ describe('MindboxEmbeddedBlock', () => {
       expect(insideHeight(renderer)).toBe(104)
       expect(nativeProps(renderer).blockHeight).toBe(104)
       expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
-      expect(firstLook).not.toHaveBeenCalled()
     })
 
-    it('asks the native module once what an automatic block starts with', () => {
-      render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
-
-      expect(firstLook).toHaveBeenCalledTimes(1)
-      expect(firstLook).toHaveBeenCalledWith('stories', 'automatic')
-    })
-
-    it('keeps an automatic block at zero until the answer, then shows the placeholder', async () => {
-      let answer: (word: string) => void = () => undefined
-      firstLook.mockImplementation(() => new Promise<string>((resolve) => (answer = resolve)))
+    it('keeps an automatic block at zero until the native block reports a placeholder, then shows it', () => {
       const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>loading</Text>} />)
 
       expect(frameHeight(renderer)).toBe(0)
+      expect(insideHeight(renderer)).toBe(104)
       expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
 
-      answer('placeholder')
-      await settle()
+      reportAppearance(renderer, 'placeholder')
 
       expect(frameHeight(renderer)).toBe(104)
       expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
     })
 
-    it('keeps an automatic block at zero after an answer of collapsed', async () => {
-      answerFirstLookWith('collapsed')
+    it('keeps an automatic block at zero when the native block reports collapsed', () => {
       const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
 
-      await settle()
+      reportAppearance(renderer, 'collapsed')
 
       expect(frameHeight(renderer)).toBe(0)
-    })
-
-    it('lets the native block outrank a later answer of the module', async () => {
-      let answer: (word: string) => void = () => undefined
-      firstLook.mockImplementation(() => new Promise<string>((resolve) => (answer = resolve)))
-      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
-
-      reportAppearance(renderer, 'content')
-      answer('collapsed')
-      await settle()
-
-      expect(frameHeight(renderer)).toBe(104)
-    })
-
-    it('leaves the block at zero when the module fails, says so once, and waits for the native block', async () => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-      forgetFirstLook()
-      const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} />)
-
-      await settle()
-
-      expect(frameHeight(renderer)).toBe(0)
-      expect(warn).toHaveBeenCalledTimes(1)
-      expect(warn.mock.calls[0][0]).toContain('initialAppearance')
-
-      reportAppearance(renderer, 'placeholder')
-
-      expect(frameHeight(renderer)).toBe(104)
-      warn.mockRestore()
     })
   })
 

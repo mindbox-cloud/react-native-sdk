@@ -6,7 +6,6 @@ import MindboxEmbeddedBlockNativeView from './MindboxEmbeddedBlockNativeComponen
 import type { NativeProps } from './MindboxEmbeddedBlockNativeComponent'
 import { MindboxEmbeddedBlockFailReason } from './MindboxEmbeddedBlockFailReason'
 import { MindboxEmbeddedBlockLoadingStrategy } from './MindboxEmbeddedBlockLoadingStrategy'
-import { askInitialAppearance } from './MindboxEmbeddedBlockNativeModule'
 
 /**
  * The handlers are typed by the props they are handed to, not by a second spelling of the same
@@ -297,41 +296,8 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
     [reveal]
   )
 
-  /**
-   * The native block has reported at least once. From then on the first look asked of the native
-   * module is stale, whenever it arrives.
-   */
-  const hasHeardFromNative = useRef(false)
-
-  // The first look of an `automatic` block is the SDK's memory of the place, which only the native
-  // side has and JS reaches asynchronously. Asked of the module — not the block, which does not
-  // exist yet — once, on mount; until it answers the block takes no space. The native block's own
-  // report, once the native view is built, settles the same question and wins.
-  useEffect(() => {
-    if (!IS_SUPPORTED || creationLoadingStrategy !== MindboxEmbeddedBlockLoadingStrategy.automatic) {
-      return
-    }
-    let isMounted = true
-    askInitialAppearance(placeSystemName, creationLoadingStrategy)
-      .then((word) => {
-        if (!isMounted || hasHeardFromNative.current || !APPEARANCES.includes(word) || word === shownAppearance.current) {
-          return
-        }
-        show(word as Appearance)
-      })
-      .catch((reason: unknown) => {
-        console.warn(`[MindboxEmbeddedBlock] initialAppearance for block "${placeSystemName}" was not answered: ${String(reason)}`)
-      })
-    return () => {
-      isMounted = false
-    }
-    // Once, on mount: the strategy is fixed at creation and the name remounts the component.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   const handleAppearanceChange = useCallback<AppearanceChangeHandler>(
     (event) => {
-      hasHeardFromNative.current = true
       const { appearance: reported, animated, revealDurationMs } = event.nativeEvent
       if (APPEARANCES.includes(reported) && reported !== shownAppearance.current) {
         show(reported as Appearance, animated ? revealDurationMs : undefined)
@@ -387,9 +353,10 @@ const Block = ({ placeSystemName, height, timeoutMs, loadingStrategy = MindboxEm
  * The look a block starts with, before the native block exists to say.
  *
  * `placeholder` and `hidden` are decided by the strategy alone. `automatic` is decided by the SDK's
- * memory of the place, which only the native side has and JS reaches asynchronously, so until it
- * answers an `automatic` block takes no space: a place that has never shown content must not flash
- * reserved space, and one that has shows its placeholder a frame late rather than a frame early.
+ * memory of the place, which only the native side has: the native block reads it as it is built and
+ * reports its first look right away. Until that report an `automatic` block takes no space: a place
+ * that has never shown content must not flash reserved space, and one that has shows its placeholder
+ * a frame late rather than a frame early.
  */
 const firstLook = (strategy: MindboxEmbeddedBlockLoadingStrategy): Appearance => (strategy === MindboxEmbeddedBlockLoadingStrategy.placeholder ? 'placeholder' : 'collapsed')
 

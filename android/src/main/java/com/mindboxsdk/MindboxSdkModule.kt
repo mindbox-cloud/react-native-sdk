@@ -22,9 +22,6 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import cloud.mindbox.mobile_sdk.annotations.InternalMindboxApi
-import cloud.mindbox.mobile_sdk.embedded.MindboxEmbeddedBlockView
-import com.mindboxsdk.embedded.EmbeddedBlockWire
 import org.json.JSONObject
 
 class MindboxSdkModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
@@ -225,37 +222,6 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
       promise.resolve(Mindbox.getSdkVersion())
     } catch (error: Throwable) {
       promise.reject(error)
-    }
-  }
-
-  /**
-   * What an embedded block of this place starts with — the look the native block decides before it
-   * exists, from the SDK's memory of the place. Asked by `MindboxEmbeddedBlock` for an `automatic`
-   * block, since JS reaches the memory only asynchronously; answered with an appearance word.
-   *
-   * Internal to the package: not exported by the JS side.
-   */
-  @OptIn(InternalMindboxApi::class)
-  @ReactMethod
-  fun embeddedBlockInitialAppearance(placeSystemName: String, loadingStrategy: String, promise: Promise) {
-    val strategy = EmbeddedBlockWire.loadingStrategyOf(loadingStrategy)
-    if (strategy == null) {
-      promise.reject("bad_arguments", "embeddedBlockInitialAppearance expects a loading strategy word: automatic, placeholder or hidden")
-      return
-    }
-
-    // On the main thread, as the native wrappers ask it: the memory is read where the blocks run.
-    Handler(reactContext.mainLooper).post {
-      try {
-        val appearance = MindboxEmbeddedBlockView.initialAppearance(
-          context = reactContext.applicationContext,
-          placeSystemName = placeSystemName,
-          loadingStrategy = strategy,
-        )
-        promise.resolve(EmbeddedBlockWire.nameOf(appearance))
-      } catch (error: Throwable) {
-        promise.reject(error)
-      }
     }
   }
 
