@@ -16,8 +16,8 @@ export const MindboxEmbeddedBlockFailReason = {
   /**
    * The content is unavailable because of the environment: the config could not be downloaded and
    * nothing is cached, the SDK gave no answer within the block's waiting budget, the block's page
-   * could not be loaded, or the data the targeting needs could not be fetched — typically a
-   * network problem.
+   * could not be loaded, or — on iOS — the data the targeting needs could not be fetched. Typically
+   * a network problem.
    */
   networkError: 'networkError',
 

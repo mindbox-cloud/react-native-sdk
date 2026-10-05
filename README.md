@@ -50,7 +50,8 @@ import { MindboxEmbeddedBlock } from 'mindbox-sdk';
 The outcome arrives through three callbacks, the same three as in SwiftUI, Compose and Flutter:
 `onLoad` when the content is shown, `onEmpty` when there is nothing to show at the place, and
 `onFail` with a `MindboxEmbeddedBlockFailReason` when the block could not be shown. An empty place
-is a normal outcome, not a breakage, and comes with no reason. A failure's reason — `networkError`
+is a normal outcome, not a breakage, and comes with no reason; a block whose place system name is
+empty is such a place too. A failure's reason — `networkError`
 or `internalError` — is for logs and analytics, not for branching: by the time it arrives the block
 has already collapsed or switched to `error`. A later SDK may add reasons, so keep a fallback when
 matching.
@@ -89,13 +90,23 @@ a screen nobody is looking at.
 
 What the block shows until the SDK has decided what goes into it is `loadingStrategy`, the same
 three choices as in SwiftUI, Compose and Flutter. `automatic` — the default — keeps the block hidden
-until the place has shown content once on this device and puts a placeholder there from then on, so
-the layout does not jump where content is expected and does not flash where it is not.
-`placeholder` takes the space up front, worth naming for a place that always has a campaign behind
-it. `hidden` never takes it until the content is shown: no placeholder, and no `error` on a failure.
+until the place has shown content once on this device and puts a placeholder there from then on:
+nothing flashes where no content is expected, and where it is expected the space is taken as soon
+as the native side has read the place's memory — a frame after the block is mounted, so what stands
+below moves down by the block's height once. `placeholder` takes the space from the first frame,
+worth naming for a place that always has a campaign behind it. `hidden` never takes it until the
+content is shown.
+
+A block that waits hidden — `hidden`, and `automatic` at a place that has not shown content yet —
+draws neither `placeholder` nor `error` until its content has been shown once: a failure keeps it
+collapsed, and only `onFail` tells. With the default strategy that is every place on a fresh
+install, so a host that counts on its `error` screen names `loadingStrategy="placeholder"`.
+
 The content is revealed with the SDK's own animation — it fades in, and a block that started hidden
 grows to its height — unless `animatesReveal` is off; the system's reduced-motion setting turns it
-off as well. Turn it off to animate the block's container yourself in `onLoad`.
+off as well. Turn it off to animate the block's container yourself in `onLoad` — keeping in mind
+that a block that waited hidden is only starting to grow from zero at that moment. A host
+`placeholder` the content replaces fades out above it over the same reveal.
 
 ```tsx
 <MindboxEmbeddedBlock
