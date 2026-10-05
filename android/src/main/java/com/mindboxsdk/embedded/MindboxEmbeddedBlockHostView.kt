@@ -28,6 +28,8 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
     private var placeSystemName: String? = null
     private var timeoutMs: Long? = null
     private var loadingStrategy: MindboxEmbeddedBlockLoadingStrategy = MindboxEmbeddedBlockLoadingStrategy.AUTOMATIC
+    /** A strategy word this SDK did not know, kept to be logged once the block is built and the place is known. */
+    private var unknownLoadingStrategyWord: String? = null
     private var animatesReveal: Boolean = true
     private var hostVisible: Boolean = true
     private var hasPlaceholder: Boolean = false
@@ -89,19 +91,16 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
     }
 
     // Fixed at creation, as the timeout is: the JS side warns the host about a later value rather
-    // than applying it, and the native block takes both only through its constructor.
+    // than applying it, and the native block takes both only through its constructor. A word this
+    // SDK does not know is read as `automatic` and logged when the block is built — Fabric sets the
+    // props in no fixed order, and here the place name may not have arrived yet.
     fun setLoadingStrategy(word: String?) {
         if (blockView != null) {
             return
         }
 
         val strategy = EmbeddedBlockWire.loadingStrategyOf(word)
-        if (strategy == null) {
-            Mindbox.writeLog(
-                message = "[EmbeddedBlock] A React Native block for place '$placeSystemName' was given a loading strategy this SDK does not know ('$word') and starts as automatic",
-                logLevel = Level.ERROR,
-            )
-        }
+        unknownLoadingStrategyWord = if (strategy == null) word else null
         loadingStrategy = strategy ?: MindboxEmbeddedBlockLoadingStrategy.AUTOMATIC
     }
 
@@ -157,6 +156,12 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         if (place.isEmpty()) {
             Mindbox.writeLog(
                 message = "[EmbeddedBlock] A React Native block was created without a place system name and has nothing to resolve",
+                logLevel = Level.ERROR,
+            )
+        }
+        unknownLoadingStrategyWord?.let { word ->
+            Mindbox.writeLog(
+                message = "[EmbeddedBlock] A React Native block for place '$place' was given a loading strategy this SDK does not know ('$word') and starts as automatic",
                 logLevel = Level.ERROR,
             )
         }
