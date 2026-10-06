@@ -47,10 +47,19 @@ import { MindboxEmbeddedBlock } from 'mindbox-sdk';
 <MindboxEmbeddedBlock placeSystemName="main-screen-top" height={104} />
 ```
 
-Both outcomes can be customized, the same way as in SwiftUI, Compose and Flutter: `placeholder`
+The outcome arrives through three callbacks, the same three as in SwiftUI, Compose and Flutter:
+`onLoad` when the content is shown, `onEmpty` when there is nothing to show at the place, and
+`onFail` with a `MindboxEmbeddedBlockFailReason` when the block could not be shown. An empty place
+is a normal outcome, not a breakage, and comes with no reason; a block whose place system name is
+empty is such a place too. A failure's reason — `networkError`
+or `internalError` — is for logs and analytics, not for branching: by the time it arrives the block
+has already collapsed or switched to `error`. A later SDK may add reasons, so keep a fallback when
+matching.
+
+Both looks can be customized, the same way as in SwiftUI, Compose and Flutter: `placeholder`
 replaces the stock loading shimmer, and `error` opts into showing a failure instead of collapsing.
 An empty place always collapses — a host cannot fill the space of a block that was never meant to
-be there. `onLoad` and `onFail` report how the load ended.
+be there.
 
 ```tsx
 <MindboxEmbeddedBlock
@@ -58,7 +67,8 @@ be there. `onLoad` and `onFail` report how the load ended.
   height={104}
   placeholder={<StoriesSkeleton />}
   error={<StoriesUnavailable />}
-  onFail={() => setShowStoriesSection(false)}
+  onEmpty={() => setShowStoriesSection(false)}
+  onFail={(reason) => console.log(`stories failed: ${reason}`)}
 />
 ```
 
@@ -78,10 +88,43 @@ a screen nobody is looking at.
 />
 ```
 
+What the block shows until the SDK has decided what goes into it is `loadingStrategy`, the same
+three choices as in SwiftUI, Compose and Flutter. `automatic` — the default — keeps the block hidden
+until the place has shown content once on this device and puts a placeholder there from then on:
+nothing flashes where no content is expected, and where it is expected the space is taken as soon
+as the native side has read the place's memory — a frame after the block is mounted, so what stands
+below moves down by the block's height once. `placeholder` takes the space from the first frame,
+worth naming for a place that always has a campaign behind it. `hidden` never takes it until the
+content is shown.
+
+A block that waits hidden — `hidden`, and `automatic` at a place that has not shown content yet —
+draws neither `placeholder` nor `error` until its content has been shown once: a failure keeps it
+collapsed, and only `onFail` tells. With the default strategy that is every place on a fresh
+install, so a host that counts on its `error` screen names `loadingStrategy="placeholder"`.
+
+The content is revealed with the SDK's own animation — it fades in, and a block that started hidden
+grows to its height — unless `animatesReveal` is off; the system's reduced-motion setting turns it
+off as well. Turn it off to animate the block's container yourself in `onLoad` — keeping in mind
+that a block that waited hidden is only starting to grow from zero at that moment. A host
+`placeholder` the content replaces fades out above it over the same reveal.
+
+```tsx
+<MindboxEmbeddedBlock
+  placeSystemName="stories"
+  height={104}
+  loadingStrategy="placeholder"
+  animatesReveal={false}
+/>
+```
+
 `height` is live: a new value resizes a block already on screen in place — the same content, no
 reload. It has to be positive, though: a block given no space to occupy is never loaded and reports
-no outcome. `timeoutMs` is fixed when the block is created — a new value is ignored with a warning;
-give the component a new `key` to load a block on a new budget.
+no outcome. `timeoutMs`, `loadingStrategy` and `animatesReveal` are fixed when the block is created
+— a new value is ignored with a warning; give the component a new `key` to build a block anew.
+
+Available on iOS and Android. On any other platform the block collapses right away and reports
+`onFail` with `internalError`, so a layout that hides its section on failure behaves the same
+everywhere.
 
 ### Push Notifications
 

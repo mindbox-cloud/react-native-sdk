@@ -25,13 +25,11 @@ internal class MindboxEmbeddedBlockViewManager :
 
     override fun addEventEmitters(reactContext: ThemedReactContext, view: MindboxEmbeddedBlockHostView) {
         super.addEventEmitters(reactContext, view)
-        view.onAppearance = { appearance ->
-            dispatch(view) { surfaceId, tag -> AppearanceChangeEvent(surfaceId, tag, appearance) }
+        view.onAppearance = { appearance, isRevealAnimated, revealDurationMs ->
+            dispatch(view) { surfaceId, tag -> AppearanceChangeEvent(surfaceId, tag, appearance, isRevealAnimated, revealDurationMs) }
         }
-        view.onOutcome = { outcome ->
-            dispatch(view) { surfaceId, tag ->
-                if (outcome == OUTCOME_LOAD) BlockLoadEvent(surfaceId, tag) else BlockFailEvent(surfaceId, tag)
-            }
+        view.onOutcome = { outcome, reason ->
+            dispatch(view) { surfaceId, tag -> BlockOutcomeEvent(surfaceId, tag, outcome, reason) }
         }
     }
 
@@ -60,6 +58,14 @@ internal class MindboxEmbeddedBlockViewManager :
         view.setTimeoutMs(value)
     }
 
+    override fun setLoadingStrategy(view: MindboxEmbeddedBlockHostView, value: String?) {
+        view.setLoadingStrategy(value)
+    }
+
+    override fun setAnimatesReveal(view: MindboxEmbeddedBlockHostView, value: Boolean) {
+        view.setAnimatesReveal(value)
+    }
+
     override fun setHasPlaceholder(view: MindboxEmbeddedBlockHostView, value: Boolean) {
         view.setHasPlaceholder(value)
     }
@@ -74,8 +80,7 @@ internal class MindboxEmbeddedBlockViewManager :
 
     override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> = mutableMapOf(
         AppearanceChangeEvent.EVENT_NAME to mutableMapOf("registrationName" to "onAppearanceChange"),
-        BlockLoadEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockLoad"),
-        BlockFailEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockFail"),
+        BlockOutcomeEvent.EVENT_NAME to mutableMapOf("registrationName" to "onBlockOutcome"),
     )
 
     private inline fun dispatch(
@@ -89,6 +94,5 @@ internal class MindboxEmbeddedBlockViewManager :
 
     internal companion object {
         const val NAME = "MindboxEmbeddedBlockView"
-        const val OUTCOME_LOAD = "load"
     }
 }

@@ -1,7 +1,7 @@
 // The embedded block on iOS, in both renderers.
 //
 // The block itself lives in `MindboxEmbeddedBlockHost` — plain UIKit, no React in it — and each
-// renderer only carries props to it and its two signals back. Fabric does that through a component
+// renderer only carries props to it and its two signals back — the look and the outcome. Fabric does that through a component
 // view and a C++ event emitter; the old renderer through a view manager and direct event blocks.
 // The order of the calls into the host is kept the same in both, so a block behaves the same way
 // whichever renderer the host app runs.
@@ -13,9 +13,6 @@
 #else
 #error "MindboxSdk-Swift.h not found. Ensure Swift sources are included in the MindboxSdk pod target."
 #endif
-
-// The outcome words the Swift host reports. A contract with the host, not derived from anything.
-static NSString *const MindboxEmbeddedBlockOutcomeLoad = @"load";
 
 #ifdef RCT_NEW_ARCH_ENABLED
 
@@ -37,12 +34,11 @@ using namespace facebook::react;
     std::string _placeSystemName;
     CGFloat _blockHeight;
     double _timeoutMs;
+    std::string _loadingStrategy;
+    BOOL _animatesReveal;
     BOOL _hasPlaceholder;
     BOOL _hasErrorView;
     BOOL _isHostVisible;
-
-    NSString *_pendingAppearance;
-    NSString *_pendingOutcome;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -61,6 +57,7 @@ using namespace facebook::react;
         static const auto defaultProps = std::make_shared<const MindboxEmbeddedBlockViewProps>();
         _props = defaultProps;
         _isHostVisible = YES;
+        _animatesReveal = YES;
     }
 
     return self;
@@ -82,6 +79,8 @@ using namespace facebook::react;
 
     _blockHeight = next.blockHeight;
     _timeoutMs = next.timeoutMs;
+    _loadingStrategy = next.loadingStrategy;
+    _animatesReveal = next.animatesReveal;
     _hasPlaceholder = next.hasPlaceholder;
     _hasErrorView = next.hasErrorView;
     _isHostVisible = next.hostVisible;
@@ -102,38 +101,26 @@ using namespace facebook::react;
         return;
     }
 
-    _host = [[MindboxEmbeddedBlockHost alloc] initWithPlaceSystemName:@(_placeSystemName.c_str())
-                                                              height:_blockHeight
-                                                           timeoutMs:_timeoutMs];
+    // The callbacks go into the host's initializer: the block reports its first look the moment the
+    // host subscribes to it, and the event emitter is already in place here — Fabric sets it before
+    // `finalizeUpdates:` on every mount — so that first report reaches JS.
+    __weak MindboxEmbeddedBlockViewComponentView *weakSelf = self;
+    _host = [[MindboxEmbeddedBlockHost alloc]
+        initWithPlaceSystemName:@(_placeSystemName.c_str())
+                         height:_blockHeight
+                      timeoutMs:_timeoutMs
+                loadingStrategy:@(_loadingStrategy.c_str())
+                 animatesReveal:_animatesReveal
+                   onAppearance:^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
+                       [weakSelf emitAppearance:appearance animated:animated revealDurationMs:revealDurationMs];
+                   }
+                      onOutcome:^(NSString *outcome, NSString *_Nullable reason) {
+                          [weakSelf emitOutcome:outcome reason:reason];
+                      }];
     [_host setStandInsWithHasPlaceholder:_hasPlaceholder hasErrorView:_hasErrorView];
     [_host setHostVisible:_isHostVisible];
 
-    __weak MindboxEmbeddedBlockViewComponentView *weakSelf = self;
-    _host.onAppearance = ^(NSString *appearance) {
-        [weakSelf emitAppearance:appearance];
-    };
-    _host.onOutcome = ^(NSString *outcome) {
-        [weakSelf emitOutcome:outcome];
-    };
-
     self.contentView = _host.view;
-}
-
-- (void)updateEventEmitter:(const EventEmitter::Shared &)eventEmitter
-{
-    [super updateEventEmitter:eventEmitter];
-
-    if (_pendingAppearance != nil) {
-        NSString *appearance = _pendingAppearance;
-        _pendingAppearance = nil;
-        [self emitAppearance:appearance];
-    }
-
-    if (_pendingOutcome != nil) {
-        NSString *outcome = _pendingOutcome;
-        _pendingOutcome = nil;
-        [self emitOutcome:outcome];
-    }
 }
 
 - (void)invalidate
@@ -142,30 +129,31 @@ using namespace facebook::react;
     _placeSystemName = "";
 }
 
-- (void)emitAppearance:(NSString *)appearance
+// The emitter is set before the host exists and lives as long as the view does, so the guards
+// below state an invariant rather than wait for anything: a report with no emitter has nobody to
+// go to and is dropped.
+- (void)emitAppearance:(NSString *)appearance animated:(BOOL)animated revealDurationMs:(NSInteger)revealDurationMs
 {
     if (!_eventEmitter) {
-        _pendingAppearance = appearance;
         return;
     }
 
     std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter)
-        ->onAppearanceChange({.appearance = std::string([appearance UTF8String])});
+        ->onAppearanceChange({.appearance = std::string([appearance UTF8String]),
+                              .animated = static_cast<bool>(animated),
+                              .revealDurationMs = static_cast<int>(animated ? revealDurationMs : 0)});
 }
 
-- (void)emitOutcome:(NSString *)outcome
+- (void)emitOutcome:(NSString *)outcome reason:(NSString *_Nullable)reason
 {
     if (!_eventEmitter) {
-        _pendingOutcome = outcome;
         return;
     }
 
-    const auto emitter = std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter);
-    if ([outcome isEqualToString:MindboxEmbeddedBlockOutcomeLoad]) {
-        emitter->onBlockLoad({});
-    } else {
-        emitter->onBlockFail({});
-    }
+    // The payload has every field: a reason that is not there is an empty string.
+    std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter)
+        ->onBlockOutcome({.outcome = std::string([outcome UTF8String]),
+                          .reason = std::string([(reason ?: @"") UTF8String])});
 }
 
 - (void)dropHost
@@ -177,8 +165,6 @@ using namespace facebook::react;
     [_host tearDown];
     self.contentView = nil;
     _host = nil;
-    _pendingAppearance = nil;
-    _pendingOutcome = nil;
 }
 
 @end
@@ -210,13 +196,14 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 @property (nonatomic, copy) NSString *placeSystemName;
 @property (nonatomic, assign) CGFloat blockHeight;
 @property (nonatomic, assign) double timeoutMs;
+@property (nonatomic, copy) NSString *loadingStrategy;
+@property (nonatomic, assign) BOOL animatesReveal;
 @property (nonatomic, assign) BOOL hasPlaceholder;
 @property (nonatomic, assign) BOOL hasErrorView;
 @property (nonatomic, assign) BOOL hostVisible;
 
 @property (nonatomic, copy) RCTDirectEventBlock onAppearanceChange;
-@property (nonatomic, copy) RCTDirectEventBlock onBlockLoad;
-@property (nonatomic, copy) RCTDirectEventBlock onBlockFail;
+@property (nonatomic, copy) RCTDirectEventBlock onBlockOutcome;
 
 @end
 
@@ -230,6 +217,7 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 {
     if (self = [super initWithFrame:frame]) {
         _hostVisible = YES;
+        _animatesReveal = YES;
     }
 
     return self;
@@ -278,29 +266,37 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
     // JS side warns the host about a new value rather than applying it.
     _builtTimeoutMs = _timeoutMs;
 
-    _host = [[MindboxEmbeddedBlockHost alloc] initWithPlaceSystemName:_builtPlaceSystemName
-                                                              height:_blockHeight
-                                                           timeoutMs:_builtTimeoutMs];
+    // The strategy and the animation flag are taken once as well: the native block takes them only
+    // through its initializer.
+    // The callbacks go into the host's initializer, as under Fabric: the block reports its first
+    // look the moment the host subscribes to it. The event blocks are props, set before
+    // `didSetProps:` and before any layout pass, so they are in place whichever of the two builds.
+    __weak MindboxEmbeddedBlockPaperView *weakSelf = self;
+    _host = [[MindboxEmbeddedBlockHost alloc]
+        initWithPlaceSystemName:_builtPlaceSystemName
+                         height:_blockHeight
+                      timeoutMs:_builtTimeoutMs
+                loadingStrategy:_loadingStrategy ?: @""
+                 animatesReveal:_animatesReveal
+                   onAppearance:^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
+                       MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
+                       if (strongSelf.onAppearanceChange != nil) {
+                           strongSelf.onAppearanceChange(@{
+                               @"appearance" : appearance,
+                               @"animated" : @(animated),
+                               @"revealDurationMs" : @(animated ? revealDurationMs : 0),
+                           });
+                       }
+                   }
+                      onOutcome:^(NSString *outcome, NSString *_Nullable reason) {
+                          MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
+                          if (strongSelf.onBlockOutcome != nil) {
+                              // The same shape as under Fabric: every field present, a missing reason is empty.
+                              strongSelf.onBlockOutcome(@{@"outcome" : outcome, @"reason" : reason ?: @""});
+                          }
+                      }];
     [_host setStandInsWithHasPlaceholder:_hasPlaceholder hasErrorView:_hasErrorView];
     [_host setHostVisible:_hostVisible];
-
-    __weak MindboxEmbeddedBlockPaperView *weakSelf = self;
-    _host.onAppearance = ^(NSString *appearance) {
-        MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
-        if (strongSelf.onAppearanceChange != nil) {
-            strongSelf.onAppearanceChange(@{@"appearance" : appearance});
-        }
-    };
-    _host.onOutcome = ^(NSString *outcome) {
-        MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
-        if ([outcome isEqualToString:MindboxEmbeddedBlockOutcomeLoad]) {
-            if (strongSelf.onBlockLoad != nil) {
-                strongSelf.onBlockLoad(@{});
-            }
-        } else if (strongSelf.onBlockFail != nil) {
-            strongSelf.onBlockFail(@{});
-        }
-    };
 
     UIView *blockView = _host.view;
     blockView.frame = self.bounds;
@@ -341,13 +337,14 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(placeSystemName, NSString)
 RCT_EXPORT_VIEW_PROPERTY(blockHeight, CGFloat)
 RCT_EXPORT_VIEW_PROPERTY(timeoutMs, double)
+RCT_EXPORT_VIEW_PROPERTY(loadingStrategy, NSString)
+RCT_EXPORT_VIEW_PROPERTY(animatesReveal, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hasPlaceholder, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hasErrorView, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(hostVisible, BOOL)
 
 RCT_EXPORT_VIEW_PROPERTY(onAppearanceChange, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlockLoad, RCTDirectEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onBlockFail, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onBlockOutcome, RCTDirectEventBlock)
 
 @end
 
