@@ -19,7 +19,9 @@ export type InitializationData = {
    * This is the only supported way to opt out: removing the AD_ID permission affects the whole app
    * and does not stop OAID collection. The SDK never requests a runtime permission for it, and
    * RuStore provides no tracking identifier. The value is applied on every initialization, so it
-   * can be turned on or off in a later app version.
+   * can be turned on or off in a later app version. A changed value takes effect once initialize
+   * has run in that version; native work started earlier (push services set up at app start,
+   * background token refresh) still uses the previous value.
    * Default value is false (the identifier is collected).
    */
   disableTrackingIds?: boolean
