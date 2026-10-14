@@ -6,6 +6,7 @@ import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.Event
 import com.facebook.react.viewmanagers.MindboxEmbeddedBlockViewManagerDelegate
 import com.facebook.react.viewmanagers.MindboxEmbeddedBlockViewManagerInterface
@@ -48,32 +49,40 @@ internal class MindboxEmbeddedBlockViewManager :
         view: MindboxEmbeddedBlockHostView,
     ): MindboxEmbeddedBlockHostView? = null
 
+    @ReactProp(name = "placeSystemName")
     override fun setPlaceSystemName(view: MindboxEmbeddedBlockHostView, value: String?) {
         view.setPlaceSystemName(value)
     }
 
+    @ReactProp(name = "blockHeight", defaultDouble = 0.0)
     override fun setBlockHeight(view: MindboxEmbeddedBlockHostView, value: Double) = Unit
 
+    @ReactProp(name = "timeoutMs", defaultDouble = 0.0)
     override fun setTimeoutMs(view: MindboxEmbeddedBlockHostView, value: Double) {
         view.setTimeoutMs(value)
     }
 
+    @ReactProp(name = "loadingStrategy")
     override fun setLoadingStrategy(view: MindboxEmbeddedBlockHostView, value: String?) {
         view.setLoadingStrategy(value)
     }
 
+    @ReactProp(name = "animatesReveal", defaultBoolean = true)
     override fun setAnimatesReveal(view: MindboxEmbeddedBlockHostView, value: Boolean) {
         view.setAnimatesReveal(value)
     }
 
+    @ReactProp(name = "hasPlaceholder", defaultBoolean = false)
     override fun setHasPlaceholder(view: MindboxEmbeddedBlockHostView, value: Boolean) {
         view.setHasPlaceholder(value)
     }
 
+    @ReactProp(name = "hasErrorView", defaultBoolean = false)
     override fun setHasErrorView(view: MindboxEmbeddedBlockHostView, value: Boolean) {
         view.setHasErrorView(value)
     }
 
+    @ReactProp(name = "hostVisible", defaultBoolean = true)
     override fun setHostVisible(view: MindboxEmbeddedBlockHostView, value: Boolean) {
         view.setHostVisible(value)
     }
