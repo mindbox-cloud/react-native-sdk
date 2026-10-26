@@ -1,17 +1,4 @@
-/**
- * `children` on the React Native views this package draws with.
- *
- * `@types/react-native@0.62.13` — the version this repo pins — describes `ViewProps` and
- * `TextProps` without `children`, so nesting anything inside a `<View>` is an error. It never came
- * up before: until the embedded block there was no JSX under `src/` at all.
- *
- * This is an augmentation, not a redeclaration: the top-level `export {}` is what makes the file a
- * module, and without it the `declare module` below would replace React Native's typings instead of
- * adding to them.
- *
- * Delete this file together with the `@types/react-native` dependency, once the pinned React Native
- * is one that ships its own TypeScript types.
- */
+// `@types/react-native` 0.62.13 lacks `children` on `ViewProps` and `TextProps`; delete this file with that dependency.
 
 export {}
 

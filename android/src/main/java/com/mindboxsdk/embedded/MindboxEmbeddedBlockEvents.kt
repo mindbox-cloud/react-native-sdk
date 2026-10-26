@@ -4,11 +4,6 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.Event
 
-/**
- * The look the native block shows. `animated` is `true` for the one change that is the SDK's
- * reveal of content — the block owns that decision, gates included — and `revealDurationMs` is
- * how long it takes; `false` and `0` for every other change.
- */
 internal class AppearanceChangeEvent(
     surfaceId: Int,
     viewTag: Int,
@@ -18,9 +13,7 @@ internal class AppearanceChangeEvent(
 ) : Event<AppearanceChangeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
 
-    // React Native coalesces same-named events of one view that are still queued when a frame is
-    // dispatched, keeping the last. The JS side reads every change — a reveal is content arriving
-    // where a placeholder or nothing stood — so none may be folded into the next.
+    // React Native keeps only the last queued event of a name per view; JS needs every look change.
     override fun canCoalesce(): Boolean = false
 
     override fun getEventData(): WritableMap = Arguments.createMap().apply {
@@ -34,10 +27,6 @@ internal class AppearanceChangeEvent(
     }
 }
 
-/**
- * How the load ended: `load`, `empty` or `fail`, the reason going with a failure. An event payload
- * has every field, so a missing reason is spelled as an empty string.
- */
 internal class BlockOutcomeEvent(
     surfaceId: Int,
     viewTag: Int,
@@ -46,7 +35,7 @@ internal class BlockOutcomeEvent(
 ) : Event<BlockOutcomeEvent>(surfaceId, viewTag) {
     override fun getEventName(): String = EVENT_NAME
 
-    // Every outcome is promised to the host once it changes; two in one frame must both arrive.
+    // React Native keeps only the last queued event of a name per view; JS needs every outcome.
     override fun canCoalesce(): Boolean = false
 
     override fun getEventData(): WritableMap = Arguments.createMap().apply {

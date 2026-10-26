@@ -4,12 +4,8 @@ import MindboxLogger
 
 @objc(MindboxEmbeddedBlockHost)
 public final class MindboxEmbeddedBlockHost: NSObject {
-    /// The appearance word, whether this change is the SDK's animated reveal, and how long it takes.
-    /// Given at creation and never replaced: the block reports its first look the moment it is
-    /// observed, and a callback wired afterwards would miss it.
     private let onAppearance: (NSString, Bool, Int) -> Void
 
-    /// The outcome word and, for a failure, the reason's raw value.
     private let onOutcome: (NSString, NSString?) -> Void
 
     @objc public var view: UIView { blockView }
@@ -17,14 +13,6 @@ public final class MindboxEmbeddedBlockHost: NSObject {
     private let blockView: MindboxEmbeddedBlockView
     private var isTornDown = false
 
-    /// `loadingStrategy` is a word — `automatic`, `placeholder` or `hidden`; a word this SDK does not
-    /// know is logged and read as `automatic`. Both it and `animatesReveal` are fixed here, as the
-    /// native block takes them only through its initializer.
-    ///
-    /// The callbacks are taken here too, not assigned later: subscribing to the block hands out its
-    /// current look at once — for an `automatic` block, the place's memory — and that first report
-    /// is the one JS has no other way to learn. Android wires its emitters before the block exists
-    /// for the same reason.
     @objc public init(placeSystemName: String,
                       height: CGFloat,
                       timeoutMs: Double,
@@ -55,12 +43,7 @@ public final class MindboxEmbeddedBlockHost: NSObject {
         }
 
         blockView.delegate = self
-        // `isRevealAnimated` is read while the observer runs: the block sets it right before it
-        // calls, for that one call. The block owns the gates — `animatesReveal`, a window to animate
-        // in, Reduce Motion off, "only the arrival of content" — and this host only passes its word
-        // on; the growth of a block that waited hidden is then the JS side's.
-        // The observer fires synchronously with the current look, so this comes last in `init`,
-        // with both callbacks already in place.
+        // Last in init: the observer reports the current look synchronously, and JS learns the first look only from it.
         blockView.setAppearanceObserver { [weak self] appearance in
             guard let self, !self.isTornDown else { return }
             self.onAppearance(EmbeddedBlockWire.name(of: appearance) as NSString,
@@ -108,8 +91,6 @@ public final class MindboxEmbeddedBlockHost: NSObject {
     }
 }
 
-// All three methods are implemented on purpose: the protocol gives each an empty default, so a
-// host that still spelled the old `DidFail(_:)` would compile and silently hear no failure.
 extension MindboxEmbeddedBlockHost: MindboxEmbeddedBlockViewDelegate {
     public func mindboxEmbeddedBlockViewDidLoad(_ blockView: MindboxEmbeddedBlockView) {
         guard !isTornDown else { return }

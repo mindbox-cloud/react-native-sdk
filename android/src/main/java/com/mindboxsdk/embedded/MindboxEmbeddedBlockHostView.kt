@@ -18,17 +18,14 @@ import cloud.mindbox.mobile_sdk.logger.Level
 
 @OptIn(InternalMindboxApi::class)
 internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(context) {
-    /** The appearance word, whether this change is the SDK's animated reveal, and how long it takes. */
     var onAppearance: ((appearance: String, isRevealAnimated: Boolean, revealDurationMs: Int) -> Unit)? = null
 
-    /** The outcome word and, for a failure, the reason's raw value. */
     var onOutcome: ((outcome: String, reason: String?) -> Unit)? = null
 
     private var blockView: MindboxEmbeddedBlockView? = null
     private var placeSystemName: String? = null
     private var timeoutMs: Long? = null
     private var loadingStrategy: MindboxEmbeddedBlockLoadingStrategy = MindboxEmbeddedBlockLoadingStrategy.AUTOMATIC
-    /** A strategy word this SDK did not know, kept to be logged once the block is built and the place is known. */
     private var unknownLoadingStrategyWord: String? = null
     private var animatesReveal: Boolean = true
     private var hostVisible: Boolean = true
@@ -90,10 +87,7 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
         }
     }
 
-    // Fixed at creation, as the timeout is: the JS side warns the host about a later value rather
-    // than applying it, and the native block takes both only through its constructor. A word this
-    // SDK does not know is read as `automatic` and logged when the block is built — Fabric sets the
-    // props in no fixed order, and here the place name may not have arrived yet.
+    // An unknown word is logged once the block is built: Fabric sets props in no fixed order.
     fun setLoadingStrategy(word: String?) {
         if (blockView != null) {
             return
@@ -192,10 +186,6 @@ internal class MindboxEmbeddedBlockHostView(context: Context) : FrameLayout(cont
                 }
             },
         )
-        // `isRevealAnimated` is read while the observer runs: the block sets it right before it
-        // calls, for that one call. The block owns the gates — `animatesReveal`, a window to animate
-        // in, animations enabled on the device, "only the arrival of content" — and this host only
-        // passes its word on; the growth of a block that waited hidden is then the JS side's.
         block.setAppearanceObserver { appearance ->
             onAppearance?.invoke(
                 EmbeddedBlockWire.nameOf(appearance),
