@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Changes
-- **Breaking since `2.16.0-rc`:** `onFail` of `MindboxEmbeddedBlock` reports failures only; a place with nothing to show arrives in the new `onEmpty`. A host that hid its section in `onFail` — as the previous README showed — moves that to `onEmpty`.
+- **Breaking since `2.16.0-rc`:** `onFail` of `MindboxEmbeddedBlock` reports failures only; a place with nothing to show arrives in the new `onEmpty`.
 - **Breaking since `2.16.0-rc`:** the `MindboxEmbeddedBlockFailure` type is removed; `onFail` receives a `MindboxEmbeddedBlockFailReason` string instead of an empty object.
 - **Breaking since `2.16.0-rc`:** `MindboxEmbeddedBlock` starts by `loadingStrategy="automatic"` — hidden until the place has shown content once on this device — instead of always showing a placeholder; `loadingStrategy="placeholder"` restores the previous look.
 - Add `MindboxEmbeddedBlock` — an embedded block for a place from the admin panel, a native component for both the old and the new architecture.
