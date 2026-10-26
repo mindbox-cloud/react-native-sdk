@@ -40,21 +40,18 @@ const reportAppearance = (renderer: ReactTestRenderer, appearance: string, revea
   })
 }
 
-/** The native block's report of how the load ended; an empty reason is what the event carries when there is none. */
 const reportOutcome = (renderer: ReactTestRenderer, outcome: string, reason = '') => {
   act(() => {
     nativeProps(renderer).onBlockOutcome({ nativeEvent: { outcome, reason } })
   })
 }
 
-/** The height the layout is given: the slot the block stands in. */
-const frameHeight = (renderer: ReactTestRenderer) => {
+const slotHeight = (renderer: ReactTestRenderer) => {
   const frame = renderer.root.findAllByType(asType(View))[0]
   return StyleSheet.flatten(frame.props.style).height
 }
 
-/** The height of the block inside the slot — what the native view is laid out in. */
-const insideHeight = (renderer: ReactTestRenderer) => {
+const nativeBlockHeight = (renderer: ReactTestRenderer) => {
   const inside = renderer.root.findAllByType(asType(View))[1]
   return StyleSheet.flatten(inside.props.style).height
 }
@@ -65,11 +62,11 @@ describe('MindboxEmbeddedBlock', () => {
   it('takes its height while loading and hands it back when the block collapses', () => {
     const renderer = render(placeholderBlock())
 
-    expect(frameHeight(renderer)).toBe(104)
+    expect(slotHeight(renderer)).toBe(104)
 
     reportAppearance(renderer, 'collapsed')
 
-    expect(frameHeight(renderer)).toBe(0)
+    expect(slotHeight(renderer)).toBe(0)
   })
 
   it('resizes a live block in place when the height changes', () => {
@@ -77,8 +74,8 @@ describe('MindboxEmbeddedBlock', () => {
 
     update(renderer, placeholderBlock({ height: 80 }))
 
-    expect(frameHeight(renderer)).toBe(80)
-    expect(insideHeight(renderer)).toBe(80)
+    expect(slotHeight(renderer)).toBe(80)
+    expect(nativeBlockHeight(renderer)).toBe(80)
     expect(nativeProps(renderer).blockHeight).toBe(80)
   })
 
@@ -122,13 +119,12 @@ describe('MindboxEmbeddedBlock', () => {
 
     expect(warn.mock.calls[0][0]).toContain('reports onEmpty')
 
-    // What the native blocks report for a name of nothing: a place with nothing behind it.
     reportAppearance(renderer, 'collapsed')
     reportOutcome(renderer, 'empty')
 
     expect(onEmpty).toHaveBeenCalledTimes(1)
     expect(onFail).not.toHaveBeenCalled()
-    expect(frameHeight(renderer)).toBe(0)
+    expect(slotHeight(renderer)).toBe(0)
     warn.mockRestore()
   })
 
@@ -142,7 +138,7 @@ describe('MindboxEmbeddedBlock', () => {
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0][0]).toContain('reserves no space')
-    expect(frameHeight(renderer)).toBe(0)
+    expect(slotHeight(renderer)).toBe(0)
     expect(nativeProps(renderer).blockHeight).toBe(0)
     warn.mockRestore()
   })
@@ -225,7 +221,7 @@ describe('MindboxEmbeddedBlock', () => {
       expect(onEmpty).toHaveBeenCalledTimes(1)
       expect(onEmpty).toHaveBeenCalledWith()
       expect(onFail).not.toHaveBeenCalled()
-      expect(frameHeight(renderer)).toBe(0)
+      expect(slotHeight(renderer)).toBe(0)
     })
 
     it('hands the failure reason to onFail as the native block spelled it', () => {
@@ -310,7 +306,7 @@ describe('MindboxEmbeddedBlock', () => {
     reportAppearance(renderer, 'collapsed')
     reportAppearance(renderer, 'sideways')
 
-    expect(frameHeight(renderer)).toBe(0)
+    expect(slotHeight(renderer)).toBe(0)
   })
 
   it('builds a different place as a different block, with nothing remembered', () => {
@@ -360,15 +356,15 @@ describe('MindboxEmbeddedBlock', () => {
     it('gives a placeholder block its height from the first frame', () => {
       const renderer = render(placeholderBlock({ placeholder: <Text>loading</Text> }))
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
       expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
     })
 
     it('gives a hidden block no slot while the native view inside keeps the full height', () => {
       const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} loadingStrategy="hidden" placeholder={<Text>loading</Text>} />)
 
-      expect(frameHeight(renderer)).toBe(0)
-      expect(insideHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(0)
+      expect(nativeBlockHeight(renderer)).toBe(104)
       expect(nativeProps(renderer).blockHeight).toBe(104)
       expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
     })
@@ -376,13 +372,13 @@ describe('MindboxEmbeddedBlock', () => {
     it('keeps an automatic block at zero until the native block reports a placeholder, then shows it', () => {
       const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} placeholder={<Text>loading</Text>} />)
 
-      expect(frameHeight(renderer)).toBe(0)
-      expect(insideHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(0)
+      expect(nativeBlockHeight(renderer)).toBe(104)
       expect(renderer.root.findAllByType(asType(Text))).toHaveLength(0)
 
       reportAppearance(renderer, 'placeholder')
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
       expect(renderer.root.findByType(asType(Text)).props.children).toBe('loading')
     })
 
@@ -391,7 +387,7 @@ describe('MindboxEmbeddedBlock', () => {
 
       reportAppearance(renderer, 'collapsed')
 
-      expect(frameHeight(renderer)).toBe(0)
+      expect(slotHeight(renderer)).toBe(0)
     })
   })
 
@@ -417,16 +413,16 @@ describe('MindboxEmbeddedBlock', () => {
 
       reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
 
-      expect(frameHeight(renderer)).toBe(0)
+      expect(slotHeight(renderer)).toBe(0)
 
       tick(125)
 
-      expect(frameHeight(renderer)).toBeGreaterThan(30)
-      expect(frameHeight(renderer)).toBeLessThan(74)
+      expect(slotHeight(renderer)).toBeGreaterThan(30)
+      expect(slotHeight(renderer)).toBeLessThan(74)
 
       tick(125)
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
     })
 
     it('lands at once when the native block does not call the change a reveal', () => {
@@ -434,7 +430,7 @@ describe('MindboxEmbeddedBlock', () => {
 
       reportAppearance(renderer, 'content')
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
     })
 
     it('lands at once when the reveal comes without a duration', () => {
@@ -442,7 +438,7 @@ describe('MindboxEmbeddedBlock', () => {
 
       reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 0 })
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
     })
 
     it('does not grow content that arrives into a placeholder: the space was taken already', () => {
@@ -450,11 +446,11 @@ describe('MindboxEmbeddedBlock', () => {
 
       reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
 
       tick(125)
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
     })
 
     it('collapses at once in the middle of a reveal', () => {
@@ -464,34 +460,32 @@ describe('MindboxEmbeddedBlock', () => {
       tick(125)
       reportAppearance(renderer, 'collapsed')
 
-      expect(frameHeight(renderer)).toBe(0)
+      expect(slotHeight(renderer)).toBe(0)
 
       tick(250)
 
-      expect(frameHeight(renderer)).toBe(0)
+      expect(slotHeight(renderer)).toBe(0)
     })
 
-    it.each(['error', 'placeholder'])('takes the full height at once when %s arrives in the middle of a reveal', (appearance) => {
+    it.each(['error', 'placeholder'])('takes the full height at once and stops the growth when %s arrives in the middle of a reveal', (appearance) => {
       const renderer = render(<MindboxEmbeddedBlock placeSystemName="stories" height={104} loadingStrategy="hidden" placeholder={<Text>loading</Text>} error={<Text>broken</Text>} />)
 
       reportAppearance(renderer, 'content', { animated: true, revealDurationMs: 250 })
       tick(125)
-      const midway = frameHeight(renderer)
+      const midway = slotHeight(renderer)
       expect(midway).toBeGreaterThan(0)
       expect(midway).toBeLessThan(104)
 
       reportAppearance(renderer, appearance)
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
 
-      // The old growth is stopped, not left to finish on its own schedule.
       tick(60)
 
-      expect(frameHeight(renderer)).toBe(104)
+      expect(slotHeight(renderer)).toBe(104)
     })
 
     describe('the host overlay under the reveal', () => {
-      /** The host's overlay layer: the view that holds the placeholder or the error screen. */
       const overlayHost = (renderer: ReactTestRenderer) => renderer.root.findAll((node) => node.type === View && (node.props.pointerEvents === 'box-none' || node.props.pointerEvents === 'none'))[0]
 
       const overlayOpacity = (renderer: ReactTestRenderer) => StyleSheet.flatten(overlayHost(renderer).props.style).opacity

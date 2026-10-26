@@ -1,11 +1,3 @@
-// The embedded block on iOS, in both renderers.
-//
-// The block itself lives in `MindboxEmbeddedBlockHost` — plain UIKit, no React in it — and each
-// renderer only carries props to it and its two signals back — the look and the outcome. Fabric does that through a component
-// view and a C++ event emitter; the old renderer through a view manager and direct event blocks.
-// The order of the calls into the host is kept the same in both, so a block behaves the same way
-// whichever renderer the host app runs.
-
 #if __has_include("MindboxSdk-Swift.h")
 #import "MindboxSdk-Swift.h"
 #elif __has_include(<MindboxSdk/MindboxSdk-Swift.h>)
@@ -101,9 +93,7 @@ using namespace facebook::react;
         return;
     }
 
-    // The callbacks go into the host's initializer: the block reports its first look the moment the
-    // host subscribes to it, and the event emitter is already in place here — Fabric sets it before
-    // `finalizeUpdates:` on every mount — so that first report reaches JS.
+    // Fabric sets the event emitter before finalizeUpdates:, so the host's first report reaches JS.
     __weak MindboxEmbeddedBlockViewComponentView *weakSelf = self;
     _host = [[MindboxEmbeddedBlockHost alloc]
         initWithPlaceSystemName:@(_placeSystemName.c_str())
@@ -129,9 +119,6 @@ using namespace facebook::react;
     _placeSystemName = "";
 }
 
-// The emitter is set before the host exists and lives as long as the view does, so the guards
-// below state an invariant rather than wait for anything: a report with no emitter has nobody to
-// go to and is dropped.
 - (void)emitAppearance:(NSString *)appearance animated:(BOOL)animated revealDurationMs:(NSInteger)revealDurationMs
 {
     if (!_eventEmitter) {
@@ -150,7 +137,6 @@ using namespace facebook::react;
         return;
     }
 
-    // The payload has every field: a reason that is not there is an empty string.
     std::static_pointer_cast<const MindboxEmbeddedBlockViewEventEmitter>(_eventEmitter)
         ->onBlockOutcome({.outcome = std::string([outcome UTF8String]),
                           .reason = std::string([(reason ?: @"") UTF8String])});
@@ -179,18 +165,7 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 #import <React/RCTView.h>
 #import <React/RCTViewManager.h>
 
-/**
- * The block's place in the old renderer.
- *
- * An `RCTView` and not a bare `UIView`: the view manager the block is exported through is an
- * `RCTViewManager`, and the standard view props it brings — the border, the shadow, the overflow —
- * are written to an `RCTView`.
- *
- * The host is built once the place has both its props and a size, which is why the attempt is made
- * from `didSetProps:` and from `layoutSubviews`: the props of a transaction and the frame of a
- * layout pass do not arrive together, and either can be the last of the two. This is what
- * `finalizeUpdates:` does for the block under Fabric.
- */
+// An RCTView: RCTViewManager writes the standard view props to it.
 @interface MindboxEmbeddedBlockPaperView : RCTView
 
 @property (nonatomic, copy) NSString *placeSystemName;
@@ -232,8 +207,6 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 {
     [super didSetProps:changedProps];
 
-    // A different name is a different block, built from scratch in place of the old one — the same
-    // rule the JS side states and the Fabric path follows.
     if (_host != nil && ![_builtPlaceSystemName isEqualToString:(_placeSystemName ?: @"")]) {
         [self dropHost];
     }
@@ -262,15 +235,9 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
     }
 
     _builtPlaceSystemName = _placeSystemName ?: @"";
-    // Taken once, when the block is created: the container cannot re-budget a running wait, and the
-    // JS side warns the host about a new value rather than applying it.
     _builtTimeoutMs = _timeoutMs;
 
-    // The strategy and the animation flag are taken once as well: the native block takes them only
-    // through its initializer.
-    // The callbacks go into the host's initializer, as under Fabric: the block reports its first
-    // look the moment the host subscribes to it. The event blocks are props, set before
-    // `didSetProps:` and before any layout pass, so they are in place whichever of the two builds.
+    // The event blocks are props, set before didSetProps: and any layout pass, so the host's first report reaches JS.
     __weak MindboxEmbeddedBlockPaperView *weakSelf = self;
     _host = [[MindboxEmbeddedBlockHost alloc]
         initWithPlaceSystemName:_builtPlaceSystemName
@@ -291,7 +258,6 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
                       onOutcome:^(NSString *outcome, NSString *_Nullable reason) {
                           MindboxEmbeddedBlockPaperView *strongSelf = weakSelf;
                           if (strongSelf.onBlockOutcome != nil) {
-                              // The same shape as under Fabric: every field present, a missing reason is empty.
                               strongSelf.onBlockOutcome(@{@"outcome" : outcome, @"reason" : reason ?: @""});
                           }
                       }];
@@ -318,10 +284,7 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 
 @end
 
-/**
- * The exported component. React Native drops the `Manager` suffix when it names the component, so
- * this is the `MindboxEmbeddedBlockView` the JS side asks for — the same name Fabric registers.
- */
+// React Native drops the Manager suffix: this registers MindboxEmbeddedBlockView, the name Fabric uses.
 @interface MindboxEmbeddedBlockViewManager : RCTViewManager
 @end
 
