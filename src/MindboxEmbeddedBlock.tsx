@@ -32,7 +32,10 @@ export type MindboxEmbeddedBlockProps = {
    */
   placeSystemName: string
 
-  /** The block's height while it is not collapsed; a new value resizes the block in place. Must be positive. */
+  /**
+   * The block's height while it is not collapsed; a new value resizes the block in place. A block
+   * created without a positive height loads nothing until it gets one.
+   */
   height: number
 
   /**
@@ -54,7 +57,10 @@ export type MindboxEmbeddedBlockProps = {
   /** Shown instead of the SDK's shimmer while the block loads. */
   placeholder?: React.ReactNode
 
-  /** Shown, instead of collapsing, when the block fails while it takes its height. */
+  /**
+   * Shown, instead of collapsing, when the block fails while it takes its height. Pass it from the
+   * start: adding it later does not expand a collapsed block.
+   */
   error?: React.ReactNode
 
   /** Called when the content is shown. */
