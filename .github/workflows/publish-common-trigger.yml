@@ -35,7 +35,7 @@ jobs:
     with:
       branch: ${{ github.ref_name }}
     secrets:
-      PAT_FOR_TRIGGERING_BRANCH_PROTECTION: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
+      MOBILE_CI_APP_PRIVATE_KEY: ${{ secrets.MOBILE_CI_APP_PRIVATE_KEY }}
 
   publish-from-pr:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
@@ -46,4 +46,4 @@ jobs:
     with:
       branch: ${{ github.base_ref }}
     secrets:
-      PAT_FOR_TRIGGERING_BRANCH_PROTECTION: ${{ secrets.PAT_FOR_TRIGGERING_BRANCH_PROTECTION }}
+      MOBILE_CI_APP_PRIVATE_KEY: ${{ secrets.MOBILE_CI_APP_PRIVATE_KEY }}
