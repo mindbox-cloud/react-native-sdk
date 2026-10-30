@@ -493,3 +493,11 @@ export default MindboxSdk
 export { LogLevel } from './LogLevel'
 
 export { InAppCallback, CopyPayloadInAppCallback, EmptyInAppCallback, UrlInAppCallback } from './InAppCallback'
+
+export { MindboxEmbeddedBlock } from './MindboxEmbeddedBlock'
+
+export type { MindboxEmbeddedBlockProps } from './MindboxEmbeddedBlock'
+
+export { MindboxEmbeddedBlockFailReason } from './MindboxEmbeddedBlockFailReason'
+
+export { MindboxEmbeddedBlockLoadingStrategy } from './MindboxEmbeddedBlockLoadingStrategy'

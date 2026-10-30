@@ -15,8 +15,13 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  s.dependency "React-Core"
+  s.dependency "Mindbox", "2.16.0-rc"
+  s.dependency "MindboxNotifications", "2.16.0-rc"
 
-  s.dependency "Mindbox", "2.15.3"
-  s.dependency "MindboxNotifications", "2.15.3"
+  # Only this call defines RCT_NEW_ARCH_ENABLED for the pod, which MindboxEmbeddedBlockView.mm splits on.
+  if respond_to?(:install_modules_dependencies, true)
+    install_modules_dependencies(s)
+  else
+    s.dependency "React-Core"
+  end
 end

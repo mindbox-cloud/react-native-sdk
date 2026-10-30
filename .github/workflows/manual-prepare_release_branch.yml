@@ -131,9 +131,12 @@ jobs:
 
           ##############################################################################
           # 2) Android build.gradle: bump cloud.mindbox:mobile-sdk:<version>
+          #    mindbox-common goes with it: it is an implementation dependency of mobile-sdk, so the
+          #    wrapper takes it compileOnly and both must stay on the same version.
           ##############################################################################
           echo "→ Bumping Android SDK in android/build.gradle"
           sed -i "s|\(api 'cloud.mindbox:mobile-sdk:\).*|\1$AND_VER'|" android/build.gradle
+          sed -i "s|\(compileOnly 'cloud.mindbox:mindbox-common:\).*|\1$AND_VER'|" android/build.gradle
           git add android/build.gradle
 
           ##############################################################################
