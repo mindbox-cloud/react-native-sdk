@@ -65,6 +65,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         if (payload.has("shouldIncludeVersionCode")) {
           configurationBuilder.shouldIncludeVersionCode(payload.optBoolean("shouldIncludeVersionCode", true))
         }
+        if (payload.has("disableTrackingIds")) {
+          configurationBuilder.disableTrackingIds(payload.optBoolean("disableTrackingIds", false))
+        }
         val configuration = configurationBuilder.build()
 
         val handler = Handler(context.mainLooper)

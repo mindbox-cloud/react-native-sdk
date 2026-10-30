@@ -84,6 +84,7 @@ class MindboxSdkClass {
    *   previousUuid: '',
    *   operationsDomain: 'anonymizer.example.com',
    *   shouldIncludeVersionCode: false, // Android only (ignored on iOS). Default value is true
+   *   disableTrackingIds: true, // Android only (ignored on iOS). Default value is false
    * });
    */
   public async initialize(initializationData: InitializationData) {
@@ -99,7 +100,7 @@ class MindboxSdkClass {
       throw new Error('Wrong initialization data!')
     }
 
-    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain, shouldIncludeVersionCode } = initializationData
+    const { domain, endpointId, subscribeCustomerIfCreated, shouldCreateCustomer, previousInstallId, previousUuid, operationsDomain, shouldIncludeVersionCode, disableTrackingIds } = initializationData
 
     if (!domain || !endpointId) {
       this._initializing = false
@@ -133,6 +134,10 @@ class MindboxSdkClass {
 
     if (typeof shouldIncludeVersionCode !== 'undefined') {
       payload.shouldIncludeVersionCode = shouldIncludeVersionCode
+    }
+
+    if (typeof disableTrackingIds !== 'undefined') {
+      payload.disableTrackingIds = disableTrackingIds
     }
 
     try {
