@@ -545,6 +545,54 @@ describe('Testing Mindbox RN SDK', () => {
       expect(JSON.parse(calledWith)).not.toHaveProperty('shouldIncludeVersionCode')
     })
 
+    it('initialize passes disableTrackingIds true to native', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize({
+        ...initializationData,
+        disableTrackingIds: true,
+      })
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).toMatchObject({ disableTrackingIds: true })
+    })
+
+    it('initialize passes disableTrackingIds false to native', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize({
+        ...initializationData,
+        disableTrackingIds: false,
+      })
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).toMatchObject({ disableTrackingIds: false })
+    })
+
+    it('initialize does not include disableTrackingIds in payload when not provided', async () => {
+      const {
+        NativeModules: { MindboxSdk: MindboxSdkNative },
+      } = require('react-native')
+      const MindboxSdk = require('../index').default
+
+      expect.assertions(1)
+
+      await MindboxSdk.initialize(initializationData)
+
+      const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
+      expect(JSON.parse(calledWith)).not.toHaveProperty('disableTrackingIds')
+    })
+
     it('getDeviceUUID method works correctly', async () => {
       const MindboxSdk = require('../index').default
 
