@@ -2,8 +2,8 @@ buildscript {
   ext {
     buildToolsVersion = "34.0.0"
     minSdkVersion = 23
-    compileSdkVersion = 35
-    targetSdkVersion = 35
+    compileSdkVersion = 36
+    targetSdkVersion = 36
     ndkVersion = "26.1.10909125"
     kotlinVersion = "1.8.0"
     cmakeVersion = "3.22.1"
@@ -12,7 +12,6 @@ buildscript {
     google()
     mavenCentral()
     maven { url 'https://developer.huawei.com/repo/' }
-    maven {url 'https://artifactory-external.vkpartner.ru/artifactory/maven'}
   }
   dependencies {
     classpath("com.android.tools.build:gradle:8.6.0")
@@ -38,7 +37,7 @@ allprojects {
     maven { url 'https://www.jitpack.io' }
     maven { url "https://plugins.gradle.org/m2/" }
     maven { url 'https://developer.huawei.com/repo/' }
-    maven {url 'https://artifactory-external.vkpartner.ru/artifactory/maven'}
+    maven { url 'https://nexus-external.rustore.ru/repository/maven-rustore-exposed' }
   }
 
 }
