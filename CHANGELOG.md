@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.16.0] - 2026-11-05
 
 ### Changes
 - Upgrade Android SDK dependency to v2.16.0
