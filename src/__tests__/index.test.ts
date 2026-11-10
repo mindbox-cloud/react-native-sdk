@@ -146,6 +146,7 @@ jest.mock('react-native', () => {
           resolve(true)
         })
     ),
+    setAdvertisingIdentifier: jest.fn(),
   }
 
   actualReactNative.NativeModules.MindboxJsDelivery = {
@@ -591,6 +592,72 @@ describe('Testing Mindbox RN SDK', () => {
 
       const calledWith = (MindboxSdkNative.initialize as jest.Mock).mock.calls.slice(-1)[0][0]
       expect(JSON.parse(calledWith)).not.toHaveProperty('disableTrackingIds')
+    })
+
+    describe('setAdvertisingIdentifier', () => {
+      const idfa = 'EA7583CD-A667-48BC-B806-42ECB2B48606'
+
+      const load = (os: 'ios' | 'android') => {
+        const reactNative = require('react-native')
+        reactNative.Platform.OS = os
+        const native = reactNative.NativeModules.MindboxSdk
+        const setIdentifier = native.setAdvertisingIdentifier as jest.Mock
+        const initialize = native.initialize as jest.Mock
+        setIdentifier.mockClear()
+        initialize.mockClear()
+        return { MindboxSdk: require('../index').default, setIdentifier, initialize }
+      }
+
+      it('passes the identifier to native on iOS', async () => {
+        const { MindboxSdk, setIdentifier } = load('ios')
+
+        await MindboxSdk.initialize(initializationData)
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+
+        expect(setIdentifier.mock.calls).toEqual([[idfa]])
+      })
+
+      it('passes null to native when disableTrackingIds is true', async () => {
+        const { MindboxSdk, setIdentifier } = load('ios')
+
+        await MindboxSdk.initialize({ ...initializationData, disableTrackingIds: true })
+        setIdentifier.mockClear()
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+
+        expect(setIdentifier.mock.calls).toEqual([[null]])
+      })
+
+      it('initialize with disableTrackingIds clears the identifier in native before the native initialization', async () => {
+        const { MindboxSdk, setIdentifier, initialize } = load('ios')
+
+        await MindboxSdk.initialize({ ...initializationData, disableTrackingIds: true })
+
+        expect(setIdentifier.mock.calls).toEqual([[null]])
+        expect(setIdentifier.mock.invocationCallOrder[0]).toBeLessThan(initialize.mock.invocationCallOrder[0])
+      })
+
+      it('initialize with disableTrackingIds still initializes when the native module has no setter', async () => {
+        const { MindboxSdk, setIdentifier, initialize } = load('ios')
+        const native = require('react-native').NativeModules.MindboxSdk
+        delete native.setAdvertisingIdentifier
+
+        try {
+          await MindboxSdk.initialize({ ...initializationData, disableTrackingIds: true })
+
+          expect(initialize).toHaveBeenCalledTimes(1)
+        } finally {
+          native.setAdvertisingIdentifier = setIdentifier
+        }
+      })
+
+      it('never reaches native on Android', async () => {
+        const { MindboxSdk, setIdentifier } = load('android')
+
+        await MindboxSdk.initialize({ ...initializationData, disableTrackingIds: true })
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+
+        expect(setIdentifier).not.toHaveBeenCalled()
+      })
     })
 
     it('getDeviceUUID method works correctly', async () => {
