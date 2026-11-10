@@ -198,6 +198,19 @@ class MindboxSdk: NSObject {
         Mindbox.shared.refreshNotificationPermissionStatus()
     }
 
+    @objc(setAdvertisingIdentifier:)
+    func setAdvertisingIdentifier(_ value: String?) {
+        guard let value, !value.isEmpty else {
+            Mindbox.shared.setAdvertisingIdentifier(nil)
+            return
+        }
+        guard let identifier = UUID(uuidString: value) else {
+            Mindbox.logger.log(level: .error, message: "[RN] setAdvertisingIdentifier: the value is not a UUID, the advertising identifier stays unchanged")
+            return
+        }
+        Mindbox.shared.setAdvertisingIdentifier(identifier)
+    }
+
     @objc
     func writeNativeLog(_ message: String, level: Int) {
 
