@@ -1,3 +1,6 @@
+source 'https://github.com/mindbox-cloud/Specs.git'
+source 'https://cdn.cocoapods.org/'
+
 def node_require(script)
    # Resolve script with node to allow for hoisting
    require Pod::Executable.execute_command('node', ['-p',
