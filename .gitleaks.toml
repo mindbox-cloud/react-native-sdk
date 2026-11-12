@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "CocoaPods checksums in Podfile.lock are public hashes; the rule fires when a pod name contains 'api'"
+condition = "AND"
+regexTarget = "line"
+paths = ['''(^|/)Podfile\.lock$''']
+regexes = ['''^\s*[A-Za-z0-9_.+/-]+: [0-9a-f]{40}$''']

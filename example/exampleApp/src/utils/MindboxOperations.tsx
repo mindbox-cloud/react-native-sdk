@@ -1,5 +1,4 @@
 import MindboxSdk, { LogLevel } from 'mindbox-sdk'
-import Snackbar from 'react-native-snackbar'
 import { Alert } from 'react-native'
 
 // Define the operation names
@@ -67,10 +66,7 @@ const asyncOperationNCOpen = () => {
     operationSystemName: asyncOperationNCOpenName,
     operationBody: {},
   })
-  Snackbar.show({
-    text: 'Send operation: Notification center opened',
-    duration: Snackbar.LENGTH_SHORT,
-  })
+  Alert.alert('Mindbox Async Operation', 'Notification center opened.')
 }
 
 // Async operation to send "click on push from notification center"
@@ -90,10 +86,7 @@ const asyncOperationNCPushOpen = (pushName: string, pushDate: string) => {
     operationSystemName: asyncOperationNCPushOpenName,
     operationBody: requestBody,
   })
-  Snackbar.show({
-    text: 'Send operation: push opened from notification center',
-    duration: Snackbar.LENGTH_SHORT,
-  })
+  Alert.alert('Mindbox Async Operation', 'Push opened from notification center.')
 }
 
 export { sendSync, sendAsync, asyncOperationNCPushOpen, asyncOperationNCOpen }

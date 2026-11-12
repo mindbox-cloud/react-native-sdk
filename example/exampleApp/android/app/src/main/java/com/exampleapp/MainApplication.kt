@@ -12,40 +12,32 @@ import cloud.mindbox.mindbox_huawei.MindboxHuawei
 import cloud.mindbox.mobile_sdk.Mindbox
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
-import com.facebook.react.ReactInstanceManager
-import com.facebook.react.ReactNativeHost
-import com.facebook.react.ReactPackage
-import com.facebook.soloader.SoLoader
+import com.facebook.react.ReactHost
+import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.exampleapp.NotificationPackage
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import cloud.mindbox.mindbox_rustore.MindboxRuStore
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
-import com.facebook.react.defaults.DefaultReactNativeHost
 
 class MainApplication : Application(), ReactApplication {
 
-    override val reactNativeHost: ReactNativeHost =
-        object : ReactNativeHost(this) {
-            override fun getPackages(): List<ReactPackage> =
+    override val reactHost: ReactHost by lazy {
+        getDefaultReactHost(
+            context = applicationContext,
+            packageList =
                 PackageList(this).packages.apply {
                     add(NotificationPackage())
-                }
-            override fun getJSMainModuleName(): String = "index"
-            override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
-        }
+                },
+        )
+    }
 
     override fun onCreate() {
         super.onCreate()
         //The fifth step of https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
         Mindbox.initPushServices(this, listOf(MindboxFirebase, MindboxHuawei, MindboxRuStore))
-        SoLoader.init(this, false)
-        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-            // If you opted-in for the New Architecture, we load the native entry point for this app.
-            load()
-        }
+        loadReactNative(this)
     }
 
     private val gson = Gson()
@@ -66,8 +58,7 @@ class MainApplication : Application(), ReactApplication {
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             try {
-                val reactInstanceManager = reactNativeHost.reactInstanceManager
-                reactInstanceManager.currentReactContext
+                reactHost.currentReactContext
                     ?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                     ?.emit("newNotification", null)
             } catch (e: Exception) {
