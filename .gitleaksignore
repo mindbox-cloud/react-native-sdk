@@ -1,2 +1,0 @@
-# reason: CocoaPods spec checksum of the React-cxxstableapi pod, a public hash and not a credential; the rule fires on "api" in the pod name.
-example/exampleApp/ios/Podfile.lock:generic-api-key:2257
