@@ -10,6 +10,14 @@ on:
         required: false
         type: string
         default: ""
+      native_ios_branch:
+        required: false
+        type: string
+        default: ""
+      native_android_branch:
+        required: false
+        type: string
+        default: ""
     secrets:
       GITLAB_TRIGGER_TOKEN:
         required: true
@@ -73,6 +81,8 @@ jobs:
 
           SOURCE_BRANCH: ${{ inputs.branch }}
           APP_REF_OVERRIDE: ${{ inputs.app_ref }}
+          NATIVE_IOS_BRANCH: ${{ inputs.native_ios_branch }}
+          NATIVE_ANDROID_BRANCH: ${{ inputs.native_android_branch }}
 
           GITLAB_TRIGGER_TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
           INPUT_COMMITS: ${{ env.commits }}
@@ -101,6 +111,13 @@ jobs:
 
           COMMITS_TO_SEND="$(normalize_commits "${INPUT_COMMITS:-}")"
 
+          native_branch_forms=()
+          for name in NATIVE_IOS_BRANCH NATIVE_ANDROID_BRANCH; do
+            if [[ -n "${!name:-}" ]]; then
+              native_branch_forms+=(--form-string "variables[${name}]=${!name}")
+            fi
+          done
+
           echo "SDK branch (INPUT_BRANCH): $SOURCE_BRANCH"
           echo "Manual App ref override: ${APP_REF_OVERRIDE:-<empty>}"
           echo "Default App ref: $DEFAULT_APP_REF"
@@ -121,7 +138,8 @@ jobs:
               --form "token=${GITLAB_TRIGGER_TOKEN}" \
               --form "ref=${ref}" \
               --form "variables[INPUT_BRANCH]=${SOURCE_BRANCH}" \
-              --form "variables[INPUT_COMMITS]=${COMMITS_TO_SEND}")"
+              --form "variables[INPUT_COMMITS]=${COMMITS_TO_SEND}" \
+              "${native_branch_forms[@]}")"
 
             local body
             body="$(cat "$tmp_body" 2>/dev/null || true)"
