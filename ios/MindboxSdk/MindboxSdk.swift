@@ -25,7 +25,7 @@ struct PayloadData: Codable {
 }
 
 @objc(MindboxSdk)
-class MindboxSdk: NSObject {
+@usableFromInline class MindboxSdk: NSObject {
 
     private var urlInappDelegate: URLInappMessageDelegate?
     private var copyInappDelegate: CopyInappMessageDelegate?
