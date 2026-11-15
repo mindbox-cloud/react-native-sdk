@@ -72,7 +72,7 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": ">=0.71"
+    "react-native": ">=0.76"
   },
   "codegenConfig": {
     "name": "MindboxSdkSpec",
