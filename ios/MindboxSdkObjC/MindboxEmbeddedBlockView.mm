@@ -1,13 +1,8 @@
-#if __has_include("MindboxSdk-Swift.h")
-#import "MindboxSdk-Swift.h"
-#elif __has_include(<MindboxSdk/MindboxSdk-Swift.h>)
-#import <MindboxSdk/MindboxSdk-Swift.h>
-#else
-#error "MindboxSdk-Swift.h not found. Ensure Swift sources are included in the MindboxSdk pod target."
-#endif
-
 #ifdef RCT_NEW_ARCH_ENABLED
 
+#import "MindboxEmbeddedBlockHosting.h"
+
+#import <React/RCTLog.h>
 #import <React/RCTViewComponentView.h>
 
 #import <react/renderer/components/MindboxSdkSpec/ComponentDescriptors.h>
@@ -21,7 +16,7 @@ using namespace facebook::react;
 @end
 
 @implementation MindboxEmbeddedBlockViewComponentView {
-    MindboxEmbeddedBlockHost *_host;
+    id<MindboxEmbeddedBlockHosting> _host;
 
     std::string _placeSystemName;
     CGFloat _blockHeight;
@@ -93,20 +88,28 @@ using namespace facebook::react;
         return;
     }
 
+    Class<MindboxEmbeddedBlockHostMaking> hostClass =
+        (Class<MindboxEmbeddedBlockHostMaking>)NSClassFromString(@"MindboxEmbeddedBlockHostAdapter");
+    if (hostClass == nil) {
+        RCTLogError(@"[EmbeddedBlock] MindboxEmbeddedBlockHostAdapter is missing from the app binary, so the block for place '%s' stays empty",
+                    _placeSystemName.c_str());
+        return;
+    }
+
     // Fabric sets the event emitter before finalizeUpdates:, so the host's first report reaches JS.
     __weak MindboxEmbeddedBlockViewComponentView *weakSelf = self;
-    _host = [[MindboxEmbeddedBlockHost alloc]
-        initWithPlaceSystemName:@(_placeSystemName.c_str())
-                         height:_blockHeight
-                      timeoutMs:_timeoutMs
-                loadingStrategy:@(_loadingStrategy.c_str())
-                 animatesReveal:_animatesReveal
-                   onAppearance:^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
-                       [weakSelf emitAppearance:appearance animated:animated revealDurationMs:revealDurationMs];
-                   }
-                      onOutcome:^(NSString *outcome, NSString *_Nullable reason) {
-                          [weakSelf emitOutcome:outcome reason:reason];
-                      }];
+    _host = [hostClass
+        makeHostWithPlaceSystemName:@(_placeSystemName.c_str())
+                             height:_blockHeight
+                          timeoutMs:_timeoutMs
+                    loadingStrategy:@(_loadingStrategy.c_str())
+                     animatesReveal:_animatesReveal
+                       onAppearance:^(NSString *appearance, BOOL animated, NSInteger revealDurationMs) {
+                           [weakSelf emitAppearance:appearance animated:animated revealDurationMs:revealDurationMs];
+                       }
+                          onOutcome:^(NSString *outcome, NSString *_Nullable reason) {
+                              [weakSelf emitOutcome:outcome reason:reason];
+                          }];
     [_host setStandInsWithHasPlaceholder:_hasPlaceholder hasErrorView:_hasErrorView];
     [_host setHostVisible:_isHostVisible];
 
@@ -161,6 +164,14 @@ Class<RCTComponentViewProtocol> MindboxEmbeddedBlockViewCls(void)
 }
 
 #else // RCT_NEW_ARCH_ENABLED
+
+#if __has_include("MindboxSdk-Swift.h")
+#import "MindboxSdk-Swift.h"
+#elif __has_include(<MindboxSdk/MindboxSdk-Swift.h>)
+#import <MindboxSdk/MindboxSdk-Swift.h>
+#else
+#error "MindboxSdk-Swift.h not found. Ensure Swift sources are included in the MindboxSdk pod target."
+#endif
 
 #import <React/RCTView.h>
 #import <React/RCTViewManager.h>
