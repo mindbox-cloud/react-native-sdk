@@ -147,6 +147,12 @@ jobs:
           sed -i -E "s/(s\.dependency \"MindboxNotifications\", \").*(\")/\1$IO_VER\2/" MindboxSdk.podspec
           git add MindboxSdk.podspec
 
+          if [ -f Package.swift ]; then
+            echo "→ Bumping iOS SDK in Package.swift"
+            sed -i -E "s|(\.package\(url: \"https://github.com/mindbox-cloud/ios-sdk\", exact: \")[^\"]*|\1$IO_VER|" Package.swift
+            git add Package.swift
+          fi
+
           ##############################################################################
           # 4) CHANGELOG.md: insert Unreleased section at top
           ##############################################################################

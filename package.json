@@ -15,6 +15,7 @@
     "ios",
     "cpp",
     "MindboxSdk.podspec",
+    "Package.swift",
     "!lib/typescript/example",
     "!android/build",
     "!ios/build",
@@ -73,6 +74,9 @@
   "peerDependencies": {
     "react": "*",
     "react-native": ">=0.76"
+  },
+  "swiftpmConfig": {
+    "name": "MindboxSdk"
   },
   "codegenConfig": {
     "name": "MindboxSdkSpec",

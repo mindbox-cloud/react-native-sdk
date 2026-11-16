@@ -61,6 +61,13 @@ echo "Bump $ios_podspec to $ios_sdk_version"
 
 git add "$android_gradle" "$ios_podspec"
 
+swift_manifest="Package.swift"
+if [ -f "$swift_manifest" ]; then
+  sed -i '' -E "s|(\.package\(url: \"https://github.com/mindbox-cloud/ios-sdk\", exact: \")[^\"]*|\1${ios_sdk_version}|" "$swift_manifest"
+  echo "Bump $swift_manifest to $ios_sdk_version"
+  git add "$swift_manifest"
+fi
+
 changelog="CHANGELOG.md"
 
 awk -v android="$android_sdk_version" -v ios="$ios_sdk_version" 'NR==3{print "## [Unreleased]\n\n ### Changes\n - Upgrade Android SDK dependency to v"android"\n - Upgrade iOS SDK dependency to v"ios"\n"}1' "$changelog" > "${changelog}.tmp" && mv "${changelog}.tmp" "$changelog"

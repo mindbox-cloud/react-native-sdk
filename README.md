@@ -24,6 +24,15 @@ Follow the installation process detailed [here](https://developers.mindbox.ru/do
     cd ios && pod install && cd ..
     ```
 
+### Swift Package Manager (preview)
+
+React Native 0.88 and newer can link native libraries through Swift Package Manager instead of CocoaPods ([React Native docs](https://github.com/react/react-native/blob/v0.88.1/packages/react-native/scripts/spm/__docs__/README.md)). React Native marks this flow as a preview; CocoaPods stays the default. The package ships a `Package.swift` for it:
+
+1. Every native library in the app needs a `Package.swift`: `npx react-native spm add` refuses the project otherwise.
+2. Run `npx react-native spm add` in the app. Do not add the native Mindbox SDK to the app target: this package brings it.
+3. Notification extensions cannot stay on CocoaPods, because `spm add` refuses a project that still has pods. In Xcode, add the package `https://github.com/mindbox-cloud/ios-sdk` with the rule "Up to Next Major Version" from the version that this package pins in its `Package.swift`. Link `MindboxNotificationsService` to the Notification Service Extension and `MindboxNotificationsContent` to the Notification Content Extension.
+4. `AppDelegate` code stays as with CocoaPods: `import MindboxSdk` and `MindboxJsDelivery.emitEvent(response)`.
+
 ### Initialization
 
 Initialize the Mindbox SDK in your React Native app. You can find the necessary code snippet and explanations [here](https://developers.mindbox.ru/docs/sdk-initialization-react-native).
