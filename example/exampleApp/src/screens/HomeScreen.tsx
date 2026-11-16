@@ -1,8 +1,9 @@
 import React, { useEffect, useCallback, useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View, Platform, Button } from 'react-native'
+import { SafeAreaView, StyleSheet, Text, View, Platform, Button, AppState } from 'react-native'
 import MindboxSdk, { LogLevel, CopyPayloadInAppCallback, EmptyInAppCallback, InAppCallback, UrlInAppCallback } from 'mindbox-sdk'
 import { sendSync, sendAsync, asyncOperationNCOpen } from '../utils/MindboxOperations'
 import { requestNotificationPermission } from '../utils/RequestPermission'
+import { passAdvertisingIdentifier } from '../utils/AdvertisingIdentifier'
 import PushNotificationScreen from './screens/PushNotificationScreen'
 import { useNavigation } from '@react-navigation/native'
 import { chooseInappCallback, RegisterInappCallback } from '../utils/InAppCallbacks'
@@ -75,6 +76,17 @@ const HomeScreen = () => {
     // https://developers.mindbox.ru/docs/%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B-react-natice-sdk#onpushclickreceived
     MindboxSdk.onPushClickReceived(getPushData)
   }, [getPushData])
+
+  useEffect(() => {
+    passAdvertisingIdentifier()
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        passAdvertisingIdentifier()
+      }
+    })
+
+    return () => subscription.remove()
+  }, [])
 
   const handleSendAsyncPress = () => {
     sendAsync()
