@@ -4,6 +4,7 @@ import type { InitializationData, ExecuteSyncOperationPayload, ExecuteAsyncOpera
 import type { InAppCallback } from './InAppCallback'
 
 import { LogLevel } from './LogLevel'
+import { integrationFramework } from './integrationFramework'
 
 const { MindboxSdk: MindboxSdkNative, MindboxJsDelivery } = NativeModules
 
@@ -149,7 +150,7 @@ class MindboxSdkClass {
         MindboxSdkNative.setAdvertisingIdentifier?.(null)
       }
 
-      const payloadString = JSON.stringify(payload)
+      const payloadString = JSON.stringify({ ...payload, integrationFramework: integrationFramework() })
       this._initialized = await MindboxSdkNative.initialize(payloadString)
       this._initializing = false
       this.writeNativeLog('Init in RN ', LogLevel.INFO)

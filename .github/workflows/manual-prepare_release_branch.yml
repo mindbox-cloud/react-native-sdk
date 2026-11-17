@@ -129,6 +129,11 @@ jobs:
           sed -i "s/\"target-version\": \".*\"/\"target-version\": \"$VERSION\"/" package.json
           git add package.json
 
+          echo "→ Bumping the wrapper version in src/integrationFramework.ts"
+          sed -i "s/export const MINDBOX_REACT_NATIVE_VERSION = '.*'/export const MINDBOX_REACT_NATIVE_VERSION = '$VERSION'/" src/integrationFramework.ts
+          grep -q "export const MINDBOX_REACT_NATIVE_VERSION = '$VERSION'" src/integrationFramework.ts || { echo "ERROR: the wrapper version in src/integrationFramework.ts was not bumped"; exit 1; }
+          git add src/integrationFramework.ts
+
           ##############################################################################
           # 2) Android build.gradle: bump cloud.mindbox:mobile-sdk:<version>
           #    mindbox-common goes with it: it is an implementation dependency of mobile-sdk, so the

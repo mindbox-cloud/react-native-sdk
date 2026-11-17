@@ -15,6 +15,7 @@ import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.EmptyInAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.LoggingInAppCallback
 import cloud.mindbox.mobile_sdk.inapp.presentation.callbacks.UrlInAppCallback
 import cloud.mindbox.mobile_sdk.Mindbox
+import cloud.mindbox.mobile_sdk.annotations.MindboxWrapperApi
 import cloud.mindbox.mobile_sdk.logger.Level
 import cloud.mindbox.mobile_sdk.MindboxConfiguration
 import com.facebook.react.bridge.Promise
@@ -33,6 +34,7 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
     return "MindboxSdk"
   }
 
+  @OptIn(MindboxWrapperApi::class)
   @ReactMethod
   fun initialize(payloadString: String, promise: Promise) {
     try {
@@ -67,6 +69,9 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
         }
         if (payload.has("disableTrackingIds")) {
           configurationBuilder.disableTrackingIds(payload.optBoolean("disableTrackingIds", false))
+        }
+        if (payload.has("integrationFramework")) {
+          configurationBuilder.integrationFramework(payload.optString("integrationFramework"))
         }
         val configuration = configurationBuilder.build()
 

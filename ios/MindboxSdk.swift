@@ -1,4 +1,4 @@
-import Mindbox
+@_spi(Internal) import Mindbox
 import MindboxLogger
 
 enum CustomError: Error {
@@ -22,6 +22,7 @@ struct PayloadData: Codable {
     var previousInstallId: String?
     var previousUuid: String?
     var operationsDomain: String?
+    var integrationFramework: String?
 }
 
 @objc(MindboxSdk)
@@ -43,7 +44,7 @@ class MindboxSdk: NSObject {
         do {
             let payload = try JSONDecoder().decode(PayloadData.self, from: payloadString.data(using: .utf8)!)
 
-            let configuration = try MBConfiguration(
+            var configuration = try MBConfiguration(
                 endpoint: payload.endpointId,
                 domain: payload.domain,
                 operationsDomain: payload.operationsDomain,
@@ -52,6 +53,7 @@ class MindboxSdk: NSObject {
                 subscribeCustomerIfCreated: payload.subscribeCustomerIfCreated ?? false,
                 shouldCreateCustomer: payload.shouldCreateCustomer ?? true
             )
+            configuration.integrationFramework = payload.integrationFramework
 
             Mindbox.shared.initialization(configuration: configuration)
 

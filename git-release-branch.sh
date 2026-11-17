@@ -32,6 +32,15 @@ echo "Bump SDK version from $current_version to $version."
 
 git add "$package_json"
 
+integration_framework="src/integrationFramework.ts"
+sed -i '' "s/export const MINDBOX_REACT_NATIVE_VERSION = '.*'/export const MINDBOX_REACT_NATIVE_VERSION = '$version'/" "$integration_framework"
+if ! grep -q "export const MINDBOX_REACT_NATIVE_VERSION = '$version'" "$integration_framework"; then
+  echo "The wrapper version in $integration_framework was not bumped to $version."
+  exit 1
+fi
+echo "Bump $integration_framework to $version"
+git add "$integration_framework"
+
 android_gradle="android/build.gradle"
 ios_podspec="MindboxSdk.podspec"
 
