@@ -11,7 +11,8 @@ class MindboxSdkClass {
   private _initialized: boolean
   private _initializing: boolean
   private _callbacks: Array<() => void>
-  private _disableTrackingIds: boolean
+  private _disableTrackingIds?: boolean
+  private _pendingAdvertisingIdentifier?: string | null
   private _mindboxJsDeliveryEvents: NativeEventEmitter
   private _emitterSubscribtion?: EmitterSubscription
   private readonly _prefix: string = '[RN]'
@@ -20,7 +21,6 @@ class MindboxSdkClass {
     this._initialized = false
     this._initializing = false
     this._callbacks = []
-    this._disableTrackingIds = false
     this._mindboxJsDeliveryEvents = new NativeEventEmitter(MindboxJsDelivery)
   }
 
@@ -143,10 +143,16 @@ class MindboxSdkClass {
     }
 
     this._disableTrackingIds = disableTrackingIds === true
+    const pendingAdvertisingIdentifier = this._pendingAdvertisingIdentifier
+    this._pendingAdvertisingIdentifier = undefined
 
     try {
-      if (this._disableTrackingIds && Platform.OS === 'ios') {
-        MindboxSdkNative.setAdvertisingIdentifier?.(null)
+      if (Platform.OS === 'ios') {
+        if (this._disableTrackingIds) {
+          MindboxSdkNative.setAdvertisingIdentifier?.(null)
+        } else if (pendingAdvertisingIdentifier !== undefined) {
+          MindboxSdkNative.setAdvertisingIdentifier?.(pendingAdvertisingIdentifier)
+        }
       }
 
       const payloadString = JSON.stringify(payload)
@@ -486,7 +492,8 @@ class MindboxSdkClass {
    * The SDK does not read the IDFA itself: call this method at launch and on every return to the
    * foreground. `null`, an empty string or zeros mean there is no tracking consent and clear the
    * IDFA sent earlier. The IDFA is sent only if the app's `PrivacyInfo.xcprivacy` declares the
-   * Mindbox tracking host.
+   * Mindbox tracking host. A value set before `initialize` is held and passed on by `initialize`
+   * once `disableTrackingIds` is known.
    *
    * @param identifier the IDFA, or `null` when tracking is not authorized
    *
@@ -495,6 +502,11 @@ class MindboxSdkClass {
    */
   public setAdvertisingIdentifier(identifier: string | null) {
     if (Platform.OS !== 'ios') {
+      return
+    }
+
+    if (this._disableTrackingIds === undefined) {
+      this._pendingAdvertisingIdentifier = identifier
       return
     }
 
