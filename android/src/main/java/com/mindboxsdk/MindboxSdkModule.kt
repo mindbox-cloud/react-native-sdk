@@ -71,7 +71,10 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
           configurationBuilder.disableTrackingIds(payload.optBoolean("disableTrackingIds", false))
         }
         if (payload.has("integrationFramework")) {
-          configurationBuilder.integrationFramework(payload.optString("integrationFramework"))
+          try {
+            configurationBuilder.integrationFramework(payload.optString("integrationFramework"))
+          } catch (error: LinkageError) {
+          }
         }
         val configuration = configurationBuilder.build()
 
