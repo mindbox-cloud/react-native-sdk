@@ -627,6 +627,47 @@ describe('Testing Mindbox RN SDK', () => {
         expect(setIdentifier.mock.calls).toEqual([[null]])
       })
 
+      it('holds an identifier set before initialize until disableTrackingIds is known', async () => {
+        const { MindboxSdk, setIdentifier } = load('ios')
+
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+        expect(setIdentifier).not.toHaveBeenCalled()
+
+        await MindboxSdk.initialize({ ...initializationData, disableTrackingIds: true })
+
+        expect(setIdentifier.mock.calls).toEqual([[null]])
+      })
+
+      it('passes an identifier held before initialize to native before the native initialization', async () => {
+        const { MindboxSdk, setIdentifier, initialize } = load('ios')
+
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+        await MindboxSdk.initialize(initializationData)
+
+        expect(setIdentifier.mock.calls).toEqual([[idfa]])
+        expect(setIdentifier.mock.invocationCallOrder[0]).toBeLessThan(initialize.mock.invocationCallOrder[0])
+      })
+
+      it('passes only the last value set before initialize, so a withdrawn consent reaches native as null', async () => {
+        const { MindboxSdk, setIdentifier } = load('ios')
+
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+        MindboxSdk.setAdvertisingIdentifier(null)
+        await MindboxSdk.initialize(initializationData)
+
+        expect(setIdentifier.mock.calls).toEqual([[null]])
+      })
+
+      it('passes an identifier set while initialize is in flight', async () => {
+        const { MindboxSdk, setIdentifier } = load('ios')
+
+        const initializing = MindboxSdk.initialize(initializationData)
+        MindboxSdk.setAdvertisingIdentifier(idfa)
+        await initializing
+
+        expect(setIdentifier.mock.calls).toEqual([[idfa]])
+      })
+
       it('initialize with disableTrackingIds clears the identifier in native before the native initialization', async () => {
         const { MindboxSdk, setIdentifier, initialize } = load('ios')
 
