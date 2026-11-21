@@ -19,10 +19,16 @@ To run the example application with functioning mobile push notifications (compl
 
 4) Configure your endpoints [iOS](https://developers.mindbox.ru/docs/add-ios-integration), [Android](https://developers.mindbox.ru/docs/add-android-integration)
 
-5) Set your domain and endpoints in the HomeScreen.tsx within the configuration builder
+5) Set your domain and endpoints in the HomeScreen.tsx within the configuration builder. With another domain, change the tracking host in the privacy manifest too (see [Advertising identifier (IDFA)](#advertising-identifier-idfa))
 
 6) Run the application
 
 7) After 5 minutes check your user in your Mindbox admin site
 
 8) Run in-app and send mobile push
+
+## Advertising identifier (IDFA)
+
+On iOS the app passes the IDFA to the SDK: `passAdvertisingIdentifier` in `src/utils/AdvertisingIdentifier.tsx` runs at launch and on every return to the app, with or without consent. The `@sparkfabrik/react-native-idfa-aaid` library shows the tracking permission request while the user has not answered. [Read more](https://developers.mindbox.ru/docs/react-native-sdk-methods).
+
+The SDK sends the IDFA only when the app's privacy manifest `ios/exampleApp/PrivacyInfo.xcprivacy` declares the tracking host: your domain with the leading `api` replaced by `api-tracking`, for example `api-tracking.mindbox.ru` for `api.mindbox.ru`. Never list the main API host: iOS blocks requests to the listed hosts until the user allows tracking.

@@ -1939,6 +1939,8 @@ PODS:
     - Yoga
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
+  - sparkfabrik-react-native-idfa-aaid (1.2.0):
+    - React
   - Yoga (0.0.0):
     - React-Core-prebuilt
 
@@ -2036,6 +2038,7 @@ DEPENDENCIES:
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - SocketRocket (from `build/rndeps-facades/SocketRocket`)
+  - "sparkfabrik-react-native-idfa-aaid (from `../node_modules/@sparkfabrik/react-native-idfa-aaid`)"
   - Yoga (from `build/rncore-facades/Yoga`)
 
 SPEC REPOS:
@@ -2226,6 +2229,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   SocketRocket:
     :path: build/rndeps-facades/SocketRocket
+  sparkfabrik-react-native-idfa-aaid:
+    :path: "../node_modules/@sparkfabrik/react-native-idfa-aaid"
   Yoga:
     :path: build/rncore-facades/Yoga
 
@@ -2323,6 +2328,7 @@ SPEC CHECKSUMS:
   RNPermissions: ccc5763d46acd4e7400b4ef3a33daae3bb0adc54
   RNScreens: f15a5bda1ddeff8575b8ce41d83885b67129f84b
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
+  sparkfabrik-react-native-idfa-aaid: a28bdc05864459e52c5398b11b9cab2b6c1ceb4b
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 
 PODFILE CHECKSUM: 15f61655758bcb3883bf0f44dc63c40678e0ced8
