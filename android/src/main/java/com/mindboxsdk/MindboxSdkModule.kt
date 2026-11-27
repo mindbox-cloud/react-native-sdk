@@ -229,14 +229,6 @@ class MindboxSdkModule(private val reactContext: ReactApplicationContext) : Reac
   }
 
   @ReactMethod
-  fun pushDelivered(uniqKey: String) {
-    Mindbox.onPushReceived(
-      context = reactApplicationContext.applicationContext,
-      uniqKey = uniqKey,
-    )
-  }
-
-  @ReactMethod
   fun refreshNotificationPermissionStatus() {
     Mindbox.updateNotificationPermissionStatus(
       context = reactApplicationContext.applicationContext,

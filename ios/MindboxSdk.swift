@@ -188,11 +188,6 @@ class MindboxSdk: NSObject {
         }
     }
 
-    @objc(pushDelivered:)
-    func pushDelivered(_ uniqKey: String) {
-        Mindbox.shared.pushDelivered(uniqueKey: uniqKey)
-    }
-
     @objc
     func refreshNotificationPermissionStatus() {
         Mindbox.shared.refreshNotificationPermissionStatus()

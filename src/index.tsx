@@ -447,22 +447,6 @@ class MindboxSdkClass {
   }
 
   /**
-   *
-   * Creates and deliveries event of "Push delivered". Recommended call this method from
-   * background thread.
-   *
-   * Use this method only if you have custom push handling you don't use [Mindbox.handleRemoteMessage].
-   * You must not call it otherwise.
-   *
-   * @param uniqKey unique identifier of push notification
-   * @deprecated since version 2.10.3. Use native methods
-   */
-  public pushDelivered(uniqKey: string) {
-    this.writeNativeLog('Used deprecated method pushDelivered. Use native methods', LogLevel.WARN)
-    return MindboxSdkNative.pushDelivered(uniqKey)
-  }
-
-  /**
    * This method is kept for backward compatibility. The `granted` argument is ignored.
    * The SDK reads the current system authorization status and, if it differs
    * from the last known value, sends an update to the backend.
