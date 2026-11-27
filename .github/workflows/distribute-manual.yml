@@ -7,6 +7,14 @@ on:
         description: "GitLab App branch (Optional)"
         required: false
         default: ""
+      native_ios_branch:
+        description: "ios-sdk branch for a source build (optional; default: the SDK branch if ios-sdk has it, else develop)"
+        required: false
+        default: ""
+      native_android_branch:
+        description: "android-sdk branch for a source build (optional; default: the SDK branch if android-sdk has it, else develop)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -17,6 +25,8 @@ jobs:
     with:
       branch: ${{ github.ref_name }}   # SDK branch = current branch GitHub
       app_ref: ${{ inputs.app_ref }}   # optional override for GitLab ref
+      native_ios_branch: ${{ inputs.native_ios_branch }}
+      native_android_branch: ${{ inputs.native_android_branch }}
     secrets:
       GITLAB_TRIGGER_TOKEN: ${{ secrets.GITLAB_TRIGGER_TOKEN }}
       GITLAB_HOST: ${{ secrets.GITLAB_HOST }}

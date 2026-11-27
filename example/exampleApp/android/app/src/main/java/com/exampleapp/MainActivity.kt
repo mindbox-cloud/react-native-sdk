@@ -6,7 +6,7 @@ import android.os.Bundle
 import cloud.mindbox.mobile_sdk.Mindbox
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.ReactInstanceManager
+import com.facebook.react.ReactInstanceEventListener
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
@@ -32,8 +32,8 @@ class MainActivity : ReactActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val reactInstanceManager = getReactNativeHost().getReactInstanceManager();
-        val reactContext = reactInstanceManager.getCurrentReactContext();
+        val reactHost = getReactHost()
+        val reactContext = reactHost.currentReactContext
 
         // Initialize and send intent if React context is already available
         // https://developers.mindbox.ru/docs/flutter-push-navigation-react-native
@@ -41,11 +41,10 @@ class MainActivity : ReactActivity() {
             initializeAndSentIntent(reactContext);
         } else {
             // Add listener to initialize and send intent once React context is initialized
-            reactInstanceManager.addReactInstanceEventListener(object :
-                ReactInstanceManager.ReactInstanceEventListener {
+            reactHost.addReactInstanceEventListener(object : ReactInstanceEventListener {
                 override fun onReactContextInitialized(context: ReactContext) {
                     initializeAndSentIntent(context)
-                    reactInstanceManager.removeReactInstanceEventListener(this)
+                    reactHost.removeReactInstanceEventListener(this)
                 }
             })
         }

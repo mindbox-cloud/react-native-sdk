@@ -17,7 +17,7 @@ Follow the installation process detailed [here](https://developers.mindbox.ru/do
    ```markdown
     npm i --save mindbox-sdk
     ```
-   The package requires React Native 0.71 or newer, on the old or the new architecture.
+   The package requires React Native 0.76 or newer, on the old or the new architecture.
 
 2. For iOS, make sure to install the pods:
    ```markdown

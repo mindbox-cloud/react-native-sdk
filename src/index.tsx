@@ -11,6 +11,8 @@ class MindboxSdkClass {
   private _initialized: boolean
   private _initializing: boolean
   private _callbacks: Array<() => void>
+  private _disableTrackingIds?: boolean
+  private _pendingAdvertisingIdentifier?: string | null
   private _mindboxJsDeliveryEvents: NativeEventEmitter
   private _emitterSubscribtion?: EmitterSubscription
   private readonly _prefix: string = '[RN]'
@@ -84,7 +86,7 @@ class MindboxSdkClass {
    *   previousUuid: '',
    *   operationsDomain: 'anonymizer.example.com',
    *   shouldIncludeVersionCode: false, // Android only (ignored on iOS). Default value is true
-   *   disableTrackingIds: true, // Android only (ignored on iOS). Default value is false
+   *   disableTrackingIds: true, // Default value is false
    * });
    */
   public async initialize(initializationData: InitializationData) {
@@ -140,7 +142,19 @@ class MindboxSdkClass {
       payload.disableTrackingIds = disableTrackingIds
     }
 
+    this._disableTrackingIds = disableTrackingIds === true
+    const pendingAdvertisingIdentifier = this._pendingAdvertisingIdentifier
+    this._pendingAdvertisingIdentifier = undefined
+
     try {
+      if (Platform.OS === 'ios') {
+        if (this._disableTrackingIds) {
+          MindboxSdkNative.setAdvertisingIdentifier?.(null)
+        } else if (pendingAdvertisingIdentifier !== undefined) {
+          MindboxSdkNative.setAdvertisingIdentifier?.(pendingAdvertisingIdentifier)
+        }
+      }
+
       const payloadString = JSON.stringify(payload)
       this._initialized = await MindboxSdkNative.initialize(payloadString)
       this._initializing = false
@@ -470,6 +484,33 @@ class MindboxSdkClass {
    */
   public refreshNotificationPermissionStatus() {
     return MindboxSdkNative.refreshNotificationPermissionStatus()
+  }
+
+  /**
+   * Passes the app's advertising identifier (IDFA) to Mindbox. iOS only, does nothing on Android.
+   *
+   * The SDK does not read the IDFA itself: call this method at launch and on every return to the
+   * foreground. `null`, an empty string or zeros mean there is no tracking consent and clear the
+   * IDFA sent earlier. The IDFA is sent only if the app's `PrivacyInfo.xcprivacy` declares the
+   * Mindbox tracking host. A value set before `initialize` is held and passed on by `initialize`
+   * once `disableTrackingIds` is known.
+   *
+   * @param identifier the IDFA, or `null` when tracking is not authorized
+   *
+   * @example
+   * MindboxSdk.setAdvertisingIdentifier(idfa)
+   */
+  public setAdvertisingIdentifier(identifier: string | null) {
+    if (Platform.OS !== 'ios') {
+      return
+    }
+
+    if (this._disableTrackingIds === undefined) {
+      this._pendingAdvertisingIdentifier = identifier
+      return
+    }
+
+    MindboxSdkNative.setAdvertisingIdentifier(this._disableTrackingIds ? null : identifier)
   }
 
   /**

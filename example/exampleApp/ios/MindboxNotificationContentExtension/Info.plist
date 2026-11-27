@@ -18,5 +18,7 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>MindboxNotificationContentExtension.NotificationViewController</string>
 	</dict>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 </dict>
 </plist>

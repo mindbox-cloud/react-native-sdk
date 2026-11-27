@@ -5,7 +5,7 @@ import React
 class NotificationModule: RCTEventEmitter {
 
   static let suiteName = "group.cloud.Mindbox.com.mindbox.exampleRN"
-  private var hasListeners = false
+  static let newNotification = Notification.Name("exampleApp.newNotification")
 
   override static func requiresMainQueueSetup() -> Bool {
     return true
@@ -31,17 +31,18 @@ class NotificationModule: RCTEventEmitter {
   }
 
   override func startObserving() {
-    hasListeners = true
+    NotificationCenter.default.addObserver(self,
+                                           selector: #selector(notifyReactNative),
+                                           name: NotificationModule.newNotification,
+                                           object: nil)
   }
 
   override func stopObserving() {
-    hasListeners = false
+    NotificationCenter.default.removeObserver(self, name: NotificationModule.newNotification, object: nil)
   }
 
   // send event about new notification
-  func notifyReactNative() {
-    if hasListeners {
-      sendEvent(withName: "newNotification", body: nil)
-    }
+  @objc func notifyReactNative() {
+    sendEvent(withName: "newNotification", body: nil)
   }
 }
