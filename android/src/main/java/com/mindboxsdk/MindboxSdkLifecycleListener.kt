@@ -44,8 +44,9 @@ internal class MindboxSdkLifecycleListener private constructor(
 
     private fun getLauncherActivityClassName(): String? {
         val pm = application.packageManager
-        val intent = pm.getLaunchIntentForPackage(application.packageName)
-        return intent?.component?.className
+        val component = pm.getLaunchIntentForPackage(application.packageName)?.component ?: return null
+        val targetActivity = runCatching { pm.getActivityInfo(component, 0).targetActivity }.getOrNull()
+        return targetActivity ?: component.className
     }
 
     private fun isMainActivity(activity: Activity): Boolean {
