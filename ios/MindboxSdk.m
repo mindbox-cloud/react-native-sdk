@@ -20,8 +20,6 @@ RCT_EXTERN_METHOD(setLogLevel:(NSInteger)level)
 
 RCT_EXTERN_METHOD(getSdkVersion:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(pushDelivered:(NSString)uniqKey)
-
 RCT_EXTERN_METHOD(refreshNotificationPermissionStatus)
 
 RCT_EXTERN_METHOD(setAdvertisingIdentifier:(nullable NSString *)identifier)
