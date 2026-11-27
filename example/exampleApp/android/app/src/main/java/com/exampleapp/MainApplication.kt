@@ -7,9 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import cloud.mindbox.mobile_sdk.pushes.MindboxRemoteMessage
-import cloud.mindbox.mindbox_firebase.MindboxFirebase
-import cloud.mindbox.mindbox_huawei.MindboxHuawei
-import cloud.mindbox.mobile_sdk.Mindbox
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -18,7 +15,6 @@ import com.exampleapp.NotificationPackage
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import cloud.mindbox.mindbox_rustore.MindboxRuStore
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 
 class MainApplication : Application(), ReactApplication {
@@ -35,8 +31,6 @@ class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
         super.onCreate()
-        //The fifth step of https://developers.mindbox.ru/docs/firebase-send-push-notifications-react-native
-        Mindbox.initPushServices(this, listOf(MindboxFirebase, MindboxHuawei, MindboxRuStore))
         loadReactNative(this)
     }
 
